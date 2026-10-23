@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C&A | Protótipo Interativo - Campanha Data Dupla 11/11</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EDEDEB;
+  --panel: #FFFFFF;
+  --ink: #0A0A0A;
+  --on-ink: #FFFFFF;
+  --muted: #6E6E6E;
+  --line: #D8D8D6;
+  --soft: #F5F5F4;
+  --wa-dark: #075E54;
+  --wa-teal: #008069;
+  --wa-bg: #EFEAE2;
+  --wa-out: #D9FDD3;
+  --ui-font: "Instrument Sans", system-ui, sans-serif;
+  --wa-font: "Instrument Sans", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--ui-font); font-size: 14px; line-height: 1.45; display: flex; flex-direction: column; min-height: 100vh; }
+button { cursor: pointer; font-family: inherit; }
+
+/* Header */
+.topbar { background: #0A0A0A; color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 24px; min-height: 60px; }
+.brand b { font-size: 20px; font-weight: 700; }
+.brand span { font-size: 14px; color: #BDBDBD; margin-left: 10px; }
+
+/* Grid principal */
+.bench { flex: 1; display: grid; grid-template-columns: 320px minmax(380px, 1fr) 420px; gap: 16px; padding: 16px; min-height: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-head { padding: 16px; border-bottom: 1px solid var(--line); }
+.panel-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.panel-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.panel-body { overflow-y: auto; padding: 16px; flex: 1; }
+
+/* Menu de Seleção de Cenários e Controles */
+.scen-btn { width: 100%; text-align: left; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px; margin-bottom: 10px; transition: 0.2s; }
+.scen-btn b { display: block; font-size: 14px; }
+.scen-btn span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.scen-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.scen-btn[aria-pressed="true"] span { color: #CCC; }
+
+/* Seletor do Horário da Interação */
+.timing-selector { margin: 12px 0; padding: 10px; background: var(--soft); border-radius: 8px; border: 1px solid var(--line); }
+.timing-selector label { font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px; color: var(--ink); }
+.timing-options { display: flex; gap: 6px; }
+.timing-btn { flex: 1; border: 1px solid var(--line); background: #fff; padding: 8px 4px; border-radius: 6px; font-size: 11.5px; font-weight: 600; text-align: center; color: var(--muted); }
+.timing-btn[aria-pressed="true"] { background: var(--wa-teal); color: #fff; border-color: var(--wa-teal); }
+
+.reset-btn { width: 100%; background: var(--panel); color: var(--ink); border: 1px solid var(--line); padding: 10px; border-radius: 6px; font-weight: 600; font-size: 13px; margin-top: 15px; }
+.reset-btn:hover { background: var(--soft); }
+
+/* Celular WhatsApp */
+.stage { display: flex; align-items: center; justify-content: center; }
+.phone { width: 375px; height: 740px; background: #111B21; border-radius: 36px; padding: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); position: relative; }
+.screen { background: var(--wa-bg); border-radius: 28px; height: 100%; overflow: hidden; display: flex; flex-direction: column; font-family: var(--wa-font); }
+.status { height: 24px; background: var(--wa-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 11px; }
+.wa-head { background: var(--wa-dark); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.wa-head .av { width: 34px; height: 34px; border-radius: 50%; background: #0A0A0A; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.wa-head .who b { display: block; font-size: 14px; }
+.wa-head .who span { font-size: 11px; opacity: 0.8; }
+
+.chat { flex: 1; overflow-y: auto; padding: 10px; background-image: radial-gradient(rgba(7,94,84,0.06) 1px, transparent 1.2px); background-size: 16px 16px; }
+.day { margin: 8px auto 6px; background: #fff; color: #54656F; font-size: 11px; padding: 3px 8px; border-radius: 6px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); }
+.row { display: flex; margin: 4px 0; width: 100%; }
+.row.in { justify-content: flex-start; }
+.row.out { justify-content: flex-end; }
+
+.bub { max-width: 85%; padding: 8px 10px; border-radius: 8px; font-size: 13px; line-height: 1.35; color: #111B21; background: #fff; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word; }
+.out .bub { background: var(--wa-out); }
+.meta { float: right; margin: 4px 0 -2px 8px; font-size: 10px; color: #667781; }
+
+.bub-img { width: 100%; max-height: 140px; object-fit: cover; border-radius: 6px; margin-bottom: 6px; display: block; }
+
+/* Carrossel de Motes (Horizontal) */
+.carousel { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-bottom: 6px; max-width: 100%; }
+.card { flex: 0 0 185px; background: #fff; border-radius: 8px; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); overflow: hidden; display: flex; flex-direction: column; }
+.card .img-container { height: 95px; width: 100%; overflow: hidden; }
+.card .img-container img { width: 100%; height: 100%; object-fit: cover; }
+.card .cb { padding: 6px 8px; font-size: 11.5px; flex: 1; word-wrap: break-word; line-height: 1.3; }
+.card button, .quick-reply-btn { border: 0; border-top: 1px solid #E9EDEF; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 13px; padding: 8px; width: 100%; text-align: center; box-sizing: border-box; display: block; }
+
+/* Lista de Botões Empilhados (Moda Feminina / Masculina) */
+.stacked-menu { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; width: 85%; }
+.stacked-menu button { border: 0; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 13px; padding: 10px; border-radius: 8px; text-align: center; width: 100%; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); }
+
+/* Container para Mensagem + Botões Fixos */
+.msg-group { width: 85%; }
+.msg-group .bub { max-width: 100%; }
+.msg-group .quick-reply-btn { background: #fff; border-radius: 8px; margin-top: 3px; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); border: none; }
+
+/* Botões de Ação na Própria Conversa */
+.in-chat-trigger { margin: 12px auto 8px; display: block; width: 90%; background: var(--wa-teal); color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 13px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: 0.2s; }
+.in-chat-trigger:hover { background: #006654; }
+
+/* Botão de Regras de Negócio */
+.btn-rule-trigger { margin: 6px 0; background: #E1F2FB; color: #1B4F72; border: 1px dashed #027EB5; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 600; text-align: left; width: 100%; }
+.rule-box { display: none; margin: 4px 0 8px; background: #FFF3C4; color: #54656F; font-size: 11.5px; padding: 8px; border-radius: 6px; border-left: 3px solid #FFC107; box-shadow: 0 1px 0.5px rgba(0,0,0,0.1); width: 100%; }
+
+/* Bloco de Payload / Personal Shopper */
+.ps-direct-box { background: #E1F2FB; border: 1px solid #BEE3F8; border-radius: 8px; padding: 10px; margin: 8px 0; font-size: 11.5px; color: #1B4F72; box-shadow: 0 1px 0.5px rgba(0,0,0,0.08); }
+.ps-direct-box b { display: block; margin-bottom: 4px; color: #004085; }
+.ps-payload-text { background: #1E1E1E; color: #D4D4D4; font-family: monospace; font-size: 11px; padding: 8px; border-radius: 4px; margin: 6px 0; word-break: break-word; }
+
+/* Especificações */
+.spec h3 { font-size: 14px; margin: 16px 0 6px; font-weight: 700; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+.spec h3:first-child { margin-top: 0; }
+.spec p, .spec li { font-size: 13px; color: #333; }
+.spec ul { padding-left: 18px; margin: 4px 0; }
+.spec code { background: #0A0A0A; color: #FFF; padding: 2px 5px; border-radius: 4px; font-size: 11px; }
+.badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+.badge.quente { background: #D1E7DD; color: #0F5132; }
+.badge.fria { background: #F8D7DA; color: #842029; }
+.badge.expirada { background: #FFF3CD; color: #856404; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><b>C&A</b><span>Simulador de Regras & Disparos — Campanha Data Dupla 11/11</span></div>
+</header>
+
+<div class="bench">
+  
+  <!-- Painel de Controle -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Seleção de Perfil</h2>
+      <p>Escolha a jornada e o horário da interação:</p>
+    </div>
+    <div class="panel-body">
+      <button class="scen-btn" id="btnQuente" aria-pressed="true" onclick="carregarCenario('quente')">
+        <b>🔥 Base Quente (Engajados)</b>
+        <span>Cliente interage no D-2, agenda disparo no bot e recebe cupom em D0.</span>
+      </button>
+      
+      <button class="scen-btn" id="btnFria" aria-pressed="false" onclick="carregarCenario('fria')">
+        <b>❄️ Base Fria (Não Engajados)</b>
+        <span>Cliente não interage no D-2, é higienizado às 18h de D-1 e recebe D0 em massa.</span>
+      </button>
+
+      <!-- Sub-menu de Momento da Interação -->
+      <div class="timing-selector" id="timingSelector">
+        <label>Horário da Interação do Cliente:</label>
+        <div class="timing-options">
+          <button class="timing-btn" id="btnAntes18" aria-pressed="true" onclick="setTiming('antes')">
+            Até 10/11 (18:00h)<br><small>(Antes do Corte)</small>
+          </button>
+          <button class="timing-btn" id="btnDepois18" aria-pressed="false" onclick="setTiming('depois')">
+            Após 10/11 (18:00h)<br><small>(Expirado)</small>
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; padding: 12px; background: var(--soft); border-radius: 8px; font-size: 12px; line-height: 1.4;">
+        <b>💡 Instrução:</b>
+        <p style="margin: 4px 0 0;">Clique nas opções para avançar no fluxo e disparar as mensagens. Use os botões azuis "Ver regras de negócio" para expandir as regras de cada etapa.</p>
+      </div>
+
+      <button class="reset-btn" onclick="carregarCenario(cenarioAtual)">🔄 Reiniciar Conversa</button>
+    </div>
+  </aside>
+
+  <!-- Visão WhatsApp -->
+  <main class="stage">
+    <div class="phone">
+      <div class="screen">
+        <div class="status"><span>11:11</span><span>5G ▮▮▮</span></div>
+        <header class="wa-head">
+          <div class="av">C&A</div>
+          <div class="who"><b>C&A</b><span>Conta Comercial Oficial</span></div>
+        </header>
+        <div class="chat" id="chat">
+          <!-- Conteúdo dinâmico via JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Especificações Técnicas -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Regras & Especificações</h2>
+      <p>Parâmetros técnicos do cenário ativo:</p>
+    </div>
+    <div class="panel-body spec" id="specPanel">
+      <!-- Mapeamento dinâmico via JS -->
+    </div>
+  </aside>
+
+</div>
+
+<script>
+let cenarioAtual = 'quente';
+let timingAtual = 'antes'; // 'antes' ou 'depois' das 18h de D-1 (10/11)
+let estadoEsquentaEnviado = false;
+let estadoRespostaEsquenta = false;
+let estadoD0Enviado = false;
+let moteEscolhidoVal = '';
+let generoVal = '';
+
+function toggleRule(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+  }
+}
+
+function setTiming(momento) {
+  timingAtual = momento;
+  document.getElementById('btnAntes18').setAttribute('aria-pressed', momento === 'antes');
+  document.getElementById('btnDepois18').setAttribute('aria-pressed', momento === 'depois');
+  carregarCenario(cenarioAtual);
+}
+
+function carregarCenario(tipo) {
+  cenarioAtual = tipo;
+  estadoEsquentaEnviado = false;
+  estadoRespostaEsquenta = false;
+  estadoD0Enviado = false;
+  moteEscolhidoVal = '';
+  generoVal = '';
+
+  document.getElementById('btnQuente').setAttribute('aria-pressed', tipo === 'quente');
+  document.getElementById('btnFria').setAttribute('aria-pressed', tipo === 'fria');
+  document.getElementById('timingSelector').style.display = (tipo === 'quente') ? 'block' : 'none';
+  
+  const chat = document.getElementById('chat');
+  chat.innerHTML = `
+    <button class="in-chat-trigger" id="btnChatEsquenta" onclick="enviarEsquenta()">📩 Enviar Esquenta (D-2)</button>
+    <div id="flowContent"></div>
+  `;
+  atualizarSpec();
+}
+
+function atualizarSpec() {
+  const spec = document.getElementById('specPanel');
+  if (cenarioAtual === 'quente') {
+    if (timingAtual === 'antes') {
+      spec.innerHTML = `
+        <span class="badge quente">BASE QUENTE (ENGAJADO ANTES DAS 18H)</span>
+        <h3>⚙️ Estrutura da Jornada</h3>
+        <ul>
+          <li><b>Interação no Prazo:</b> Ocorreu até 10/11 às 18:00h.</li>
+          <li><b>Agendamento Interno (Blip):</b> Salva <code>moteEscolhido</code> e <code>genero</code> no contexto e agenda a mensagem para D0 (11/11).</li>
+          <li><b>Extrato de Negativação:</b> Incluído no relatório extraído às 18h de D-1 (10/11) para que a C&A o <b>remova</b> do disparo ativo geral de D0 (Template 3).</li>
+          <li><b>Template 2 (Reengajamento Agendado):</b> Disparado pelo bot em D0 consumindo as variáveis salvas.</li>
+        </ul>
+        <h3>📄 Templates Oficiais</h3>
+        <p><b>Template 1:</b> Carrossel Motes c/ Quick Reply.</p>
+        <p><b>Template 2:</b> Mensagem Reengajamento c/ resumo e botão de CTA.</p>
+      `;
+    } else {
+      spec.innerHTML = `
+        <span class="badge expirada">BASE QUENTE (INTERAÇÃO APÓS 18H / EXPIRADO)</span>
+        <h3>⚙️ Estrutura da Jornada</h3>
+        <ul>
+          <li><b>Interação Tardia:</b> Ocorreu após o corte das 18h do dia 10/11.</li>
+          <li><b>Exclusão da Base da Blip:</b> Como a extração ocorreu às 18h, esta pessoa <b>NÃO estará no relatório da Blip</b> enviado à C&A.</li>
+          <li><b>Disparo de D0 Geral (Template 3):</b> O cliente será impactado normalmente pelo envio em massa do Template 3 pela C&A em D0 (11/11).</li>
+          <li><b>Regra de Expiração no Bot:</b> Ao interagir após o corte, o bot envia a mensagem de encerramento do esquenta e ativa a trava temporária para evitar o agendamento do Template 2 e impedir duplo impacto.</li>
+        </ul>
+        <h3>📄 Mensagem de Expiração do Bot</h3>
+        <p><i>"Nosso esquenta já terminou, mas não se preocupa: amanhã eu volto com novidades. 💛"</i></p>
+      `;
+    }
+  } else {
+    spec.innerHTML = `
+      <span class="badge fria">BASE FRIA (NÃO ENGAJADOS)</span>
+      <h3>⚙️ Estrutura da Jornada</h3>
+      <ul>
+        <li><b>Template 1 (Esquenta / D-2):</b> Enviado porém sem resposta do cliente.</li>
+        <li><b>Higienização de Base:</b> Não havendo resposta até às 18h de D-1 (10/11), o cliente permanece na base do disparo em massa de D0 da C&A.</li>
+        <li><b>Template 3 (Disparo Ativo / D0):</b> Template simples com imagem + ofertas diretas + cupom <code>11DO11</code>.</li>
+      </ul>
+      <h3>📄 Templates Oficiais</h3>
+      <p><b>Template 1:</b> Carrossel enviado no D-2 (sem resposta).</p>
+      <p><b>Template 3:</b> Imagem única da promoção + texto direto com botões.</p>
+    `;
+  }
+}
+
+function enviarEsquenta() {
+  if (estadoEsquentaEnviado) return;
+  estadoEsquentaEnviado = true;
+  
+  const btn = document.getElementById('btnChatEsquenta');
+  if (btn) btn.style.display = 'none';
+
+  const flow = document.getElementById('flowContent');
+  flow.innerHTML += `
+    <div class="day">D-2 (09/11/2026)</div>
+    <div class="row in">
+      <div class="bub">
+        <b>Maria</b>, a data dupla <b>11/11</b> está chegando e quero te ajudar a montar um look incrível! 👀✨<br><br>Me conta: pra qual ocasião você quer encontrar as melhores peças?
+        <span class="meta">09:00</span>
+      </div>
+    </div>
+    
+    <div class="carousel" id="carrosselEsquenta">
+      <div class="card">
+        <div class="img-container">
+          <img src="https://images.unsplash.com/photo-1549482075-a8254a047c0a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Jantar">
+        </div>
+        <div class="cb">Opções elegantes e cheias de estilo para um <b>jantar especial</b> ou um <b>date inesquecível</b>. 🍽️</div>
+        <button onclick="selecionarCard('jantar e dates', 'Look para date')">Look para date</button>
+      </div>
+      <div class="card">
+        <div class="img-container">
+          <img src="https://images.unsplash.com/photo-1713519362648-1e1adec5dc8f?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Festa">
+        </div>
+        <div class="cb">Produções marcantes e tendências perfeitas para brilhar em <b>festas</b> e <b>ocasiões especiais</b>. 🎉</div>
+        <button onclick="selecionarCard('festas', 'Look para festa')">Look para festa</button>
+      </div>
+      <div class="card">
+        <div class="img-container">
+          <img src="https://images.unsplash.com/photo-1583117399869-4c25e7202346?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Viagem">
+        </div>
+        <div class="cb">Combinações confortáveis e versáteis para aproveitar <b>viagens e passeios</b>. ✈️</div>
+        <button onclick="selecionarCard('viagens e passeios', 'Look para viagem')">Look para viagem</button>
+      </div>
+      <div class="card">
+        <div class="img-container">
+          <img src="https://images.unsplash.com/photo-1594262254144-8a0e068f4215?q=80&w=1119&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Dia a dia">
+        </div>
+        <div class="cb">Peças práticas, modernas e super aconchegantes para o seu dia a dia.😌</div>
+        <button onclick="selecionarCard('conforto no dia a dia', 'Look para dia a dia')">Look para dia a dia</button>
+      </div>
+    </div>
+    <div id="anchorEsquenta"></div>
+  `;
+
+  if (cenarioAtual === 'fria') {
+    flow.innerHTML += `
+      <button class="in-chat-trigger" id="btnChatAgendado" onclick="enviarAgendado()">📩 Enviar Disparo D0 (Sem Resposta)</button>
+      <div id="anchorD0"></div>
+    `;
+  }
+}
+
+function selecionarCard(mote, textoBotao) {
+  if (cenarioAtual !== 'quente' || estadoRespostaEsquenta) return;
+  moteEscolhidoVal = mote;
+
+  const anchor = document.getElementById('anchorEsquenta');
+
+  if (timingAtual === 'depois') {
+    // Interação Tardia / Expirada
+    estadoRespostaEsquenta = true;
+    anchor.innerHTML = `
+      <div class="row out">
+        <div class="bub">${textoBotao}<span class="meta">18:30 (10/11)</span></div>
+      </div>
+      <div class="row in">
+        <div class="bub">
+          Nosso esquenta já terminou, mas não se preocupa: amanhã eu volto com novidades. 💛
+          <span class="meta">18:30 (10/11)</span>
+        </div>
+      </div>
+
+      <button class="btn-rule-trigger" onclick="toggleRule('ruleExpiracao')">🔍 Ver regras de negócio</button>
+      <div class="rule-box" id="ruleExpiracao">
+        <b>Regra de Expiração & Prevenção de Duplicidade:</b><br>
+        Como a interação ocorreu após as 18:00h do dia 10/11, o cliente <b>não entrou na lista de exclusão enviada à C&A</b>. A trava temporária do bot cancela o agendamento interno do Template 2. O cliente será impactado normalmente pelo disparo geral de D0 da C&A (Template 3), evitando que receba duas mensagens.
+      </div>
+
+      <button class="in-chat-trigger" id="btnChatAgendado" onclick="enviarAgendado()">📩 Enviar Disparo D0 Geral da C&A</button>
+      <div id="anchorD0"></div>
+    `;
+    return;
+  }
+
+  // Interação Normal (Antes das 18h do dia 10/11)
+  anchor.innerHTML = `
+    <div class="row out">
+      <div class="bub">${textoBotao}<span class="meta">09:01</span></div>
+    </div>
+    <div class="row in">
+      <div class="bub">
+        Perfeito! Você prefere ver peças de <b>moda feminina</b> ou <b>moda masculina</b>?
+        <span class="meta">09:01</span>
+      </div>
+    </div>
+    
+    <!-- Opções empilhadas verticalmente -->
+    <div class="stacked-menu" id="generoMenuEmpilhado">
+      <button onclick="selecionarGenero('moda feminina')">moda feminina</button>
+      <button onclick="selecionarGenero('moda masculina')">moda masculina</button>
+    </div>
+    <div id="anchorGenero"></div>
+  `;
+}
+
+function selecionarGenero(genero) {
+  if (estadoRespostaEsquenta) return;
+  estadoRespostaEsquenta = true;
+  generoVal = genero;
+
+  document.getElementById('generoMenuEmpilhado').style.display = 'none';
+  const anchorG = document.getElementById('anchorGenero');
+
+  anchorG.innerHTML = `
+    <div class="row out">
+      <div class="bub">${genero}<span class="meta">09:02</span></div>
+    </div>
+    <div class="row in">
+      <div class="bub">
+        Prontinho, guardei aqui! 💛 No dia 11/11 eu volto com a sua seleção pronta e um <b>cupom especial de presente</b>. Fica de olho!
+        <span class="meta">09:02</span>
+      </div>
+    </div>
+
+    <button class="btn-rule-trigger" onclick="toggleRule('ruleAgendamento')">🔍 Ver regras de negócio</button>
+    <div class="rule-box" id="ruleAgendamento">
+      <b>Gravação & Corte de D-1 (18h em 10/11):</b><br>
+      A Blip salva as variáveis no contexto do cliente (<code>moteEscolhido = "${moteEscolhidoVal}"</code> / <code>genero = "${generoVal}"</code>) e agenda o disparo agendado de D0. Às 18h do dia 10/11, a Blip extrai os agendados para a C&A negativar da base em massa.
+    </div>
+    
+    <button class="in-chat-trigger" id="btnChatAgendado" onclick="enviarAgendado()">📩 Enviar Mensagem Agendada (D0)</button>
+    <div id="anchorD0"></div>
+  `;
+}
+
+function enviarAgendado() {
+  if (estadoD0Enviado) return;
+  estadoD0Enviado = true;
+
+  const btn = document.getElementById('btnChatAgendado');
+  if (btn) btn.style.display = 'none';
+
+  if (cenarioAtual === 'quente' && timingAtual === 'antes') {
+    const anchorD0 = document.getElementById('anchorD0');
+    anchorD0.innerHTML += `
+      <div class="day">D0 (11/11/2026)</div>
+      
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">
+            <b>Maria</b>, estou aqui para cumprir a minha promessa! É <b>11/11</b> e chegou a hora de conferir a seleção de peças perfeita para <b>${moteEscolhidoVal}</b> em ${generoVal}.<br><br>E tem mais: usando o cupom <b>11DO11</b> você aproveita descontos exclusivos hoje! 🛍️
+            <span class="meta">10:00</span>
+          </div>
+        </div>
+        <button class="quick-reply-btn" onclick="acionarPersonalShopper()">✨ Ver minha seleção</button>
+      </div>
+
+      <button class="btn-rule-trigger" onclick="toggleRule('ruleT2')">🔍 Ver regras de negócio</button>
+      <div class="rule-box" id="ruleT2">
+        <b>Template 2 (Reengajamento Agendado):</b><br>
+        Disparado dinamicamente pelo bot em D0 (11/11) usando as variáveis capturadas no D-2 (09/11).
+      </div>
+      <div id="anchorPS"></div>
+    `;
+  } else {
+    // Base Fria ou Interação Tardia (Expirada) -> Disparo Geral de D0 da C&A (Template 3)
+    const anchorD0 = document.getElementById('anchorD0');
+    anchorD0.innerHTML += `
+      <div class="day">D0 (11/11/2026)</div>
+      
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw2QE5dcjxzFwq4EPANjqnTWZw5q7_RTXT7ujfS2Iub8o-SAppgCtl0e9H&s=10" class="bub-img" alt="Promoção 11/11 C&A">
+            Chegou 11/11 da C&A! 🔥<br><b>Maria</b>, aproveite o cupom <b>11DO11</b> para renovar o guarda-roupa hoje com descontos exclusivos. Explore as categorias e garanta os melhores achadinhos hoje! 🛍️
+            <span class="meta">10:00</span>
+          </div>
+        </div>
+        <button class="quick-reply-btn" onclick="cliqueFria('moda feminina')">Ver ofertas femininas</button>
+        <button class="quick-reply-btn" onclick="cliqueFria('moda masculina')">Ver ofertas masculinas</button>
+      </div>
+      <div id="anchorFriaResp"></div>
+    `;
+  }
+}
+
+function acionarPersonalShopper() {
+  const anchorPS = document.getElementById('anchorPS');
+  if (anchorPS.innerHTML !== '') return;
+
+  anchorPS.innerHTML = `
+    <div class="row out">
+      <div class="bub">✨ Ver minha seleção<span class="meta">10:01</span></div>
+    </div>
+    
+    <div class="ps-direct-box">
+      <b>Transição para Personal Shopper:</b>
+      Payload com as informações selecionadas são enviadas à personalShopper
+      <div class="ps-payload-text">
+        "Quero ver peças para ${moteEscolhidoVal} em ${generoVal}"
+      </div>
+    </div>
+  `;
+}
+
+function cliqueFria(genero) {
+  const anchorResp = document.getElementById('anchorFriaResp');
+  if (anchorResp.innerHTML !== '') return;
+
+  const textoBtn = (genero === 'moda feminina') ? 'Ver ofertas femininas' : 'Ver ofertas masculinas';
+
+  anchorResp.innerHTML = `
+    <div class="row out">
+      <div class="bub">${textoBtn}<span class="meta">10:01</span></div>
+    </div>
+    
+    <div class="ps-direct-box">
+      <b>Transição Técnica:</b>
+      Payload enviado ao bot:
+      <div class="ps-payload-text">
+        "Quero ver as últimas ofertas em ${genero}"
+      </div>
+    </div>
+  `;
+}
+
+// Inicializar simulador
+carregarCenario('quente');
+</script>
+</body>
+</html>
