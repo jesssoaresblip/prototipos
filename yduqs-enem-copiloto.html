@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="pt-BR" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Estácio | Simulador de Notificações Ativas (NA 2 a NA 8) — Copiloto do ENEM</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Instrument+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --paper: #F1F4F9;
+  --panel: #FFFFFF;
+  --ink: #0F172A;
+  --on-ink: #FFFFFF;
+  --muted: #64748B;
+  --line: #E2E8F0;
+  --soft: #F8FAFC;
+  --primary: #002D62;
+  --primary-light: #E0ECFB;
+  --accent: #FF7A00;
+  --estacio-lime: #C1FA00;
+  --wa-dark: #075E54;
+  --wa-teal: #008069;
+  --wa-bg: #EFEAE2;
+  --wa-out: #D9FDD3;
+  --ui-font: "Plus Jakarta Sans", system-ui, sans-serif;
+  --wa-font: "Instrument Sans", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--paper); color: var(--ink); font-family: var(--ui-font); font-size: 14px; line-height: 1.45; display: flex; flex-direction: column; min-height: 100vh; }
+button { cursor: pointer; font-family: inherit; }
+
+/* Topbar */
+.topbar { background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; min-height: 64px; box-shadow: 0 2px 10px rgba(0,29,66,0.15); z-index: 10; flex-wrap: wrap; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand img { height: 32px; object-fit: contain; }
+.brand-title { display: flex; flex-direction: column; }
+.brand-title strong { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; }
+.brand-title span { font-size: 12px; color: #94A3B8; }
+.top-badges { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.top-pill { background: rgba(255,255,255,0.12); color: #fff; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
+.btn-macro-top { background: #FFFFFF; color: var(--primary); border: none; font-weight: 700; font-size: 13px; padding: 8px 16px; border-radius: 8px; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: inline-flex; align-items: center; gap: 6px; }
+.btn-macro-top:hover { background: #F1F5F9; transform: translateY(-1px); }
+
+/* Grid principal */
+.bench { flex: 1; display: grid; grid-template-columns: 360px minmax(380px, 1fr) 460px; gap: 20px; padding: 20px; min-height: 0; }
+@media (max-width: 1200px) {
+  .bench { grid-template-columns: 320px 1fr; }
+  .bench > aside:last-child { grid-column: span 2; }
+}
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 16px rgba(15,23,42,0.04); }
+.panel-head { padding: 18px 20px; border-bottom: 1px solid var(--line); background: #FCFDFF; }
+.panel-head h2 { margin: 0; font-size: 16px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.panel-head p { margin: 4px 0 0; color: var(--muted); font-size: 12.5px; }
+.panel-body { overflow-y: auto; padding: 18px 20px; flex: 1; }
+
+/* Lista de Notificações Ativas */
+.na-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.na-card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #FFF; transition: all 0.2s ease; cursor: pointer; text-align: left; width: 100%; position: relative; }
+.na-card:hover { border-color: #93C5FD; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,45,98,0.06); }
+.na-card.active { border-color: var(--primary); background: #F0F6FF; box-shadow: 0 0 0 2px var(--primary); }
+.na-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.na-tag { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
+.na-tag.na { background: var(--primary); color: #FFF; }
+.na-tag.flows-badge { background: #10B981; color: #FFF; font-size: 10px; margin-left: 6px; }
+.na-date { font-size: 11.5px; font-weight: 600; color: #2563EB; }
+.na-title { font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+.na-desc { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+/* Phone Stage */
+.stage { display: flex; align-items: center; justify-content: center; }
+.phone { width: 385px; height: 780px; background: #0F172A; border-radius: 40px; padding: 10px; box-shadow: 0 25px 60px -15px rgba(0,45,98,0.35); position: relative; border: 4px solid #334155; }
+.screen { background: var(--wa-bg); border-radius: 30px; height: 100%; overflow: hidden; display: flex; flex-direction: column; font-family: var(--wa-font); position: relative; }
+.status { height: 24px; background: var(--wa-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; font-size: 11px; font-weight: 600; z-index: 5; }
+.wa-head { background: var(--wa-dark); color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index: 5; }
+.wa-head-left { display: flex; align-items: center; gap: 10px; }
+.wa-head .av { width: 36px; height: 36px; border-radius: 50%; background: #FFF; padding: 3px; display: grid; place-items: center; overflow: hidden; }
+.wa-head .av img { width: 100%; height: 100%; object-fit: contain; }
+.wa-head .who b { display: flex; align-items: center; gap: 4px; font-size: 14px; }
+.wa-head .who span { font-size: 11px; opacity: 0.85; }
+.verified-icon { display: inline-flex; width: 14px; height: 14px; background: #25D366; border-radius: 50%; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 900; }
+
+.chat { flex: 1; overflow-y: auto; padding: 12px; background-image: radial-gradient(rgba(7,94,84,0.07) 1.2px, transparent 1.2px); background-size: 18px 18px; display: flex; flex-direction: column; }
+.day { margin: 4px auto 10px; background: rgba(255,255,255,0.92); color: #54656F; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 6px; width: max-content; box-shadow: 0 1px 1px rgba(0,0,0,0.08); }
+.row { display: flex; margin: 6px 0; width: 100%; flex-direction: column; }
+.row.in { align-items: flex-start; }
+.row.out { align-items: flex-end; }
+
+/* Balão WhatsApp */
+.wa-card-bubble { max-width: 90%; background: #FFF; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+.wa-card-img-wrap { width: 100%; height: 160px; background: #E2E8F0; overflow: hidden; position: relative; }
+.wa-card-img-wrap img { width: 100%; max-width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 8px 8px 0 0; }
+.wa-card-img-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); color: #FFF; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; backdrop-filter: blur(4px); }
+.wa-card-body { padding: 10px 12px; font-size: 12.8px; line-height: 1.4; color: #111B21; word-wrap: break-word; }
+.wa-card-body p { margin-bottom: 8px; }
+.wa-card-body p:last-child { margin-bottom: 0; }
+.footer-msg { font-size: 11px; color: #64748B; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #CBD5E1; }
+.meta { float: right; margin: 4px 0 -2px 8px; font-size: 10px; color: #667781; }
+
+/* Botões */
+.wa-action-stack { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; max-width: 90%; width: 100%; }
+.wa-btn { border: 0; background: #FFF; color: var(--wa-teal); font-weight: 700; font-size: 13px; padding: 9px 12px; text-align: center; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.12); transition: 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.wa-btn:hover { background: #F8FAFC; color: #006050; }
+.wa-btn.primary { background: #E8F5E9; color: #1B5E20; }
+.wa-btn.flows { background: #002D62; color: #FFFFFF; box-shadow: 0 2px 4px rgba(0,45,98,0.25); border: 1px solid #001D42; }
+.wa-btn.flows:hover { background: #001D42; }
+.wa-btn.dismiss { color: #64748B; font-weight: 500; }
+
+.wa-response-out { background: var(--wa-out); padding: 8px 12px; border-radius: 8px; font-size: 13px; box-shadow: 0 1px 1px rgba(0,0,0,0.1); max-width: 80%; align-self: flex-end; margin-top: 6px; color: #111B21; }
+
+/* WHATSAPP FLOWS MODAL OVERLAY */
+.flows-sheet { position: absolute; bottom: 0; left: 0; right: 0; height: 88%; background: #FFFFFF; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -8px 24px rgba(0,0,0,0.25); z-index: 50; display: none; flex-direction: column; animation: slideUp 0.25s ease-out forwards; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.flows-header { background: #002D62; color: #FFF; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-top-left-radius: 20px; border-top-right-radius: 20px; }
+.flows-header-title { display: flex; align-items: center; gap: 8px; }
+.flows-header-title h4 { font-size: 13.5px; font-weight: 700; margin: 0; }
+.flows-header-title span { font-size: 10px; background: rgba(193,250,0,0.25); color: #C1FA00; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+.flows-close { background: transparent; border: none; color: #FFF; font-size: 18px; line-height: 1; opacity: 0.8; }
+.flows-body { flex: 1; overflow-y: auto; padding: 14px 16px; font-family: var(--ui-font); }
+.flows-step-progress { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.flows-step-indicator { font-size: 11px; font-weight: 700; color: #002D62; text-transform: uppercase; }
+.flows-pills { display: flex; gap: 4px; }
+.flows-pill-dot { width: 24px; height: 5px; border-radius: 4px; background: #E2E8F0; transition: 0.3s; }
+.flows-pill-dot.active { background: #002D62; }
+.flows-card-q { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+.flows-q-tag { font-size: 10.5px; font-weight: 800; color: #2563EB; margin-bottom: 4px; }
+.flows-q-text { font-size: 12.5px; font-weight: 600; color: #0F172A; line-height: 1.35; margin-bottom: 10px; }
+.flows-options { display: flex; flex-direction: column; gap: 6px; }
+.flows-opt-label { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #334155; padding: 8px 10px; background: #FFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.15s; }
+.flows-opt-label:hover { border-color: #002D62; background: #F0F6FF; }
+.flows-opt-label input { margin-top: 2px; }
+.flows-footer { padding: 12px 16px; border-top: 1px solid #E2E8F0; background: #FAFAFA; display: flex; gap: 8px; }
+.flows-submit-btn { flex: 1; background: #002D62; color: #FFF; border: none; font-weight: 700; font-size: 13px; padding: 10px; border-radius: 8px; transition: 0.2s; }
+.flows-submit-btn:hover { background: #001D42; }
+
+/* Especificações e UX */
+.spec-tag-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700; }
+.badge.blue { background: #DBEAFE; color: #1D4ED8; }
+.badge.orange { background: #FFEDD5; color: #C2410C; }
+.badge.green { background: #DCFCE7; color: #15803D; }
+.badge.purple { background: #F3E8FF; color: #7E22CE; }
+
+.spec-section { background: #FFF; border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+.spec-section h3 { font-size: 13px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.spec-section p, .spec-section li { font-size: 12.5px; color: #334155; line-height: 1.45; }
+.spec-section ul { padding-left: 18px; margin: 4px 0; }
+.spec-section code { background: #F1F5F9; color: #0F172A; padding: 2px 6px; border-radius: 4px; font-size: 11.5px; font-weight: 600; border: 1px solid #E2E8F0; }
+
+.ux-box { background: #FFFBEB; border-left: 4px solid #F59E0B; padding: 12px; border-radius: 6px; font-size: 12.5px; color: #78350F; line-height: 1.45; margin-top: 8px; }
+.ux-box strong { color: #92400E; display: block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Modal Macrofluxo Completo */
+#macroView { display: none; position: fixed; inset: 0; background: #F8FAFC; z-index: 9999; overflow-y: auto; padding: 30px 24px 60px; flex-direction: column; align-items: center; }
+.btn-back { position: fixed; top: 20px; left: 24px; background: var(--primary); color: #FFF; border: none; font-weight: 700; font-size: 13px; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 10000; display: inline-flex; align-items: center; gap: 6px; }
+.btn-back:hover { background: #001D42; }
+
+.macro-header-title { text-align: center; margin-bottom: 30px; width: 100%; max-width: 1050px; }
+.macro-header-title h1 { font-size: 24px; font-weight: 800; color: var(--primary); }
+.macro-header-title p { font-size: 14px; color: var(--muted); margin-top: 6px; }
+
+/* Diagrama Arquitetural de Macrofluxo */
+.macro-architecture-container {
+  width: 100%;
+  max-width: 1050px;
+  background: #FFF;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 30px rgba(0,45,98,0.06);
+}
+.macro-arch-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.macro-arch-head h2 { font-size: 17px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.opt-out-banner { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; padding: 6px 14px; border-radius: 8px; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+
+/* Fluxo Visual */
+.flow-diagram { display: flex; flex-direction: column; gap: 16px; position: relative; }
+.flow-row { display: flex; align-items: center; gap: 14px; position: relative; }
+.flow-step-box {
+  flex: 1;
+  background: #FFF;
+  border: 2px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  transition: 0.2s;
+  position: relative;
+}
+.flow-step-box:hover { border-color: var(--primary); }
+.flow-step-box.entry { border-color: #3B82F6; background: #EFF6FF; }
+.flow-step-box.decision { border-color: #F59E0B; background: #FFFBEB; }
+.flow-step-box.active-node { border-color: #10B981; background: #F0FDF4; }
+.flow-step-box.flows-node { border-color: #8B5CF6; background: #F5F3FF; }
+.flow-step-box.alert-node { border-color: #EF4444; background: #FEF2F2; }
+
+.flow-step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.flow-step-badge { font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
+.flow-step-badge.entry { background: #2563EB; color: #FFF; }
+.flow-step-badge.gate { background: #D97706; color: #FFF; }
+.flow-step-badge.na { background: var(--primary); color: #FFF; }
+.flow-step-badge.flow-tag { background: #7C3AED; color: #FFF; }
+.flow-step-time { font-size: 11px; font-weight: 700; color: #475569; }
+
+.flow-step-title { font-size: 13.5px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+.flow-step-desc { font-size: 11.5px; color: #475569; line-height: 1.4; }
+.flow-branches { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1); display: flex; gap: 8px; font-size: 11px; }
+.branch-pill-yes { background: #DCFCE7; color: #166534; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+.branch-pill-no { background: #FEE2E2; color: #991B1B; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+.flow-arrow-down { text-align: center; color: #94A3B8; font-size: 20px; line-height: 1; margin: -6px 0; }
+
+/* Timeline Macro Detalhada */
+.timeline-macro { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 1050px; position: relative; }
+.timeline-macro::before { content: ""; position: absolute; left: 32px; top: 20px; bottom: 20px; width: 3px; background: #CBD5E1; z-index: 1; }
+.timeline-node { display: flex; gap: 20px; position: relative; z-index: 2; }
+.node-circle { width: 66px; height: 66px; border-radius: 50%; background: #FFF; border: 3px solid var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.06); flex-shrink: 0; }
+.node-circle span { font-size: 9px; color: var(--muted); font-weight: 600; }
+.node-content { background: #FFF; border: 1px solid var(--line); border-radius: 12px; padding: 16px; flex: 1; box-shadow: 0 4px 12px rgba(0,45,98,0.04); display: flex; gap: 16px; align-items: center; }
+.node-thumb { width: 150px; height: 90px; border-radius: 8px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--line); display: block; max-width: 100%; }
+.node-info { flex: 1; }
+.node-info h4 { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+.node-info p { font-size: 12px; color: #475569; line-height: 1.4; margin-bottom: 6px; }
+.node-info .meta-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.node-info .pill-small { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #F1F5F9; color: #334155; }
+.node-info .pill-small.flows-tag { background: #EDE9FE; color: #6D28D9; border: 1px solid #DDD6FE; }
+</style>
+</head>
+<body>
+<header class="topbar">
+<div class="brand">
+<img alt="Estácio" class="" src="https://lh3.googleusercontent.com/aida/AEtjO1XzNOz06_9nIpPR-vfg4foD1OLBK5O0rbSn0ZOyp2DsHeroNGd_afOah9uH99CZ5kpfXVhotVsjSgHxB14-K6M7qKaV0fzgj58uLdwdk2UkQJopMKCimr1jpzft2T0md_EgtMirG1AtnxcM6c1C4Hr_TwwXeseV9SpKON99D0R_sJE7_HjeuE_ZRqM5YpZ4v74nffuNiSudQMHqmZH3eMdBtVpa2BWbLskj6xvYCpXYtfWtFR8ZyEE71Xc" style="height: 38px; width: 38px; border-radius: 8px; object-fit: contain; display: block;"/>
+<div class="brand-title">
+<strong>Estácio | Simulador de Notificações Ativas (NA 2 a NA 8)</strong>
+<span class="">Jornada Completa: Simulado Pocket (Flows) + Copiloto do ENEM 2026 com Imagens Oficiais</span>
+</div>
+</div>
+<div class="top-badges">
+<div class="top-pill">📸 Imagens Oficiais Estácio (Header HSM)</div>
+<div class="top-pill">📱 WhatsApp Flows Integrado (NA 4)</div>
+<div class="top-pill">📅 Calendário 30/10 a 15/11</div>
+<button class="btn-macro-top" onclick="abrirMacroFluxo()">🧠 Macrofluxo das Regras de Disparo</button>
+</div>
+</header>
+<div class="bench">
+<!-- Painel Esquerdo: Seleção das Notificações Ativas -->
+<aside class="panel">
+<div class="panel-head">
+<h2 class="">📬 Notificações Ativas (Régua)</h2>
+<p class="">Selecione um disparo para simular na tela do WhatsApp:</p>
+</div>
+<div class="panel-body">
+<div class="" style="padding: 10px 12px; background: var(--soft); border-radius: 8px; font-size: 12px; color: #475569; margin-bottom: 12px; border: 1px solid var(--line);">
+<b>📌 Padrão Visual Consolidado Estácio:</b><br/>
+Cada template HSM possui header fotográfico publicitário oficial da Estácio, paleta azul institucional (#002D62), toques de verde-limão e opt-out automático.
+</div>
+<div class="na-list" id="naListContainer">
+</div>
+</div>
+</aside>
+<!-- Painel Central: Simulador Interativo WhatsApp com WhatsApp Flows Embutido -->
+<main class="stage">
+<div class="phone">
+<div class="screen">
+<div class="status">
+<span class="">09:41</span>
+<span class="">5G ▮▮▮ 100%</span>
+</div>
+<header class="wa-head">
+<div class="wa-head-left">
+<div class="av" style="width: 36px; height: 36px; border-radius: 50%; background: rgb(0, 45, 98); padding: 2px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1.5px solid rgba(255, 255, 255, 0.3);"><img alt="Estácio" src="https://lh3.googleusercontent.com/aida/AEtjO1XzNOz06_9nIpPR-vfg4foD1OLBK5O0rbSn0ZOyp2DsHeroNGd_afOah9uH99CZ5kpfXVhotVsjSgHxB14-K6M7qKaV0fzgj58uLdwdk2UkQJopMKCimr1jpzft2T0md_EgtMirG1AtnxcM6c1C4Hr_TwwXeseV9SpKON99D0R_sJE7_HjeuE_ZRqM5YpZ4v74nffuNiSudQMHqmZH3eMdBtVpa2BWbLskj6xvYCpXYtfWtFR8ZyEE71Xc" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"/></div>
+<div class="who">
+<b>Estácio <span class="verified-icon">✓</span></b>
+<span class="">Conta comercial oficial</span>
+</div>
+</div>
+<span class="" style="font-size: 16px; opacity: 0.7;">⋮</span>
+</header>
+<div class="chat" id="chatWindow">
+</div>
+<!-- Modal Bottom Sheet: WhatsApp Flows Simulado -->
+<div class="flows-sheet" id="flowsSheetModal" style="display: none;">
+<div class="flows-header">
+<div class="flows-header-title">
+<h4 class="">Simulado Pocket ENEM</h4>
+<span class="">WhatsApp Flows</span>
+</div>
+<button class="flows-close" onclick="fecharFlowsModal()" title="Fechar">✕</button>
+</div>
+<div class="flows-body" id="flowsModalContent">
+<div class="flows-step-progress">
+<span class="flows-step-indicator" id="flowsStepIndicator">Questão (1/3)</span>
+<div class="flows-pills">
+<div class="flows-pill-dot active" id="dot-1"></div>
+<div class="flows-pill-dot" id="dot-2"></div>
+<div class="flows-pill-dot" id="dot-3"></div>
+</div>
+</div>
+<form id="flowsQuizForm" onsubmit="event.preventDefault(); handleFlowsAction();">
+<!-- Questão 1: Matemática -->
+<div class="flows-card-q" id="flows-q-1">
+<div class="flows-q-tag">QUESTÃO 1 • MATEMÁTICA</div>
+<div class="flows-q-text">
+      Ao escutar a notícia de que um filme recém-lançado arrecadou, no primeiro mês de lançamento, R$ 1,35 bilhão em bilheteria, um estudante escreveu corretamente o número que representa essa quantia, com todos os seus algarismos.<br><br>
+      O número escrito pelo estudante foi:
+    </div>
+<div class="flows-options">
+<label class="flows-opt-label"><input name="q1" type="radio" value="A"/><span>(A) 135 000,00.</span></label>
+<label class="flows-opt-label"><input name="q1" type="radio" value="B"/><span>(B) 1 350 000,00.</span></label>
+<label class="flows-opt-label"><input name="q1" type="radio" value="C"/><span>(C) 13 500 000,00.</span></label>
+<label class="flows-opt-label"><input name="q1" type="radio" value="D"/><span>(D) 135 000 000,00.</span></label>
+<label class="flows-opt-label"><input checked="" name="q1" type="radio" value="E"/><span>(E) 1 350 000 000,00.</span></label>
+</div>
+</div>
+<!-- Questão 2: História / Humanas -->
+<div class="flows-card-q" id="flows-q-2" style="display: none;">
+<div class="flows-q-tag">QUESTÃO 2 • CIÊNCIAS HUMANAS</div>
+<div class="flows-q-text">
+      196º Se alguém arranca o olho a um outro, se lhe deverá arrancar o olho.<br>
+      197º Se ele quebra o osso a um outro, se lhe deverá quebrar o osso.<br>
+      198º Se ele arranca o olho de um liberto, deverá pagar uma mina.<br>
+      199º Se ele arranca um olho de um escravo alheio... deverá pagar a metade de seu preço. (Código de Hamurabi).<br><br>
+      Esse trecho apresenta uma característica de um código legal elaborado no contexto da Antiguidade Oriental explicitada no(a):
+    </div>
+<div class="flows-options">
+<label class="flows-opt-label"><input name="q2" type="radio" value="A"/><span>(A) recusa do direito natural para expressão da vontade divina.</span></label>
+<label class="flows-opt-label"><input checked="" name="q2" type="radio" value="B"/><span>(B) caracterização do objeto do delito para a definição da pena.</span></label>
+<label class="flows-opt-label"><input name="q2" type="radio" value="C"/><span>(C) engajamento da coletividade para a institucionalização da justiça.</span></label>
+<label class="flows-opt-label"><input name="q2" type="radio" value="D"/><span>(D) flexibilização das normas para garantia do arbritrio dos magistrados.</span></label>
+<label class="flows-opt-label"><input name="q2" type="radio" value="E"/><span>(E) cerceamento da possibilidade de defesa para preservação da autoridade.</span></label>
+</div>
+</div>
+<!-- Questão 3: Química / Natureza -->
+<div class="flows-card-q" id="flows-q-3" style="display: none;">
+<div class="flows-q-tag">QUESTÃO 3 • CIÊNCIAS DA NATUREZA</div>
+<div class="flows-q-text">
+      (ENEM 2022) - Separação de misturas<br>
+      A água bruta coletada de mananciais apresenta alto índice de sólidos suspensos, o que a deixa com um aspecto turvo. Para se obter uma água límpida e potável, ela deve passar por um processo de purificação numa estação de tratamento de água.<br><br>
+      Nesse processo, as principais etapas são, nesta ordem: coagulação, decantação, filtração, desinfecção e fluoretação.<br><br>
+      Qual é a etapa de retirada de grande parte desses sólidos?
+    </div>
+<div class="flows-options">
+<label class="flows-opt-label"><input name="q3" type="radio" value="A"/><span>(A) Coagulação.</span></label>
+<label class="flows-opt-label"><input checked="" name="q3" type="radio" value="B"/><span>(B) Decantação.</span></label>
+<label class="flows-opt-label"><input name="q3" type="radio" value="C"/><span>(C) Filtração.</span></label>
+<label class="flows-opt-label"><input name="q3" type="radio" value="D"/><span>(D) Desinfecção.</span></label>
+<label class="flows-opt-label"><input name="q3" type="radio" value="E"/><span>(E) Fluoretação.</span></label>
+</div>
+</div>
+<div class="flows-footer">
+<button class="flows-submit-btn" id="btnSubmitFlows" onclick="handleFlowsAction()" type="button">Próxima Questão ➔</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div></main>
+<!-- Painel Direito: Especificações Técnicas e Racional de UX -->
+<aside class="panel">
+<div class="panel-head">
+<h2 class="">📋 Especificações &amp; Racional UX</h2>
+<p class="">Regras técnicas de negócio, gatilhos e redação oficial:</p>
+</div>
+<div class="panel-body" id="specDetailPanel">
+</div>
+</aside>
+</div>
+<!-- MODAL MACROFLUXO / REGRA DE DISPARO COMPLETA -->
+<div id="macroView">
+<button class="btn-back" onclick="fecharMacroFluxo()">⬅️ Voltar ao Simulador</button>
+<div class="macro-header-title">
+<h1 class="">Macrofluxo da Regra de Disparo (NA 2 à NA 8)</h1>
+<p class="">Mapeamento visual arquitetural da jornada do Copiloto do ENEM 2026.</p>
+</div>
+<div class="macro-architecture-container">
+<div class="macro-arch-head">
+<h2 class="">⚡ Arquitetura da Régua de Disparos</h2>
+<div class="opt-out-banner">
+      🛑 Regra Global: Regex <code>/^(cancelar|parar|sair)/i</code> remove imediatamente o usuário da régua ativa em qualquer fase.
+    </div>
+</div>
+<div class="flow-diagram"><!-- Ponto de Entrada -->
+<div class="flow-row">
+<div class="flow-step-box entry">
+<div class="flow-step-header">
+<span class="flow-step-badge entry">Entrada</span>
+<span class="flow-step-time">Gatilho Anterior</span>
+</div>
+<div class="flow-step-title">Handover Teste Vocacional / Campanha CTWA</div>
+<div class="flow-step-desc">Lead capturado com opt-in primário. Dados sincronizados no CRM de Admissão Estácio.</div>
+</div>
+</div>
+<div class="flow-arrow-down">↓</div>
+<!-- NA 2 -->
+<div class="flow-row">
+<div class="flow-step-box decision">
+<div class="flow-step-header">
+<span class="flow-step-badge gate">NA 2 • Consentimento</span>
+<span class="flow-step-time">📅 30/10 às 09:00</span>
+</div>
+<div class="flow-step-title">Convite Ativação Copiloto (Opt-in Explícito)</div>
+<div class="flow-step-desc">Captura o consentimento do estudante para alertas e dicas na régua ativa até a prova.</div>
+<div class="flow-branches">
+<span class="branch-pill-yes">🟢 "Ativar o copiloto": Ativa flag copiloto_optin = true e segue para o Controlador</span>
+<span class="branch-pill-no">🔴 "Agora não": Encerra régua ativa; mantém no receptivo</span>
+</div>
+</div>
+</div>
+<div class="flow-arrow-down">↓</div>
+<!-- BLOCO CONTROLADOR DE DISPARO -->
+<div class="flow-row">
+<div class="flow-step-box" style="border-color: #6366F1; background: #EEF2FF;">
+<div class="flow-step-header">
+<span class="flow-step-badge" style="background: #4F46E5; color: #FFF;">🧠 BLOCO CONTROLADOR DE DISPARO</span>
+<span class="flow-step-time">Motor de Regras Inteligente</span>
+</div>
+<div class="flow-step-title">Auditoria de Resposta e Verificação Temporal de Disparo</div>
+<div class="flow-step-desc">
+<b>Regras de Execução Automática:</b><br/>
+      1. <b>O usuário respondeu à mensagem anterior?</b> (Valida interação/interesse ativo).<br/>
+      2. <b>Se SIM, qual é a data atual?</b> Avalia o timestamp do sistema.<br/>
+      3. <b>Pula datas que já passaram</b> e agenda automaticamente a <b>próxima mensagem futura disponível</b>.<br/>
+      4. <b>Se a data atual for superior a 15/11:</b> Redireciona imediatamente para o Início do Bot Principal Estácio.
+    </div>
+</div>
+</div>
+<div class="flow-arrow-down">↓ (Se data ≤ 15/11 e Opt-in ativo)</div>
+<!-- NA 3 -->
+<div class="flow-row">
+<div class="flow-step-box active-node">
+<div class="flow-step-header">
+<span class="flow-step-badge na">NA 3 • Dica de Redação</span>
+<span class="flow-step-time">📅 02/11 às 10:00</span>
+</div>
+<div class="flow-step-title">Copiloto: Dica prática de Redação + Temas Cotados</div>
+<div class="flow-step-desc">Template HSM inicial convida para a dica. Clique em 'Ver dica' abre a Dica de Ouro e repertórios no chat. Botão de recusa padronizado: 'Agora não'.</div>
+</div>
+</div>
+<div class="flow-arrow-down">↓ (Controlador: Pula se data &gt; 04/11)</div>
+<!-- NA 4 (Arquitetura 2 Etapas com Receptivo Flows) -->
+<div class="flow-row">
+<div class="flow-step-box flows-node">
+<div class="flow-step-header">
+<span class="flow-step-badge flow-tag">NA 4 • Simulado Pocket (WhatsApp Flows em 2 Etapas)</span>
+<span class="flow-step-time">📅 04/11 às 14:00</span>
+</div>
+<div class="flow-step-title">1ª Etapa: Disparo HSM Ativo com Quick Reply ("Iniciar simulado" / "Agora não")</div>
+<div class="flow-step-desc">Em conformidade técnica com as diretrizes do WhatsApp Cloud API, o HSM inicial faz o convite ativo. Ao clicar em <b>"Iniciar simulado"</b>, inicia-se a sessão de 24h com a mensagem receptiva intermediária do bot: <i>"Para responder o simulado clique no botão abaixo"</i> acompanhada do botão nativo <b>"Iniciar agora"</b> com acionamento do Flows.</div>
+<div class="flow-branches" style="margin-top: 10px;">
+<span class="branch-pill-yes">1. HSM Ativo ➜ Quick Reply 'Iniciar simulado'</span>
+<span class="branch-pill-yes" style="background:#EDE9FE; color:#6D28D9;">2. Msg Interativa Receptiva: 'Para responder o simulado...' ➜ CTA Flows 'Iniciar agora'</span>
+<span class="branch-pill-yes" style="background:#FEF3C7; color:#92400E;">3. Abertura do Quiz Flows (3 Questões) ➜ Gabarito dinâmico</span>
+<span class="branch-pill-no">Opção 'Agora não' ➜ Recusa educada</span>
+</div>
+</div>
+</div>
+<div class="flow-arrow-down">↓ (Controlador: Pula se data &gt; 06/11)</div>
+<!-- NA 5 -->
+<div class="flow-row">
+<div class="flow-step-box active-node">
+<div class="flow-step-header">
+<span class="flow-step-badge na">NA 5 • Preparação D-2</span>
+<span class="flow-step-time">📅 06/11 às 09:30</span>
+</div>
+<div class="flow-step-title">Dica de Preparação + Checklist 1º Dia</div>
+<div class="flow-step-desc">Checklist interativo com 'Ver checklist' ou recusa 'Agora não'. Revisa canetas pretas, documentos oficiais e horários.</div>
+</div>
+</div>
+<div class="flow-arrow-down">↓ (Controlador: Pula se data &gt; 08/11)</div>
+<!-- NA 6 -->
+<div class="flow-row">
+<div class="flow-step-box alert-node">
+<div class="flow-step-header">
+<span class="flow-step-badge na" style="background:#DC2626;">NA 6 • Alerta 1º Dia</span>
+<span class="flow-step-time">📅 08/11 às 07:30</span>
+</div>
+<div class="flow-step-title">Alerta de Horário de Saída — 1º Dia (Informativo, sem botão)</div>
+<div class="flow-step-desc">Alerta de utilidade pública: fechamento impreterível dos portões às 13h. Mensagem focada em pontualidade.</div>
+</div>
+</div>
+<div class="flow-arrow-down">↓ (Controlador: Pula se data &gt; 13/11)</div>
+<!-- NA 7 -->
+<div class="flow-row">
+<div class="flow-step-box active-node">
+<div class="flow-step-header">
+<span class="flow-step-badge na">NA 7 • Intermédio</span>
+<span class="flow-step-time">📅 13/11 às 11:00</span>
+</div>
+<div class="flow-step-title">Lembrete de Preparação para o 2º Dia (Exatas &amp; Natureza)</div>
+<div class="flow-step-desc">Orientação de descanso e checklist de itens do 2º domingo via 'Ver checklist' ou 'Agora não'.</div>
+</div>
+</div>
+<div class="flow-arrow-down">↓ (Controlador: Pula se data &gt; 15/11)</div>
+<!-- NA 8 -->
+<div class="flow-row">
+<div class="flow-step-box alert-node">
+<div class="flow-step-header">
+<span class="flow-step-badge na" style="background:#DC2626;">NA 8 • Alerta 2º Dia</span>
+<span class="flow-step-time">📅 15/11 às 07:30</span>
+</div>
+<div class="flow-step-title">Alerta de Horário de Saída — 2º Dia (Informativo, sem botão)</div>
+<div class="flow-step-desc">Alerta final de pontualidade às 07:30 e encerramento caloroso com passagem de bastão.</div>
+</div>
+</div>
+<div class="flow-arrow-down">↓</div>
+<!-- TRANSBORDO PÓS-JORNADA -->
+<div class="flow-row">
+<div class="flow-step-box" style="border-color: #059669; background: #ECFDF5;">
+<div class="flow-step-header">
+<span class="flow-step-badge" style="background: #059669; color: #FFF;">🔄 TRANSBORDO PÓS-JORNADA</span>
+<span class="flow-step-time">A partir de 15/11 pós-prova</span>
+</div>
+<div class="flow-step-title">Encerramento do Copiloto &amp; Redirecionamento ao Bot Principal</div>
+<div class="flow-step-desc">
+      Respostas recebidas após 15/11 acionam a mensagem de encerramento do Copiloto do ENEM e transferem o contato automaticamente para o <b>Bot Principal / Menu de Opções Gerais da Estácio</b>.
+    </div>
+<div class="flow-branches">
+<span class="branch-pill-yes">🏁 Fim da Jornada Copiloto ENEM 2026</span>
+<span class="branch-pill-yes" style="background:#EFF6FF; color:#1D4ED8;">🎓 Início da Jornada de Matrícula &amp; Vestibular Estácio</span>
+</div>
+</div>
+</div></div>
+</div>
+<!-- Timeline Visual das Notificações -->
+<div class="macro-header-title" style="margin-top: 10px; margin-bottom: 20px;">
+<h2 class="" style="font-size: 19px; color: var(--primary); font-weight: 800;">Visualização Detalhada dos 7 Templates HSM</h2>
+</div>
+<div class="timeline-macro" id="macroTimelineContainer">
+<!-- Gerado dinamicamente via JS -->
+</div>
+</div>
+<script>
+// Variáveis Globais do Flows (Paginação)
+let currentFlowStep = 1;
+const totalFlowSteps = 3;
+
+const notificacoes = [
+  {
+    id: "NA2",
+    numero: "NA 2",
+    listaTitulo: "NA 2 - Convite para Ativação (30/10 • 09:00)",
+    data: "30/10",
+    hora: "09:00",
+    jornada: "Convite para Ativação",
+    objetivo: "Prepare-se para o Enem com o Copiloto da Estácio!",
+    imagem: "https://lh3.googleusercontent.com/aida-public/AB6AXuCs0TlGFAvsVgS5B5d7pJY7H11WsFwZsy2rKkuCkzpyDQnwNOJNh30msK33XVrMCr8rJxKs8PSgLZzoI1DTFgYJykmKdUkF8KRZnmXWre3QvlKJ3TThVgh39JSu1XFQCT8-nHiqIZDjJsEoEHxU16Dy8uqHHi4CPkpIFVW3genN38UP-siuLozrPx5kOpWa_DZUOWIFGZgy_QOufBJXAmNNOrRl0iKNW2-eqf_utQ1uuPbMgxBCHFZrxPzaTMOpGlnFdw",
+    imagemDesc: "Ative Seu Copiloto! Estudante sorridente com fone e smartphone mostrando o Copiloto de Estudos em frente ao campus Estácio",
+    texto: `<b>Prepare-se para o Enem com o Copiloto da Estácio! 🎯</b><br><br>Ative o Copiloto e receba dicas de redação, possíveis temas, checklists e alertas para os dias de prova, tudo pelo WhatsApp.`,
+    optOut: "Para parar de receber mensagens, responda Cancelar.",
+    botoes: [
+      { texto: "Ativar o copiloto", acao: "ativar", desc: "Confirma a adesão. Registra opt-in no CRM." },
+      { texto: "Agora não", acao: "recusar", desc: "Recusa a adesão sem penalizar o usuário." }
+    ],
+    justificativaUX: `Abertura oficial com convite claro e de alto valor. Apresenta objetivamente o apoio oferecido na reta final.`,
+    regrasTecnicas: [
+      "Template HSM Oficial com Header de Imagem Estácio (Formato 16:9).",
+      "Consentimento explícito (Opt-in) gravado no CRM (copiloto_optin = true).",
+      "Botões rápidos (Quick Reply): 'Ativar o copiloto' e 'Agora não'.",
+      "Qualquer resposta com regex /cancelar|parar|sair/i executa opt-out imediatamente."
+    ]
+  },
+  {
+    id: "NA3",
+    numero: "NA 3",
+    listaTitulo: "NA 3 - DICA DE REDAÇÃO",
+    data: "02/11",
+    hora: "10:00",
+    jornada: "Copiloto: dica de redação",
+    objetivo: "Gerar abertura e engajamento com uma dica prática de redação.",
+    imagem: "https://lh3.googleusercontent.com/aida-public/AB6AXuAiXMbCW8fNyuhRDWKvzCIEqQZJzAwkOgoYYQqyKvztxCeok4HLSRR8apUH5aOTM2NOUsi_iH5lvXdFRymGFP0gIMVoExDKegVbdjL1m19k0kJX9DLYcnxkWdqhzHoCVUuOIJ5kptzfM0sva8cs2hxPBrh1TU4INYYlYM7OwVrkIfzsPNmXO2W-YSWpn8vs1e90B34cvifI0L5REAVk3OLsG7qQs46pPpzKoHCOGjzinSdCcJqMH4nxoLrPdLGO7c7MdQ",
+    imagemDesc: "Dica de Redação! Como tirar nota 10! Estudante com caderno de anotações em frente ao campus Estácio",
+    texto: `<b>E se esse for o tema da redação do Enem 2026? 👀</b><br><br>O Copiloto separou uma dica de redação que vale conhecer antes da prova.<br><br>Prepare-se para explorar possíveis temas e treinar seus argumentos!`,
+    optOut: "Para parar de receber mensagens, responda Cancelar.",
+    botoes: [
+      { texto: "Ver dica", acao: "dica", desc: "Abre o detalhamento da redação." },
+      { texto: "Agora não", acao: "recusar", desc: "Envia a mensagem padrão de recusa sem descadastrar." }
+    ],
+    justificativaUX: `Título em negrito atrativo sobre o tema da redação para fisgar a atenção imediatamente.`,
+    regrasTecnicas: [
+      "Template HSM Oficial com Header de Imagem.",
+      "Disparo apenas para opt-ins ativos.",
+      "Botões rápidos (Quick Reply): 'Ver dica' e 'Agora não'."
+    ]
+  },
+  {
+    id: "NA4",
+    numero: "NA 4 [⚡ FLOWS]",
+    listaTitulo: "NA 4 - SIMULADO POCKET",
+    data: "04/11",
+    hora: "14:00",
+    jornada: "Simulado Pocket (Flows)",
+    objetivo: "Gerar participação no simulado de 3 questões via WhatsApp Flows",
+    imagem: "https://lh3.googleusercontent.com/aida-public/AB6AXuCGFgbX7NisA1Wn9O7wdTWEbGtwA3N-hHvkrREUV8Jkzpoi2bz2qctCr5FMYzzs-d4CzFagmMelvMkQ5QLi8Ymqh8mjXLcpQY1gOQO6oqlfEd3TwR1UMYdHrnqFXJvUF8JanYLj7-DRcyqnbOBWHAJ3ePRZTD0QB7uYsVbsXD2FjoSSZv9dt8p2J-_eiiZmueEU5BkF3qH-bi2n1hKbLl2ogf3W6IR84amWhlB8Y_NEQmwzL8yfhUfqrm-Mn6oEqzGniw",
+    imagemDesc: "Simulado Preparatório! Iniciar Teste - Estudante resolvendo simulado no notebook em frente ao campus Estácio",
+    texto: `<b>Você acertaria estas 3 questões do Enem? 🎯</b><br><br>São só 3 questões no estilo Enem para testar o que você sabe.<br><br>Responda agora e descubra como está sua preparação para a prova!`,
+    optOut: "Para parar de receber mensagens, responda Cancelar.",
+    botoes: [
+      { texto: "Iniciar simulado", acao: "fazer_simulado", desc: "Quick Reply de 1º nível do HSM. Dispara a transição para mensagem interativa receptiva." },
+      { texto: "Agora não", acao: "recusar", desc: "Envia a mensagem padrão de recusa sem descadastrar." }
+    ],
+    justificativaUX: `Em conformidade com a arquitetura técnica da Cloud API da Meta, o template HSM ativo dispara um Quick Reply padrão ('Iniciar simulado'). A interação abre a janela de sessão receptiva de 24h onde o bot envia o CTA oficial com botão 'Iniciar agora' para acionar o WhatsApp Flows nativo.`,
+    regrasTecnicas: [
+      "Arquitetura em 2 etapas: Template HSM Ativo (Quick Reply) ➔ Mensagem Interativa Receptiva com CTA Flows ➔ Abertura do Quiz.",
+      "Template HSM Oficial com Header de Imagem Estácio e botões rápidos: 'Iniciar simulado' e 'Agora não'.",
+      "Mensagem intermediária receptiva no bot: 'Para responder o simulado clique no botão abaixo' com botão 'Iniciar agora' (WhatsApp Flows).",
+      "Integração nativa via WhatsApp Flows API (Meta) para resposta em modal sem sair do WhatsApp."
+    ]
+  },
+  {
+    id: "NA5",
+    numero: "NA 5",
+    listaTitulo: "NA 5 - CHECKLIST PRÉ-PROVA",
+    data: "06/11",
+    hora: "09:30",
+    jornada: "Copiloto: dica de preparação + checklist pré-prova",
+    objetivo: "Gerar acesso ao checklist e reforçar o valor do Copiloto.",
+    imagem: "https://lh3.googleusercontent.com/aida-public/AB6AXuD6JEuh2T0R2k2YegxrP_VRtI2SVfS5xdwJo5RDtJM4_jg-QhJLdXKokjFgrQgqQoj1ImxjhcULVA2AMP_ledQN32l-GgO_PtuEbYAQ-FhzlvQSZN9LMD7LJHeG4jk7n-mKfZGPwSj3rYREhD-3i7lYYkori8diXUIifFdL5y1r8wv_Bj-q-h3U_rqa0spEe0lCFpZsnwb_29wHsnsH8x0DGxe9nw3GeZvQaU8mZibZkv2c9iXU-f8vDncS-SWmTsB0Kg",
+    imagemDesc: "Estudante organizando mochila e materiais escolares com a chamada 'PREPARE-SE!' em frente ao campus Estácio",
+    texto: `<b>Enem chegando: não esqueça o que levar! 🚨</b><br><br>Falta pouco para o Enem! Confira o checklist do Copiloto e veja o que você precisa separar para o dia da prova.<br><br>É rapidinho e pode evitar imprevistos!`,
+    optOut: "Para parar de receber mensagens, responda Cancelar.",
+    botoes: [
+      { texto: "Ver checklist", acao: "checklist", desc: "Abre o checklist interativo pré-prova no bot." },
+      { texto: "Agora não", acao: "recusar", desc: "Envia a mensagem padrão de recusa." }
+    ],
+    justificativaUX: `Cria o senso de urgência necessário a 2 dias da prova, com botão rápido para checklist útil.`,
+    regrasTecnicas: [
+      "Enviado na sexta-feira pré-prova (D-2).",
+      "Botões rápidos (Quick Reply): 'Ver checklist' e 'Agora não'."
+    ]
+  },
+  {
+    id: "NA6",
+    numero: "NA 6",
+    listaTitulo: "NA 6 - DIA DA PROVA 1",
+    data: "08/11",
+    hora: "07:30",
+    jornada: "Copiloto: alerta de horário de saída — 1º dia",
+    objetivo: "Garantir que o estudante saia a tempo para o primeiro dia de prova.",
+    imagem: "https://lh3.googleusercontent.com/aida-public/AB6AXuANdd9IIrgImpAsEW47LbEIIHuV1poU2zLSQbK5jEGa6nA7UosCh6aZjy2HCFlw8iywv5t5EkI1VmIrU5yxwK6mKrRhGj49R7Wqvml9NPrWL8be9b_lU48PR8zaFpGgTa1utdAYiIIFMNjvhBrrdXN6AjSYOzQEGX5FyAzh4Kl5ygslGe1Zj9FT4a4Qbc2avZpjyzLLWgog3SqsB1e4HJa_wTisCdrohwckrFUq5HFl1IBDpNRvBX2qL7dv5dNzmqmCtg",
+    imagemDesc: "Estudante sorridente comemorando o dia da prova em frente ao campus Estácio com a chamada 'É HOJE! O GRANDE DIA!'",
+    texto: `<b>É hoje! Não perca o horário do Enem.</b><br><br>Chegou o dia! Antes de sair, confira o horário de fechamento dos portões e planeje seu trajeto com antecedência.<br><br>O Copiloto está com você nessa reta final. Boa prova! 💙`,
+    optOut: "Para parar de receber mensagens, responda Cancelar.",
+    botoes: [],
+    justificativaUX: `Alerta prático e motivacional na manhã da prova. Não utiliza botões para manter o foco na mensagem crítica.`,
+    regrasTecnicas: [
+      "Disparo crítico no domingo do 1º dia de prova às 07:30 da manhã.",
+      "Sem botões (No-button Template)."
+    ]
+  },
+  {
+    id: "NA7",
+    numero: "NA 7",
+    listaTitulo: "NA 7 - PREPARAÇÃO PARA O SEGUNDO DIA",
+    data: "13/11",
+    hora: "11:00",
+    jornada: "Copiloto: lembrete de preparação para o 2º dia",
+    objetivo: "Reativar o engajamento e preparar o estudante para o segundo dia com antecedência.",
+    imagem: "https://lh3.googleusercontent.com/aida-public/AB6AXuD6JEuh2T0R2k2YegxrP_VRtI2SVfS5xdwJo5RDtJM4_jg-QhJLdXKokjFgrQgqQoj1ImxjhcULVA2AMP_ledQN32l-GgO_PtuEbYAQ-FhzlvQSZN9LMD7LJHeG4jk7n-mKfZGPwSj3rYREhD-3i7lYYkori8diXUIifFdL5y1r8wv_Bj-q-h3U_rqa0spEe0lCFpZsnwb_29wHsnsH8x0DGxe9nw3GeZvQaU8mZibZkv2c9iXU-f8vDncS-SWmTsB0Kg",
+    imagemDesc: "Estudante organizando mochila e materiais escolares com a chamada 'PREPARE-SE!' em frente ao campus Estácio",
+    texto: `<b>O segundo dia do Enem também exige atenção! 👀</b><br><br>Uma etapa já foi. <b>Agora, é hora de se preparar para a próxima!</b><br><br>O Copiloto separou um checklist para você organizar tudo com antecedência e chegar ao segundo dia mais tranquilo.`,
+    optOut: "Para parar de receber mensagens, responda Cancelar.",
+    botoes: [
+      { texto: "Ver checklist", acao: "checklist2", desc: "Abre o checklist pré-prova do 2º dia." },
+      { texto: "Agora não", acao: "recusar", desc: "Envia a mensagem padrão de recusa." }
+    ],
+    justificativaUX: `Reativação inteligente no meio da semana para reconectar com o aluno. Botão padronizado 'Agora não' para recusa respeitosa.`,
+    regrasTecnicas: [
+      "Reativação no meio da semana entre as duas provas.",
+      "Botões rápidos (Quick Reply): 'Ver checklist' e 'Agora não'."
+    ]
+  },
+  {
+    id: "NA8",
+    numero: "NA 8",
+    listaTitulo: "NA 8 - DIA DA PROVA 2",
+    data: "15/11",
+    hora: "07:30",
+    jornada: "Copiloto: alerta de horário de saída — 2º dia",
+    objetivo: "Garantir que o estudante saia a tempo para o segundo e último dia de prova.",
+    imagem: "https://lh3.googleusercontent.com/aida-public/AB6AXuDsVola6jHuqUJeBSPFPP6mAEkqPGliAx1vExI0rT0TGpVz95K_B-xYXB6PvPpO3gbWxlMl6tST3gvLenO4G2WFbYEaeqo39mZyP5xWoH1jgJO9qzLAz2qsC-nze9VTOesC1BNSNfXN313391asfQIX_QxxSbO6guIi0x3eGtrDVnr6pT462aSLpiq86SqpgLgmwA7nHjn323VV9oTpUbDtti8Jteh0NWMkiVUoUW5EPTGz054PivclSKmzw0pe4CKocw",
+    imagemDesc: "Estudante comemorando com braços erguidos e a mensagem 'BOA SORTE NA PROVA!' em frente ao campus da Estácio",
+    texto: `<b>Último dia de Enem: não deixe o horário te pegar! 🏁</b><br><br>É a última etapa! Confira seu trajeto e saia com antecedência para chegar com tranquilidade.<br><br>Agora, é hora de dar o seu melhor.<br><br>Boa prova! 💙`,
+    optOut: "Para parar de receber mensagens, responda Cancelar.",
+    botoes: [],
+    justificativaUX: `Encerramento motivacional sem fricções, passando o bastão da jornada para o aluno.`,
+    regrasTecnicas: [
+      "Último disparo da régua de Notificações Ativas do ENEM 2026."
+    ]
+  }
+];
+
+let naSelecionada = notificacoes[0];
+
+function renderizarListaNA() {
+  const container = document.getElementById('naListContainer');
+  if (!container) return;
+  container.innerHTML = notificacoes.map((item) => {
+    const isActive = item.id === naSelecionada.id ? 'active' : '';
+    const hasFlowsBadge = item.id === 'NA4' ? '<span class="na-tag flows-badge">⚡ Flows</span>' : '';
+    return `
+      <button class="na-card ${isActive}" onclick="selecionarNA('${item.id}')">
+        <div class="na-card-top">
+          <div>
+            <span class="na-tag na">${item.listaTitulo}</span>
+            ${hasFlowsBadge}
+          </div>
+          <span class="na-date">📅 ${item.data} • ${item.hora}</span>
+        </div>
+        <div class="na-title">${item.jornada}</div>
+        <div class="na-desc">${item.objetivo}</div>
+      </button>
+    `;
+  }).join('');
+}
+
+function selecionarNA(id) {
+  naSelecionada = notificacoes.find(n => n.id === id) || notificacoes[0];
+  fecharFlowsModal();
+  renderizarListaNA();
+  renderizarChat();
+  renderizarSpec();
+}
+
+function renderizarChat() {
+  const chat = document.getElementById('chatWindow');
+  if (!chat) return;
+  const n = naSelecionada;
+
+  let botoesHtml = '';
+  if (n.botoes && n.botoes.length > 0) {
+    botoesHtml = `
+      <div class="wa-action-stack">
+        ${n.botoes.map(btn => {
+          let btnClass = 'primary';
+          if (btn.acao.includes('recusar')) btnClass = 'dismiss';
+          if (btn.acao === 'abrir_flows') btnClass = 'flows';
+          return `
+            <button class="wa-btn ${btnClass}" onclick="tratarCliqueBotao('${btn.acao}', '${btn.texto}', '${n.id}')">
+              ${btn.texto}
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  chat.innerHTML = `
+    <div class="day">${n.data}/2026</div>
+    <div class="row in">
+      <div class="wa-card-bubble">
+        <div class="wa-card-img-wrap">
+          <img src="${n.imagem}" alt="${n.imagemDesc}">
+          <span class="wa-card-img-badge">📷 Header HSM Estácio</span>
+        </div>
+        <div class="wa-card-body">
+          <p>${n.texto}</p>
+          <div class="footer-msg">${n.optOut}</div>
+          <span class="meta">${n.hora}</span>
+        </div>
+      </div>
+      ${botoesHtml}
+    </div>
+    <div id="userFeedbackSlot"></div>
+  `;
+}
+
+function tratarCliqueBotao(acao, texto, naId) {
+  if (acao === 'abrir_flows') {
+    abrirFlowsModal();
+  } else if (acao === 'fazer_simulado') {
+    simularTransicaoFlowsIntermediaria(texto);
+  } else {
+    simularRespostaUsuario(texto, naId);
+  }
+}
+
+function simularTransicaoFlowsIntermediaria(textoBotao) {
+  const slot = document.getElementById('userFeedbackSlot');
+  if (!slot) return;
+  const horaResp = calcularHoraMaisUm(naSelecionada.hora);
+  const userText = textoBotao || "Iniciar simulado";
+
+  slot.innerHTML = `
+    <div class="wa-response-out">
+      ${userText}
+      <span class="meta" style="margin-left: 6px;">${horaResp} ✓✓</span>
+    </div>
+    <div class="row in" style="margin-top: 8px;">
+      <div class="wa-card-bubble" style="max-width: 88%;">
+        <div class="wa-card-body" style="padding: 10px 12px; font-size: 13px;">
+          Para responder o simulado clique no botão abaixo
+          <span class="meta">${horaResp}</span>
+        </div>
+      </div>
+      <div class="wa-action-stack" style="max-width: 88%;">
+        <button class="wa-btn flows" onclick="abrirFlowsModal()">
+          ▶ Iniciar agora
+        </button>
+      </div>
+    </div>
+    <div id="subFlowsResultSlot"></div>
+  `;
+}
+
+// LOGICA DE PAGINAÇÃO DO FLOWS
+function atualizarViewFlows() {
+  for (let i = 1; i <= totalFlowSteps; i++) {
+    const qCard = document.getElementById('flows-q-' + i);
+    if (qCard) {
+      qCard.style.display = (i === currentFlowStep) ? 'block' : 'none';
+    }
+  }
+
+  const indicator = document.getElementById('flowsStepIndicator');
+  if (indicator) {
+    indicator.innerText = `Questão (${currentFlowStep}/${totalFlowSteps})`;
+  }
+
+  for (let i = 1; i <= totalFlowSteps; i++) {
+    const dot = document.getElementById('dot-' + i);
+    if (dot) {
+      if (i <= currentFlowStep) dot.classList.add('active');
+      else dot.classList.remove('active');
+    }
+  }
+
+  const btn = document.getElementById('btnSubmitFlows');
+  if (btn) {
+    if (currentFlowStep < totalFlowSteps) {
+      btn.innerHTML = 'Próxima Questão ➔';
+    } else {
+      btn.innerHTML = '✅ Enviar Respostas no Chat';
+    }
+  }
+}
+
+function handleFlowsAction() {
+  if (currentFlowStep < totalFlowSteps) {
+    currentFlowStep++;
+    atualizarViewFlows();
+  } else {
+    submeterFlowsDireto();
+  }
+}
+
+function abrirFlowsModal() {
+  const modal = document.getElementById('flowsSheetModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    currentFlowStep = 1;
+    atualizarViewFlows();
+  }
+}
+
+function fecharFlowsModal() {
+  const modal = document.getElementById('flowsSheetModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function submeterFlowsDireto() {
+  const modal = document.getElementById('flowsSheetModal');
+  if (modal) modal.style.display = 'none';
+
+  const q1Input = document.querySelector('input[name="q1"]:checked');
+  const q2Input = document.querySelector('input[name="q2"]:checked');
+  const q3Input = document.querySelector('input[name="q3"]:checked');
+
+  const q1Val = q1Input ? q1Input.value : 'E';
+  const q2Val = q2Input ? q2Input.value : 'B';
+  const q3Val = q3Input ? q3Input.value : 'B';
+
+  let acertos = 0;
+  if (q1Val === 'E') acertos++;
+  if (q2Val === 'B') acertos++;
+  if (q3Val === 'B') acertos++;
+
+  let mensagem_resultado = "";
+  if (acertos === 0) {
+    mensagem_resultado = "Todo treino é uma oportunidade de aprender! Confira as respostas e use as explicações para revisar os conteúdos.";
+  } else if (acertos === 1) {
+    mensagem_resultado = "Você deu o primeiro passo! Revise as respostas e aproveite cada explicação para fortalecer seus conhecimentos.";
+  } else if (acertos === 2) {
+    mensagem_resultado = "Mandou bem! Você acertou a maioria das questões. Revise a que errou para reforçar seu aprendizado.";
+  } else if (acertos === 3) {
+    mensagem_resultado = "Arrasou! Você acertou todas as questões. Continue praticando para manter esse ritmo!";
+  }
+
+  const chatWindow = document.getElementById('chatWindow');
+  let targetSlot = document.getElementById('subFlowsResultSlot');
+  if (!targetSlot) {
+    targetSlot = document.getElementById('userFeedbackSlot');
+  }
+  if (!targetSlot && chatWindow) {
+    targetSlot = document.createElement('div');
+    targetSlot.id = 'userFeedbackSlot';
+    chatWindow.appendChild(targetSlot);
+  }
+
+  if (targetSlot) {
+    targetSlot.innerHTML = `
+      <div class="wa-response-out">📝 <i>Respostas enviadas via WhatsApp Flows</i><span class="meta">14:02 ✓✓</span></div>
+      <div class="row in" style="margin-top: 8px;">
+        <div class="wa-card-bubble" style="padding: 12px 14px; font-size: 13px; line-height: 1.45;">
+          🎯 Simulado Pocket concluído! Você acertou ${acertos} de 3 questões.<br><br>
+          ${mensagem_resultado}<br><br>
+          <b>📝 Q1 · Matemática</b><br>
+          E — 1 350 000 000,00.<br><br>
+          <b>🌎 Q2 · Ciências Humanas</b><br>
+          B — caracterização do objeto do delito para a definição da pena.<br><br>
+          <b>🧪 Q3 · Ciências da Natureza</b><br>
+          B — Decantação.<br><br>
+          Aproveite o gabarito para revisar e continuar aprendendo!<br><br>
+          No dia 06/11, às 9h30, o Copiloto volta com o checklist do primeiro dia do Enem.<br><br>
+          Até lá! 👋
+          <span class="meta">14:02</span>
+        </div>
+      </div>
+    `;
+  }
+
+  if (chatWindow) {
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+}
+
+function simularRespostaUsuario(texto, naId) {
+  const slot = document.getElementById('userFeedbackSlot');
+  if (!slot) return;
+  let respostaBot = '';
+
+  const normalizado = texto.trim().toLowerCase();
+
+  if (normalizado === "agora não" || normalizado === "não quero agora" || normalizado === "ignorar") {
+    respostaBot = `Combinado! Respeitamos seu tempo e seu ritmo de estudo.<br><br>Se mudar de ideia, estamos sempre por aqui, no site ou no portal do aluno Estácio.<br><br>Até mais! 👋`;
+  } 
+  else if (normalizado.includes("ativar")) {
+    respostaBot = `Sensacional! Seu Copiloto do ENEM está oficialmente ativado. 🚀<br><br>Você receberá nossas dicas exclusivas, simulados práticos e alertas de horário nos momentos mais decisivos.<br><br>Nos vemos em breve! 👋`;
+  } 
+  else if (normalizado === "ver dica" || normalizado === "descobrir a dica") {
+    respostaBot = `Aqui está o que você precisa saber pra garantir uma redação nota 1000! 📝✨<br><br>
+Alguns temas atuais para praticar seus argumentos:<br>
+- 🤖 Inteligência artificial e desinformação<br>
+- 🧠 Saúde mental entre jovens<br>
+- 🌎 Mudanças climáticas e sustentabilidade<br>
+- 📱 Impactos das redes sociais<br>
+- ♿ Inclusão e acessibilidade<br><br>
+Esses são temas para estudar, não previsões da prova!<br><br>
+💡 Na hora de escrever, faça assim:<br>
+- Introdução: apresente o problema e sua opinião sobre ele.<br>
+- Desenvolvimento: explique suas ideias e use um exemplo ou repertório para sustentar cada argumento.<br>
+- Conclusão: proponha uma solução, indicando quem vai agir, o que fará e como isso ajudará a resolver o problema.<br><br>
+🎯 Exercício rápido: escolha um dos temas e tente escrever sua introdução em 3 frases!<br><br>
+O Copiloto da Estácio segue com você nessa reta final. 💙<br><br>
+Até a próxima!`;
+  } 
+  else if (normalizado === "ver checklist" || normalizado === "conferir checklist") {
+    if (naSelecionada.id === "NA7" || naId === "NA7") {
+        respostaBot = `📋 <b>Checklist do Copiloto para o 2º dia do Enem</b><br><br>A segunda etapa está chegando! 👀 Confira o que deixar preparado para o dia da prova:<br><br>✔️ <b>Caneta:</b> esferográfica de tinta preta e tubo transparente.<br>✔️ <b>Documento:</b> oficial com foto. Se usar a versão digital aceita pelo edital, deixe o celular carregado.<br>✔️ <b>Água:</b> garrafa transparente e sem rótulo.<br>✔️ <b>Lanche:</b> opções práticas, como castanhas, barra de cereal ou chocolate.<br>✔️ <b>Deslocamento:</b> planeje a saída com antecedência para chegar ao local de prova sem correria.<br><br>Tudo organizado? Agora, <b>foque na preparação e vá no seu ritmo.</b> Você consegue! 💙`;
+    } else {
+        respostaBot = `<b>🎒 Checklist para o dia do Enem</b><br><br>
+• Documento oficial com foto<br>
+• Caneta esferográfica preta de tubo transparente<br>
+• Cartão de confirmação da inscrição, se necessário<br>
+• Lanche e água em recipiente permitido<br><br>
+Antes de sair, confira as orientações oficiais do Enem e organize tudo com antecedência.<br><br>
+Boa prova! 💙`;
+    }
+  }
+
+  slot.innerHTML = `
+    <div class="wa-response-out">
+      ${texto}
+      <span class="meta" style="margin-left: 6px;">${calcularHoraMaisUm(naSelecionada.hora)} ✓✓</span>
+    </div>
+    <div class="row in" style="margin-top: 8px;">
+      <div class="wa-card-bubble" style="padding: 10px 12px; font-size: 13px;">
+        ${respostaBot}
+        <span class="meta">${calcularHoraMaisUm(naSelecionada.hora)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function calcularHoraMaisUm(horaStr) {
+  const parts = horaStr.split(':');
+  let h = parseInt(parts[0], 10);
+  let m = parseInt(parts[1], 10) + 1;
+  return `${h < 10 ? '0' + h : h}:${m < 10 ? '0' + m : m}`;
+}
+
+function renderizarSpec() {
+  const panel = document.getElementById('specDetailPanel');
+  if (!panel) return;
+  const n = naSelecionada;
+
+  let extraCustomSpec = '';
+  if (n.id === 'NA4') {
+    extraCustomSpec = `
+      <div class="spec-section" style="border-left: 4px solid #7C3AED; background: #FAF5FF;">
+        <h3 style="color: #6D28D9;">⚡ Arquitetura Técnica em 2 Etapas (WhatsApp Cloud API + Flows)</h3>
+        <p><b>Por que em duas etapas?</b></p>
+        <p style="font-size: 12px; color: #475569; margin-top: 4px;">Pelas diretrizes e regras de negócio da API oficial do WhatsApp Cloud, templates de Notificação Ativa (HSM de marketing/utilidade) iniciam a conversa através de <b>Quick Reply padrão</b>. A abertura do componente nativo de <b>WhatsApp Flows</b> é acionada na mensagem interativa subsequente dentro da janela de sessão de 24h aberta pelo usuário.</p>
+        
+        <div style="background: #FFF; border: 1px solid #DDD6FE; border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 12px;">
+          <b>Passo a Passo da NA 4:</b>
+          <ol style="margin: 6px 0 0 16px; line-height: 1.5;">
+            <li><b>Disparo Ativo (HSM):</b> Notificação com header de imagem Estácio + texto convidativo + botões de Quick Reply: <code>Iniciar simulado</code> ou <code>Agora não</code>.</li>
+            <li><b>Interação do Usuário:</b> Usuário seleciona <code>Iniciar simulado</code> (abre a janela de sessão de 24h).</li>
+            <li><b>Mensagem Receptiva Intermediária:</b> O bot responde imediatamente com o texto <i>"Para responder o simulado clique no botão abaixo"</i> e o botão CTA <b>"Iniciar agora"</b>.</li>
+            <li><b>Execução do Flows (Paginado):</b> Ao clicar em <b>"Iniciar agora"</b>, o WhatsApp Flows abre num modelo paginado (uma tela para cada questão).</li>
+            <li><b>Gabarito e Devolutiva:</b> O webhook recebe as respostas e envia o feedback instantâneo com a nota e gabarito comentado:
+              <ul style="margin-top: 4px; font-size: 11px; color: #475569;">
+                <li>Q1 · Matemática: E — 1 350 000 000,00</li>
+                <li>Q2 · Ciências Humanas: B — caracterização do objeto...</li>
+                <li>Q3 · Ciências da Natureza: B — Decantação</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <p style="margin-top: 6px;"><b>Regra do {{mensagem_resultado}}:</b></p>
+        <ul style="margin: 4px 0 8px 18px; font-size: 11.5px;">
+          <li><b>0 acertos:</b> "Todo treino é uma oportunidade de aprender!..."</li>
+          <li><b>1 acerto:</b> "Você deu o primeiro passo! Revise as respostas..."</li>
+          <li><b>2 acertos:</b> "Mandou bem! Você acertou a maioria..."</li>
+          <li><b>3 acertos:</b> "Arrasou! Você acertou todas as questões..."</li>
+        </ul>
+      </div>
+    `;
+  }
+
+  panel.innerHTML = `
+    <div class="spec-tag-header">
+      <span class="badge blue">${n.numero}</span>
+      <span class="badge orange">📅 ${n.data}/2026 às ${n.hora}</span>
+      <span class="badge green">Header com Imagem</span>
+      ${n.id === 'NA4' ? '<span class="badge purple">WhatsApp Flows em 2 Etapas</span>' : ''}
+    </div>
+
+    <div class="spec-section">
+      <h3>🎯 Objetivo Estratégico</h3>
+      <p><b>${n.objetivo}</b></p>
+      <p style="margin-top: 6px;"><b>Jornada Vinculada:</b> <code>${n.jornada}</code></p>
+    </div>
+
+    ${extraCustomSpec}
+
+    <div class="spec-section">
+      <h3>🧠 Racional de UX & Copywriting</h3>
+      <div class="ux-box">
+        <strong>Justificativa de UX:</strong>
+        ${n.justificativaUX}
+      </div>
+    </div>
+
+    <div class="spec-section">
+      <h3>🔘 Interações & Botões do Template</h3>
+      ${n.botoes.length > 0 ? `
+        <ul>
+          ${n.botoes.map(b => `<li><b>"${b.texto}":</b> ${b.desc}</li>`).join('')}
+        </ul>
+      ` : `
+        <p><i>Nenhum botão de ação associado. A notificação é um alerta prático de pontualidade.</i></p>
+      `}
+    </div>
+
+    <div class="spec-section">
+      <h3>🖼️ Especificações da Imagem de Header</h3>
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
+        <img src="${n.imagem}" alt="Thumbnail" style="width: 80px; height: 50px; max-width: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #CBD5E1; display: block;">
+        <div style="font-size: 12px;">
+          <b>Estilo Oficial Publicitário Estácio</b>
+        </div>
+      </div>
+      <p style="margin-top: 4px;"><b>Descrição Visual:</b> ${n.imagemDesc}</p>
+    </div>
+  `;
+}
+
+function abrirMacroFluxo() {
+  const container = document.getElementById('macroTimelineContainer');
+  if (!container) return;
+  container.innerHTML = notificacoes.map(n => `
+    <div class="timeline-node">
+      <div class="node-circle">
+        ${n.numero}
+        <span>${n.data}</span>
+      </div>
+      <div class="node-content">
+        <img class="node-thumb" src="${n.imagem}" alt="${n.imagemDesc}">
+        <div class="node-info">
+          <h4>${n.jornada}</h4>
+          <p><b>Objetivo:</b> ${n.objetivo}</p>
+          <div class="meta-pills">
+            <span class="pill-small">🕒 ${n.hora}</span>
+            <span class="pill-small">🔘 ${n.botoes.length > 0 ? n.botoes.map(b => b.texto).join(' | ') : 'Sem botão'}</span>
+            ${n.id === 'NA4' ? '<span class="pill-small flows-tag">⚡ WhatsApp Flows (2 Etapas)</span>' : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('macroView').style.display = 'flex';
+}
+
+function fecharMacroFluxo() {
+  document.getElementById('macroView').style.display = 'none';
+}
+
+function inicializarApp() {
+  naSelecionada = notificacoes[0]; 
+  renderizarListaNA();
+  renderizarChat();
+  renderizarSpec();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', inicializarApp);
+} else {
+  inicializarApp();
+}
+</script>
+</body></html>
