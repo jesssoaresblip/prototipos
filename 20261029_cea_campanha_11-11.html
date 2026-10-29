@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C&A | Protótipo Interativo - Campanha Data Dupla 11/11</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EDEDEB;
+  --panel: #FFFFFF;
+  --ink: #0A0A0A;
+  --on-ink: #FFFFFF;
+  --muted: #6E6E6E;
+  --line: #D8D8D6;
+  --soft: #F5F5F4;
+  --wa-dark: #075E54;
+  --wa-teal: #008069;
+  --wa-bg: #EFEAE2;
+  --wa-out: #D9FDD3;
+  --ui-font: "Instrument Sans", system-ui, sans-serif;
+  --wa-font: "Instrument Sans", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--ui-font); font-size: 14px; line-height: 1.45; display: flex; flex-direction: column; min-height: 100vh; }
+button { cursor: pointer; font-family: inherit; }
+
+/* Header */
+.topbar { background: #0A0A0A; color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 24px; min-height: 60px; }
+.brand b { font-size: 20px; font-weight: 700; }
+.brand span { font-size: 14px; color: #BDBDBD; margin-left: 10px; }
+
+/* Grid principal */
+.bench { flex: 1; display: grid; grid-template-columns: 320px minmax(380px, 1fr) 420px; gap: 16px; padding: 16px; min-height: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-head { padding: 16px; border-bottom: 1px solid var(--line); }
+.panel-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.panel-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.panel-body { overflow-y: auto; padding: 16px; flex: 1; }
+
+/* Menu de Seleção de Cenários e Controles */
+.scen-btn { width: 100%; text-align: left; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px; margin-bottom: 10px; transition: 0.2s; }
+.scen-btn b { display: block; font-size: 14px; }
+.scen-btn span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.scen-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.scen-btn[aria-pressed="true"] span { color: #CCC; }
+
+/* Seletor do Horário da Interação */
+.timing-selector { margin: 12px 0; padding: 10px; background: var(--soft); border-radius: 8px; border: 1px solid var(--line); }
+.timing-selector label { font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px; color: var(--ink); }
+.timing-options { display: flex; gap: 6px; }
+.timing-btn { flex: 1; border: 1px solid var(--line); background: #fff; padding: 8px 4px; border-radius: 6px; font-size: 11.5px; font-weight: 600; text-align: center; color: var(--muted); }
+.timing-btn[aria-pressed="true"] { background: var(--wa-teal); color: #fff; border-color: var(--wa-teal); }
+
+.reset-btn { width: 100%; background: var(--panel); color: var(--ink); border: 1px solid var(--line); padding: 10px; border-radius: 6px; font-weight: 600; font-size: 13px; margin-top: 15px; }
+.reset-btn:hover { background: var(--soft); }
+
+/* Celular WhatsApp */
+.stage { display: flex; align-items: center; justify-content: center; }
+.phone { width: 375px; height: 740px; background: #111B21; border-radius: 36px; padding: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); position: relative; }
+.screen { background: var(--wa-bg); border-radius: 28px; height: 100%; overflow: hidden; display: flex; flex-direction: column; font-family: var(--wa-font); }
+.status { height: 24px; background: var(--wa-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 11px; }
+.wa-head { background: var(--wa-dark); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.wa-head .av { width: 34px; height: 34px; border-radius: 50%; background: #0A0A0A; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.wa-head .who b { display: block; font-size: 14px; }
+.wa-head .who span { font-size: 11px; opacity: 0.8; }
+
+.chat { flex: 1; overflow-y: auto; padding: 10px; background-image: radial-gradient(rgba(7,94,84,0.06) 1px, transparent 1.2px); background-size: 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.day { margin: 8px auto 6px; background: #fff; color: #54656F; font-size: 11px; padding: 3px 8px; border-radius: 6px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); text-align: center; }
+.row { display: flex; margin: 2px 0; width: 100%; }
+.row.in { justify-content: flex-start; }
+.row.out { justify-content: flex-end; }
+
+.bub { max-width: 88%; padding: 8px 10px; border-radius: 8px; font-size: 13px; line-height: 1.4; color: #111B21; background: #fff; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word; white-space: pre-line; }
+.bub img.msg-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 6px; display: block; }
+.out .bub { background: var(--wa-out); white-space: normal; }
+.meta { float: right; margin: 4px 0 -2px 8px; font-size: 10px; color: #667781; }
+
+/* Lista de Botões Empilhados e CTAs */
+.stacked-menu { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; width: 88%; }
+.stacked-menu button, .cta-link-btn { border: 0; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 13px; padding: 10px; border-radius: 8px; text-align: center; width: 100%; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); text-decoration: none; display: block; box-sizing: border-box; cursor: pointer; }
+
+/* Container de Mensagens e Elementos de Controle */
+.msg-group { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+
+/* Botões de Ação na Conversa */
+.in-chat-trigger { margin: 10px auto; display: block; width: 92%; background: var(--wa-teal); color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 12.5px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: 0.2s; }
+.in-chat-trigger:hover { background: #006654; }
+
+/* Botão e Caixa de Regras de Negócio */
+.rule-wrapper { width: 100%; margin: 6px 0; }
+.btn-rule-trigger { background: #E1F2FB; color: #1B4F72; border: 1px dashed #027EB5; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 600; text-align: left; width: 100%; display: block; cursor: pointer; box-sizing: border-box; line-height: 1.3; }
+.rule-box { display: none; margin-top: 4px; background: #FFF3C4; color: #54656F; font-size: 11px; line-height: 1.35; padding: 8px; border-radius: 6px; border-left: 3px solid #FFC107; box-shadow: 0 1px 0.5px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box; white-space: normal; }
+
+/* Bloco de Variáveis / Payload */
+.ps-direct-box { background: #E1F2FB; border: 1px solid #BEE3F8; border-radius: 8px; padding: 8px 10px; margin: 6px 0; font-size: 11px; color: #1B4F72; box-shadow: 0 1px 0.5px rgba(0,0,0,0.08); width: 100%; box-sizing: border-box; }
+.ps-direct-box b { display: block; margin-bottom: 2px; color: #004085; }
+.ps-payload-text { background: #1E1E1E; color: #D4D4D4; font-family: monospace; font-size: 10.5px; padding: 6px 8px; border-radius: 4px; margin: 4px 0; word-break: break-all; }
+
+/* Especificações */
+.spec h3 { font-size: 14px; margin: 16px 0 6px; font-weight: 700; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+.spec h3:first-child { margin-top: 0; }
+.spec p, .spec li { font-size: 13px; color: #333; line-height: 1.4; }
+.spec ul { padding-left: 18px; margin: 4px 0; }
+.spec code { background: #0A0A0A; color: #FFF; padding: 2px 5px; border-radius: 4px; font-size: 11px; }
+.badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+.badge.quente { background: #D1E7DD; color: #0F5132; }
+.badge.fria { background: #F8D7DA; color: #842029; }
+.badge.expirada { background: #FFF3CD; color: #856404; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><b>C&A</b><span>Simulador de Regras & Disparos — Campanha Data Dupla 11/11</span></div>
+</header>
+
+<div class="bench">
+  
+  <!-- Painel de Controle -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Seleção de Perfil</h2>
+      <p>Escolha o fluxo e o momento da interação:</p>
+    </div>
+    <div class="panel-body">
+      <button class="scen-btn" id="btnQuente" aria-pressed="true" onclick="carregarCenario('quente')">
+        <b>🔥 Versão A (Interagiu no D-2)</b>
+        <span>Cliente seleciona a categoria no D-2 e recebe a versão direcionada no D0.</span>
+      </button>
+      
+      <button class="scen-btn" id="btnFria" aria-pressed="false" onclick="carregarCenario('fria')">
+        <b>❄️ Versão B (Sem Interação)</b>
+        <span>Cliente recebe D-2 mas não interage. Em D0 recebe a oferta geral de escassez.</span>
+      </button>
+
+      <!-- Sub-menu de Momento da Interação -->
+      <div class="timing-selector" id="timingSelector">
+        <label>Momento da Interação D-2:</label>
+        <div class="timing-options">
+          <button class="timing-btn" id="btnAntes18" aria-pressed="true" onclick="setTiming('antes')">
+            Até D-1 (18:00h)<br><small>(Janela Normal)</small>
+          </button>
+          <button class="timing-btn" id="btnDepois18" aria-pressed="false" onclick="setTiming('depois')">
+            Após D-1 (18:00h)<br><small>(Fora do Corte)</small>
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; padding: 12px; background: var(--soft); border-radius: 8px; font-size: 12px; line-height: 1.4;">
+        <b>💡 Instrução:</b>
+        <p style="margin: 4px 0 0;">Utilize os botões do simulador para navegar no fluxo. Clique em "🔍 Ver regras de negócio" para analisar detalhes de parâmetros, UTMs dinâmicas e gravação de variáveis.</p>
+      </div>
+
+      <button class="reset-btn" onclick="carregarCenario(cenarioAtual)">🔄 Reiniciar Conversa</button>
+    </div>
+  </aside>
+
+  <!-- Visão WhatsApp -->
+  <main class="stage">
+    <div class="phone">
+      <div class="screen">
+        <div class="status"><span>11:11</span><span>5G ▮▮▮</span></div>
+        <header class="wa-head">
+          <div class="av">C&A</div>
+          <div class="who"><b>C&A</b><span>Conta Comercial Oficial</span></div>
+        </header>
+        <div class="chat" id="chat">
+          <!-- Conteúdo dinâmico via JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Especificações Técnicas -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Regras & Especificações</h2>
+      <p>Regras de negócio e parâmetros do cenário:</p>
+    </div>
+    <div class="panel-body spec" id="specPanel">
+      <!-- Mapeamento dinâmico via JS -->
+    </div>
+  </aside>
+
+</div>
+
+<script>
+let cenarioAtual = 'quente';
+let timingAtual = 'antes'; // 'antes' ou 'depois' das 18h de D-1 (10/11)
+let estadoEsquentaEnviado = false;
+let estadoRespostaEsquenta = false;
+let estadoD0Enviado = false;
+let categoriaEscolhida = '';
+
+const LINK_FEMININA = "https://www.cea.com.br/moda-feminina?utm_source=wppm&utm_medium=notification&utm_campaign=Z_WSF_JOR_MIS_MAS_T000_20261028_DXL_WGO_PRECHURNALGODAOPONTUALAT";
+const LINK_MASCULINA = "https://www.cea.com.br/moda-masculina?utm_source=wppm&utm_medium=notification&utm_campaign=Z_WSF_JOR_MIS_MAS_T000_20261028_DXL_WGO_PRECHURNALGODAOPONTUALAT";
+const LINK_GERAL = "https://www.cea.com.br/?utm_source=wppm&utm_medium=notification&utm_campaign=Z_WSF_JOR_MIS_MAS_T000_20261028_DXL_WGO_PRECHURNALGODAOPONTUALAT";
+
+const IMG_D2 = "https://blipmediastore.blob.core.windows.net/public-medias/Media_8dda668b-e2f4-429f-b9d3-90cea91da7d4";
+const IMG_D0_FRIA = "https://blipmediastore.blob.core.windows.net/public-medias/Media_f79e7f30-57ae-4b90-b192-248d35028b46";
+
+function toggleRule(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+  }
+}
+
+function setTiming(momento) {
+  timingAtual = momento;
+  document.getElementById('btnAntes18').setAttribute('aria-pressed', momento === 'antes');
+  document.getElementById('btnDepois18').setAttribute('aria-pressed', momento === 'depois');
+  carregarCenario(cenarioAtual);
+}
+
+function carregarCenario(tipo) {
+  cenarioAtual = tipo;
+  estadoEsquentaEnviado = false;
+  estadoRespostaEsquenta = false;
+  estadoD0Enviado = false;
+  categoriaEscolhida = '';
+
+  document.getElementById('btnQuente').setAttribute('aria-pressed', tipo === 'quente');
+  document.getElementById('btnFria').setAttribute('aria-pressed', tipo === 'fria');
+  document.getElementById('timingSelector').style.display = (tipo === 'quente') ? 'block' : 'none';
+  
+  const chat = document.getElementById('chat');
+  chat.innerHTML = `
+    <button class="in-chat-trigger" id="btnChatEsquenta" onclick="enviarEsquenta()">📩 Enviar Warm Up (D-2 · 09/11)</button>
+    <div id="flowContent"></div>
+  `;
+  atualizarSpec();
+}
+
+function atualizarSpec() {
+  const spec = document.getElementById('specPanel');
+  if (cenarioAtual === 'quente') {
+    if (timingAtual === 'antes') {
+      spec.innerHTML = `
+        <span class="badge quente">VERSÃO A (INTERAGIU NO D-2)</span>
+        <h3>⚙️ Regras de Envio & Variáveis</h3>
+        <ul>
+          <li><b>Mídia Header (D-2):</b> Banner ativo da campanha 11/11.</li>
+          <li><b>Gravação de Contexto:</b> A seleção salva a variável <code>Categoria</code> (<code>feminina</code> ou <code>masculina</code>).</li>
+          <li><b>Links Dinâmicos de Categoria:</b><br>
+            - <b>Feminina:</b> <code style="word-break:break-all;">cea.com.br/moda-feminina?...</code><br>
+            - <b>Masculina:</b> <code style="word-break:break-all;">cea.com.br/moda-masculina?...</code>
+          </li>
+          <li><b>Agendamento D0:</b> Interação até 10/11 às 18:00h agenda a <b>Versão A</b> para o D0 (11/11).</li>
+          <li><b>Negativação:</b> O lead entra na lista extraída às 18h para ser <b>excluído</b> do disparo geral em massa (Versão B).</li>
+          <li><b>Template Meta:</b> Conforme diretrizes da Meta, os botões HSM <b>não possuem emojis</b>.</li>
+        </ul>
+        <h3>📄 CTA & Destino</h3>
+        <p><b>D-2 (Resposta Imediata):</b> Direct Link com UTM para esquenta na vitrine da categoria escolhida.</p>
+        <p><b>D0:</b> Link direcionado para a categoria <code>%%Categoria%%</code> com a oferta da Data Dupla ativa.</p>
+      `;
+    } else {
+      spec.innerHTML = `
+        <span class="badge expirada">VERSÃO A (INTERAÇÃO APÓS CORTE DE 18H EM D-1)</span>
+        <h3>⚙️ Regras de Negócio Pós-Corte</h3>
+        <ul>
+          <li><b>Horário Expirado:</b> Interação realizada após o corte das 18:00h de D-1 (10/11).</li>
+          <li><b>Mensagem de Resposta:</b> Informa que o esquenta acabou, mas promete novidades para o D0.</li>
+          <li><b>Fallback D0:</b> O cliente entra na base do disparo geral em massa (<b>Versão B</b>) em D0 para garantir recebimento sem duplicação de disparos.</li>
+        </ul>
+      `;
+    }
+  } else {
+    spec.innerHTML = `
+      <span class="badge fria">VERSÃO B (SEM INTERAÇÃO NO D-2)</span>
+      <h3>⚙️ Regras de Envio & Variáveis</h3>
+      <ul>
+        <li><b>Mídia Header (D0):</b> Banner ativo com apelo de escassez/urgência.</li>
+        <li><b>Sem Interação Prévia:</b> Cliente recebeu D-2 mas não clicou em nenhuma opção.</li>
+        <li><b>Base de Disparo D0:</b> Disparo em massa para a base geral.</li>
+        <li><b>Link de Destino:</b> Vitrine Geral do 11/11 com a mecânica promocional do dia ativa em todo o site.</li>
+        <li><b>Template Meta:</b> Botão HSM sem emoji (<code>Aproveitar ofertas</code>).</li>
+      </ul>
+    `;
+  }
+}
+
+function enviarEsquenta() {
+  if (estadoEsquentaEnviado) return;
+  estadoEsquentaEnviado = true;
+  
+  const btn = document.getElementById('btnChatEsquenta');
+  if (btn) btn.style.display = 'none';
+
+  const flow = document.getElementById('flowContent');
+  flow.innerHTML += `
+    <div class="day">D-2 (09/11)</div>
+    <div class="msg-group">
+      <div class="row in">
+        <div class="bub">
+          <img src="${IMG_D2}" class="msg-img" alt="11/11 C&A">
+          Maria, o <b>11/11</b> está chegando e os <b>descontos exclusivos</b> da data dupla também! ✨<br><br>Quer garantir o caminho direto pros melhores achadinhos e aproveitar primeiro? Escolha abaixo: 👇<span class="meta">09:00</span>
+        </div>
+      </div>
+      
+      <div class="stacked-menu" id="menuD2">
+        <button onclick="selecionarCategoria('feminina')">Moda Feminina</button>
+        <button onclick="selecionarCategoria('masculina')">Moda Masculina</button>
+      </div>
+    </div>
+    <div id="anchorEsquenta"></div>
+  `;
+
+  if (cenarioAtual === 'fria') {
+    flow.innerHTML += `
+      <div style="margin-top: 12px;" id="anchorD2Fria">
+        <button class="in-chat-trigger" id="btnChatAgendado" onclick="enviarAgendado()">📩 Simular Envio D0 (Sem resposta ao D-2)</button>
+      </div>
+      <div id="anchorD0"></div>
+    `;
+  }
+}
+
+function selecionarCategoria(cat) {
+  if (cenarioAtual !== 'quente' || estadoRespostaEsquenta) return;
+  estadoRespostaEsquenta = true;
+  categoriaEscolhida = cat;
+
+  document.getElementById('menuD2').style.display = 'none';
+  const anchor = document.getElementById('anchorEsquenta');
+  const btnLabel = (cat === 'feminina') ? 'Moda Feminina' : 'Moda Masculina';
+  const catFormatada = (cat === 'feminina') ? 'moda feminina' : 'moda masculina';
+  const targetLink = (cat === 'feminina') ? LINK_FEMININA : LINK_MASCULINA;
+
+  if (timingAtual === 'depois') {
+    anchor.innerHTML = `
+      <div class="row out">
+        <div class="bub">${btnLabel}<span class="meta">18:30 (10/11)</span></div>
+      </div>
+      
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">Nosso esquenta já terminou, mas não se preocupa: amanhã eu volto com novidades. 👀✨<span class="meta">18:30 (10/11)</span></div>
+        </div>
+      </div>
+
+      <div class="rule-wrapper">
+        <button class="btn-rule-trigger" onclick="toggleRule('ruleExpiracao')">🔍 Ver regras de negócio</button>
+        <div class="rule-box" id="ruleExpiracao">
+          <b>Janela de Corte Expirada (Pós 18:00h de D-1):</b><br>
+          A resposta do usuário ocorreu após as 18:00h de 10/11. Por isso, a confirmação informa o fim do esquenta e o cliente receberá o disparo da <b>Versão B (Fria)</b> no D0 para evitar divergência nos relatórios de agendamento.
+        </div>
+      </div>
+
+      <button class="in-chat-trigger" id="btnChatAgendado" onclick="enviarAgendado()">📩 Enviar Disparo D0 (Versão B)</button>
+      <div id="anchorD0"></div>
+    `;
+    return;
+  }
+
+  anchor.innerHTML = `
+    <div class="row out">
+      <div class="bub">${btnLabel}<span class="meta">09:01</span></div>
+    </div>
+    
+    <div class="msg-group">
+      <div class="row in">
+        <div class="bub">Perfeito, Maria! Aproveite agora as peças de <b>${catFormatada}</b> selecionadas para o <b>esquenta</b>! 🛍️<span class="meta">09:01</span></div>
+      </div>
+      <div class="stacked-menu">
+        <a href="${targetLink}" target="_blank" class="cta-link-btn" onclick="alert('Redirecionando para: ' + '${targetLink}')">Garantir agora</a>
+      </div>
+    </div>
+
+    <div class="msg-group" style="margin-top: 6px;">
+      <div class="row in">
+        <div class="bub">E fique de olho por aqui: no dia 11/11 eu volto para te avisar das novidades! 👀✨<span class="meta">09:01</span></div>
+      </div>
+    </div>
+
+    <div class="ps-direct-box">
+      <b>Variável Gravada & Link Atribuído:</b>
+      <div class="ps-payload-text">
+        Categoria = "${catFormatada}"<br>
+        Target_URL = "${targetLink}"
+      </div>
+    </div>
+
+    <div class="rule-wrapper">
+      <button class="btn-rule-trigger" onclick="toggleRule('ruleAgendamento')">🔍 Ver regras de negócio</button>
+      <div class="rule-box" id="ruleAgendamento">
+        <b>Salvamento de Variáveis & Agendamento D0:</b><br>
+        • Variável <code>Categoria</code> gravada com sucesso.<br>
+        • Mensagem e botão dinamizados com o link correspondente a <code>${catFormatada}</code>.<br>
+        • Lead adicionado à lista do agendamento da <b>Versão A</b> para o disparo do dia 11/11 e excluído da Versão B.
+      </div>
+    </div>
+    
+    <button class="in-chat-trigger" id="btnChatAgendado" onclick="enviarAgendado()">📩 Enviar Mensagem D0 (11/11 · Conversão)</button>
+    <div id="anchorD0"></div>
+  `;
+}
+
+function enviarAgendado() {
+  if (estadoD0Enviado) return;
+  estadoD0Enviado = true;
+
+  const btn = document.getElementById('btnChatAgendado');
+  if (btn) btn.style.display = 'none';
+
+  const anchorD0 = document.getElementById('anchorD0');
+
+  if (cenarioAtual === 'quente' && timingAtual === 'antes') {
+    const catFormatada = (categoriaEscolhida === 'feminina') ? 'moda feminina' : 'moda masculina';
+    const targetLink = (categoriaEscolhida === 'feminina') ? LINK_FEMININA : LINK_MASCULINA;
+
+    anchorD0.innerHTML += `
+      <div class="day">D0 (11/11)</div>
+      
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">O 11/11 da C&A começou, Maria! 🔥<br><br>Novas peças em <b>${catFormatada}</b> acabaram de entrar, mas é por tempo limitado e os estoques costumam voar, hein? 🛍️<span class="meta">10:00</span></div>
+        </div>
+        <div class="stacked-menu">
+          <a href="${targetLink}" target="_blank" class="cta-link-btn" onclick="alert('Redirecionando para: ' + '${targetLink}')">Aproveitar agora</a>
+        </div>
+      </div>
+
+      <div class="rule-wrapper">
+        <button class="btn-rule-trigger" onclick="toggleRule('ruleT2')">🔍 Ver regras de negócio</button>
+        <div class="rule-box" id="ruleT2">
+          <b>D0 · Versão A (Engajados):</b><br>
+          • Template HSM direcionado para a categoria <code>${catFormatada}</code>.<br>
+          • Sem emojis no botão HSM de acordo com o padrão Meta.<br>
+          • Destino com parâmetros UTM ativos de atribuição.
+        </div>
+      </div>
+    `;
+  } else {
+    anchorD0.innerHTML += `
+      <div class="day">D0 (11/11)</div>
+      
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">
+            <img src="${IMG_D0_FRIA}" class="msg-img" alt="11/11 C&A Ofertas">
+            Maria, chegou o dia! A <b>Data Dupla 11/11</b> já começou com novidades e descontos exclusivos! 🔥<br><br>São as <b>últimas horas</b> pra garantir os melhores achadinhos. ⏰🛍️<span class="meta">10:00</span>
+          </div>
+        </div>
+        <div class="stacked-menu">
+          <a href="${LINK_GERAL}" target="_blank" class="cta-link-btn" onclick="alert('Redirecionando para vitrine geral: ' + '${LINK_GERAL}')">Aproveitar ofertas</a>
+        </div>
+      </div>
+
+      <div class="rule-wrapper">
+        <button class="btn-rule-trigger" onclick="toggleRule('ruleT3')">🔍 Ver regras de negócio</button>
+        <div class="rule-box" id="ruleT3">
+          <b>D0 · Versão B (Disparo Geral / Sem Interação Prévia):</b><br>
+          • Contém imagem header de campanha no template.<br>
+          • Direciona para a vitrine geral do site.<br>
+          • Botão HSM sem emoji (<code>Aproveitar ofertas</code>).
+        </div>
+      </div>
+    `;
+  }
+}
+
+// Inicializar simulador
+carregarCenario('quente');
+</script>
+</body>
+</html>
