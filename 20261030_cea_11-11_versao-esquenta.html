@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C&A | Protótipo Interativo - Campanha Data Dupla 11/11</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EDEDEB;
+  --panel: #FFFFFF;
+  --ink: #0A0A0A;
+  --on-ink: #FFFFFF;
+  --muted: #6E6E6E;
+  --line: #D8D8D6;
+  --soft: #F5F5F4;
+  --wa-dark: #075E54;
+  --wa-teal: #008069;
+  --wa-bg: #EFEAE2;
+  --wa-out: #D9FDD3;
+  --ui-font: "Instrument Sans", system-ui, sans-serif;
+  --wa-font: "Instrument Sans", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--ui-font); font-size: 14px; line-height: 1.45; display: flex; flex-direction: column; min-height: 100vh; }
+button { cursor: pointer; font-family: inherit; }
+
+/* Header */
+.topbar { background: #0A0A0A; color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 24px; min-height: 60px; }
+.brand b { font-size: 20px; font-weight: 700; }
+.brand span { font-size: 14px; color: #BDBDBD; margin-left: 10px; }
+
+/* Grid principal */
+.bench { flex: 1; display: grid; grid-template-columns: 320px minmax(380px, 1fr) 420px; gap: 16px; padding: 16px; min-height: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-head { padding: 16px; border-bottom: 1px solid var(--line); }
+.panel-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.panel-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.panel-body { overflow-y: auto; padding: 16px; flex: 1; }
+
+/* Menu de Seleção de Cenários e Controles */
+.scen-btn { width: 100%; text-align: left; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px; margin-bottom: 10px; transition: 0.2s; }
+.scen-btn b { display: block; font-size: 14px; }
+.scen-btn span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.scen-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.scen-btn[aria-pressed="true"] span { color: #CCC; }
+
+/* Seletor do Horário da Interação */
+.timing-selector { margin: 12px 0; padding: 10px; background: var(--soft); border-radius: 8px; border: 1px solid var(--line); }
+.timing-selector label { font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px; color: var(--ink); }
+.timing-options { display: flex; gap: 6px; }
+.timing-btn { flex: 1; border: 1px solid var(--line); background: #fff; padding: 8px 4px; border-radius: 6px; font-size: 11.5px; font-weight: 600; text-align: center; color: var(--muted); }
+.timing-btn[aria-pressed="true"] { background: var(--wa-teal); color: #fff; border-color: var(--wa-teal); }
+
+.reset-btn { width: 100%; background: var(--panel); color: var(--ink); border: 1px solid var(--line); padding: 10px; border-radius: 6px; font-weight: 600; font-size: 13px; margin-top: 15px; }
+.reset-btn:hover { background: var(--soft); }
+
+/* Celular WhatsApp */
+.stage { display: flex; align-items: center; justify-content: center; }
+.phone { width: 375px; height: 740px; background: #111B21; border-radius: 36px; padding: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); position: relative; }
+.screen { background: var(--wa-bg); border-radius: 28px; height: 100%; overflow: hidden; display: flex; flex-direction: column; font-family: var(--wa-font); }
+.status { height: 24px; background: var(--wa-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 11px; }
+.wa-head { background: var(--wa-dark); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.wa-head .av { width: 34px; height: 34px; border-radius: 50%; background: #0A0A0A; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.wa-head .who b { display: block; font-size: 14px; }
+.wa-head .who span { font-size: 11px; opacity: 0.8; }
+
+.chat { flex: 1; overflow-y: auto; padding: 10px; background-image: radial-gradient(rgba(7,94,84,0.06) 1px, transparent 1.2px); background-size: 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.day { margin: 8px auto 6px; background: #fff; color: #54656F; font-size: 11px; padding: 3px 8px; border-radius: 6px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); text-align: center; }
+.row { display: flex; margin: 2px 0; width: 100%; }
+.row.in { justify-content: flex-start; }
+.row.out { justify-content: flex-end; }
+
+.bub { max-width: 88%; padding: 8px 10px; border-radius: 8px; font-size: 13px; line-height: 1.4; color: #111B21; background: #fff; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word; white-space: pre-line; }
+.bub img.msg-img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 6px; display: block; }
+.out .bub { background: var(--wa-out); white-space: normal; }
+.meta { float: right; margin: 4px 0 -2px 8px; font-size: 10px; color: #667781; }
+
+/* Lista de Botões Empilhados e CTAs */
+.stacked-menu { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; width: 88%; }
+.stacked-menu button, .cta-link-btn { border: 0; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 13px; padding: 10px; border-radius: 8px; text-align: center; width: 100%; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); text-decoration: none; display: block; box-sizing: border-box; cursor: pointer; }
+
+/* Container de Mensagens e Elementos de Controle */
+.msg-group { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+
+/* Botões de Ação na Conversa */
+.in-chat-trigger { margin: 10px auto; display: block; width: 92%; background: var(--wa-teal); color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 12.5px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: 0.2s; }
+.in-chat-trigger:hover { background: #006654; }
+
+/* Botão e Caixa de Regras de Negócio */
+.rule-wrapper { width: 100%; margin: 6px 0; }
+.btn-rule-trigger { background: #E1F2FB; color: #1B4F72; border: 1px dashed #027EB5; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 600; text-align: left; width: 100%; display: block; cursor: pointer; box-sizing: border-box; line-height: 1.3; }
+.rule-box { display: none; margin-top: 4px; background: #FFF3C4; color: #54656F; font-size: 11px; line-height: 1.35; padding: 8px; border-radius: 6px; border-left: 3px solid #FFC107; box-shadow: 0 1px 0.5px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box; white-space: normal; }
+
+/* Bloco de Variáveis / Payload */
+.ps-direct-box { background: #E1F2FB; border: 1px solid #BEE3F8; border-radius: 8px; padding: 8px 10px; margin: 6px 0; font-size: 11px; color: #1B4F72; box-shadow: 0 1px 0.5px rgba(0,0,0,0.08); width: 100%; box-sizing: border-box; }
+.ps-direct-box b { display: block; margin-bottom: 2px; color: #004085; }
+.ps-payload-text { background: #1E1E1E; color: #D4D4D4; font-family: monospace; font-size: 10.5px; padding: 6px 8px; border-radius: 4px; margin: 4px 0; word-break: break-all; }
+
+/* Especificações */
+.spec h3 { font-size: 14px; margin: 16px 0 6px; font-weight: 700; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+.spec h3:first-child { margin-top: 0; }
+.spec p, .spec li { font-size: 13px; color: #333; line-height: 1.4; }
+.spec ul { padding-left: 18px; margin: 4px 0; }
+.spec code { background: #0A0A0A; color: #FFF; padding: 2px 5px; border-radius: 4px; font-size: 11px; }
+.badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+.badge.quente { background: #D1E7DD; color: #0F5132; }
+.badge.fria { background: #F8D7DA; color: #842029; }
+.badge.expirada { background: #FFF3CD; color: #856404; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><b>C&A</b><span>Simulador de Regras & Disparos — Campanha Esquenta 11DO11</span></div>
+</header>
+
+<div class="bench">
+  
+  <!-- Painel de Controle -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Controle do Simulador</h2>
+      <p>Simule a interação e o momento do clique da cliente:</p>
+    </div>
+    <div class="panel-body">
+      <!-- Seletor do Horário da Interação -->
+      <div class="timing-selector" id="timingSelector" style="margin-top: 0;">
+        <label>Momento em que a cliente clica para liberar o cupom:</label>
+        <div class="timing-options">
+          <button type="button" class="timing-btn" id="btnAntes18" aria-pressed="true" onclick="window.simuladorApp.setTiming('antes')">
+            Até 10/11 às 14:00h<br><small>(Vigência do Esquenta)</small>
+          </button>
+          <button type="button" class="timing-btn" id="btnDepois18" aria-pressed="false" onclick="window.simuladorApp.setTiming('depois')">
+            Após 10/11 às 14:00h<br><small>(Esquenta Encerrado)</small>
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; padding: 12px; background: var(--soft); border-radius: 8px; font-size: 12px; line-height: 1.4;">
+        <b>💡 Fluxo Único da Campanha:</b>
+        <p style="margin: 4px 0 0;">• A comunicação é 100% focada na cliente que interage com o disparo de abertura em <b>07/11</b>.<br>• Clientes que liberam o cupom dentro do prazo recebem o código <code>11DO11</code> e são programadas para receber o lembrete de <b>últimas horas</b> em 10/11 cedo.<br>• Interações após o encerramento às 14h recebem o aviso direto de término com expectativa para o dia seguinte.</p>
+      </div>
+
+      <button type="button" class="reset-btn" onclick="window.simuladorApp.reiniciar()">🔄 Reiniciar Conversa</button>
+    </div>
+  </aside>
+
+  <!-- Visão WhatsApp -->
+  <main class="stage">
+    <div class="phone">
+      <div class="screen">
+        <div class="status"><span>11:11</span><span>5G ▮▮▮</span></div>
+        <header class="wa-head">
+          <div class="av">C&A</div>
+          <div class="who"><b>C&A</b><span>Conta Comercial Oficial</span></div>
+        </header>
+        <div class="chat" id="chat">
+          <!-- Conteúdo dinâmico montado via JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Especificações de Negócio / Visão C&A -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Entenda a Estratégia</h2>
+      <p>Visão de negócio e jornada da cliente C&A:</p>
+    </div>
+    <div class="panel-body spec" id="specPanel">
+      <!-- Mapeamento dinâmico via JS -->
+    </div>
+  </aside>
+
+</div>
+
+<script>
+window.simuladorApp = {
+  timingAtual: 'antes',
+  estadoEsquentaEnviado: false,
+  estadoRespostaEsquenta: false,
+  estadoD0Enviado: false,
+
+  LINK_CAMPANHA: "https://www.cea.com.br/black-friday/11-11",
+  IMG_D7: "https://blipmediastore.blob.core.windows.net/public-medias/Media_8dda668b-e2f4-429f-b9d3-90cea91da7d4",
+  IMG_D10: "https://blipmediastore.blob.core.windows.net/public-medias/Media_f79e7f30-57ae-4b90-b192-248d35028b46",
+
+  copiarCodigo: function(btnElement) {
+    var cupom = "11DO11";
+    var tempInput = document.createElement("input");
+    tempInput.value = cupom;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    try {
+      document.execCommand('copy');
+      var originalText = btnElement.innerText;
+      btnElement.innerText = "✓ Código 11DO11 copiado!";
+      btnElement.style.color = "#0F5132";
+      btnElement.style.background = "#D1E7DD";
+      setTimeout(function() {
+        btnElement.innerText = originalText;
+        btnElement.style.color = "var(--wa-teal)";
+        btnElement.style.background = "#fff";
+      }, 2500);
+    } catch (e) {
+      console.log("Erro ao copiar código", e);
+    }
+    document.body.removeChild(tempInput);
+  },
+
+  toggleRule: function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+  },
+
+  setTiming: function(momento) {
+    this.timingAtual = momento;
+    var btnAntes = document.getElementById('btnAntes18');
+    var btnDepois = document.getElementById('btnDepois18');
+    if (btnAntes) btnAntes.setAttribute('aria-pressed', momento === 'antes' ? 'true' : 'false');
+    if (btnDepois) btnDepois.setAttribute('aria-pressed', momento === 'depois' ? 'true' : 'false');
+    this.reiniciar();
+  },
+
+  reiniciar: function() {
+    this.estadoEsquentaEnviado = false;
+    this.estadoRespostaEsquenta = false;
+    this.estadoD0Enviado = false;
+    
+    var chat = document.getElementById('chat');
+    if (chat) {
+      chat.innerHTML = '<button type="button" class="in-chat-trigger" id="btnChatEsquenta" onclick="window.simuladorApp.enviarEsquenta()">📩 Enviar Abertura Esquenta (07/11 · Disparo 1)</button><div id="flowContent"></div>';
+    }
+    this.atualizarSpec();
+  },
+
+  atualizarSpec: function() {
+    var spec = document.getElementById('specPanel');
+    if (!spec) return;
+
+    if (this.timingAtual === 'antes') {
+      spec.innerHTML = `
+        <span class="badge quente">JORNADA COMPLETA DO ESQUENTA (07/11 &rarr; 10/11)</span>
+        <h3>🎯 Objetivo & Estratégia</h3>
+        <p>Fluxo integrado e personalizado para a cliente que interage com o esquenta da Data Dupla 11/11:</p>
+        
+        <h3>✨ O que acontece na conversa?</h3>
+        <ul>
+          <li><b>Abertura (07/11):</b> Notificação apresentando o início do esquenta com convite direto para liberar o cupom.</li>
+          <li><b>Confirmação Imediata:</b> Entrega do cupom <b>11DO11</b> para descontos exclusivos em itens selecionados, botão com link da campanha e botão para <b>Copiar código da oferta</b>.</li>
+          <li><b>Últimas Horas (10/11 cedo):</b> Lembrete com imagem de impacto avisando que a condição encerra <b>hoje às 14h</b>.</li>
+        </ul>
+
+        <h3>🛍️ Benefício para o Negócio</h3>
+        <p>Experiência fluida, sem ruídos e com foco absoluto na conversão da cliente engajada.</p>
+      `;
+    } else {
+      spec.innerHTML = `
+        <span class="badge expirada">INTERAÇÃO PÓS-ENCERRAMENTO (APÓS 10/11 ÀS 14H)</span>
+        <h3>🎯 Objetivo & Estratégia</h3>
+        <p>Tratamento transparente para quem clica na mensagem após o término oficial da mecânica de esquenta.</p>
+        
+        <h3>✨ O que acontece na conversa?</h3>
+        <ul>
+          <li><b>Aviso Claro de Término:</b> A cliente é informada de forma direta que o esquenta acabou, mantendo o engajamento e a expectativa para as novidades do dia seguinte (11/11).</li>
+          <li><b>Sem Frustração:</b> A conversa conclui sem promessas de cupom expirado e prepara o terreno para a próxima ação.</li>
+        </ul>
+      `;
+    }
+  },
+
+  enviarEsquenta: function() {
+    if (this.estadoEsquentaEnviado) return;
+    this.estadoEsquentaEnviado = true;
+    
+    var btn = document.getElementById('btnChatEsquenta');
+    if (btn) btn.style.display = 'none';
+
+    var flow = document.getElementById('flowContent');
+    if (!flow) return;
+
+    flow.innerHTML += `
+      <div class="day">07/11 · Disparo 1 (Abertura Esquenta)</div>
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">
+            <img src="${this.IMG_D7}" class="msg-img" alt="Esquenta 11DO11 C&A" onerror="this.style.display='none'">
+            Maria, já começou o esquenta para a <b>Data Dupla 11/11</b> e tem descontos exclusivos esperando por você! 🔥<br><br>São <b>50% OFF + 30% OFF extra</b> por tempo limitado. Libere seu cupom agora para garantir os melhores achadinhos! ⏰<span class="meta">10:00</span>
+          </div>
+        </div>
+        
+        <div class="stacked-menu" id="menuD7">
+          <button type="button" onclick="window.simuladorApp.resgatarCupom()">Liberar cupom</button>
+        </div>
+      </div>
+      <div id="anchorEsquenta"></div>
+    `;
+  },
+
+  resgatarCupom: function() {
+    if (this.estadoRespostaEsquenta) return;
+    this.estadoRespostaEsquenta = true;
+
+    var menu = document.getElementById('menuD7');
+    if (menu) menu.style.display = 'none';
+
+    var anchor = document.getElementById('anchorEsquenta');
+    if (!anchor) return;
+
+    if (this.timingAtual === 'depois') {
+      anchor.innerHTML = `
+        <div class="row out">
+          <div class="bub">Liberar cupom<span class="meta">14:35 (10/11)</span></div>
+        </div>
+        
+        <div class="msg-group">
+          <div class="row in">
+            <div class="bub">Maria, o nosso Esquenta 11/11 acabou por aqui! ⏰<br><br>Mas não se preocupe: fique de olho porque amanhã tem muito mais novidades imperdíveis para você! 👀✨<span class="meta">14:35 (10/11)</span></div>
+          </div>
+        </div>
+
+        <div class="rule-wrapper">
+          <button type="button" class="btn-rule-trigger" onclick="window.simuladorApp.toggleRule('ruleExpiracao')">🔍 Ver detalhes técnicos (Devs)</button>
+          <div class="rule-box" id="ruleExpiracao">
+            <b>Regras Técnicas de Execução (Pós-Esquenta):</b><br>
+            • <b>Horário &gt; 10/11 às 14:00h:</b> Promoção do Esquenta encerrada na coleção 19132.<br>
+            • <b>Mensagem Final:</b> Exibe o encerramento do esquenta sem disponibilizar o cupom <code>11DO11</code>.<br>
+            • <b>Sem agendamentos:</b> Não agenda o template de últimas horas.
+          </div>
+        </div>
+        <div id="anchorD0"></div>
+      `;
+      return;
+    }
+
+    anchor.innerHTML = `
+      <div class="row out">
+        <div class="bub">Liberar cupom<span class="meta">10:02 (07/11)</span></div>
+      </div>
+      
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">Cupom liberado, Maria! 🎟️✨<br><br>Use o cupom <b>11DO11</b> para garantir descontos exclusivos em itens selecionados! 🛍️<br><br>Aproveite agora antes que acabe o estoque.<span class="meta">10:02 (07/11)</span></div>
+        </div>
+        <div class="stacked-menu">
+          <a href="${this.LINK_CAMPANHA}" target="_blank" rel="noopener noreferrer" class="cta-link-btn">Aproveitar agora</a>
+          <button type="button" onclick="window.simuladorApp.copiarCodigo(this)">📋 Copiar código da oferta</button>
+        </div>
+      </div>
+
+      <div class="rule-wrapper">
+        <button type="button" class="btn-rule-trigger" onclick="window.simuladorApp.toggleRule('ruleAgendamento')">🔍 Ver detalhes técnicos (Devs)</button>
+        <div class="rule-box" id="ruleAgendamento">
+          <b>Regras Técnicas de Execução:</b><br>
+          • <b>Variáveis Salvas:</b> <code>nome = "Maria"</code>, <code>interagiu_esquenta = true</code>, <code>cupom = "11DO11"</code> e <code>timestamp_interacao = 07/11 10:02</code>.<br>
+          • <b>Ações Interativas:</b> Botão CTA tipo URL para <code>https://www.cea.com.br/black-friday/11-11</code> e botão de Ação de Cópia (Copy Offer Code) para o cupom <code>11DO11</code>.<br>
+          • <b>API de Agendamento:</b> Contato cadastrado para o disparo exclusivo do template de <b>Últimas Horas</b> no dia 10/11 cedo.
+        </div>
+      </div>
+      
+      <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Simular Recebimento 10/11 Cedo (Últimas Horas)</button>
+      <div id="anchorD0"></div>
+    `;
+  },
+
+  enviarAgendado: function() {
+    if (this.estadoD0Enviado) return;
+    this.estadoD0Enviado = true;
+
+    var btn = document.getElementById('btnChatAgendado');
+    if (btn) btn.style.display = 'none';
+
+    var anchorD0 = document.getElementById('anchorD0');
+    if (!anchorD0) return;
+
+    anchorD0.innerHTML += `
+      <div class="day">10/11 (Cedo) · Disparo Últimas Horas</div>
+      
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">
+            <img src="${this.IMG_D10}" class="msg-img" alt="Últimas Horas Esquenta C&A" onerror="this.style.display='none'">
+            Maria, são as <b>últimas horas</b> do nosso esquenta! ⏰🔥<br><br>O desconto de até <b>50% OFF + 30% OFF extra</b> com o cupom <b>11DO11</b> é só até às <b>14h de hoje</b>.<br><br>Corre que as peças favoritas estão voando! 🛍️<span class="meta">08:30</span>
+          </div>
+        </div>
+        <div class="stacked-menu">
+          <a href="${this.LINK_CAMPANHA}" target="_blank" rel="noopener noreferrer" class="cta-link-btn">Aproveitar ofertas</a>
+          <button type="button" onclick="window.simuladorApp.copiarCodigo(this)">📋 Copiar código da oferta</button>
+        </div>
+      </div>
+
+      <div class="rule-wrapper">
+        <button type="button" class="btn-rule-trigger" onclick="window.simuladorApp.toggleRule('ruleT2')">🔍 Ver detalhes técnicos (Devs)</button>
+        <div class="rule-box" id="ruleT2">
+          <b>Regras Técnicas · Disparo Exclusivo 10/11:</b><br>
+          • <b>Público:</b> Leads com <code>interagiu_esquenta == true</code> registrados até 10/11 às 14h.<br>
+          • <b>Mídia no Header:</b> Banner oficial de Últimas Horas.<br>
+          • <b>Botões Interativos:</b> URL Direta (<code>Aproveitar ofertas</code>) e Botão de Copiar Código com <code>11DO11</code>.
+        </div>
+      </div>
+    `;
+  }
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    window.simuladorApp.reiniciar();
+  });
+} else {
+  window.simuladorApp.reiniciar();
+}
+</script>
+</body>
+</html>
