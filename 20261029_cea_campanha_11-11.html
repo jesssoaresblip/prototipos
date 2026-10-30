@@ -270,37 +270,21 @@ window.simuladorApp = {
         `;
       } else {
         spec.innerHTML = `
-          <span class="badge expirada">JORNADA CONTINUADA · RECEBE TEMPLATE D0-B (INTERAÇÃO PÓS-CORTE)</span>
+          <span class="badge fria">JORNADA GERAL · TEMPLATE D0-B (BASE NÃO ENGAJADA / FRIA)</span>
           <h3>🎯 Objetivo & Estratégia</h3>
-          <p>A cliente interagiu com o esquenta após as 18h do dia 10/11 (fora da janela operacional para agendamento do envio segmentado no <b>Template D0-A</b>).</p>
+          <p>Destinada à cliente que recebeu a notificação de esquenta em D-2, mas não realizou nenhuma escolha de categoria (base não engajada).</p>
           
           <h3>✨ O que acontece na conversa?</h3>
           <ul>
-            <li><b>Experiência Positiva (Sem Fricção):</b> A cliente <b>não</b> recebe mensagens de "prazo encerrado". Ela acessa o esquenta da categoria normalmente pelo botão.</li>
-            <li><b>Alinhamento Suave:</b> A C&A confirma a escolha e promete novidades para o 11/11 com tom convidativo.</li>
-            <li><b>Garantia de Impacto no D0 com Template D0-B:</b> Para que ela não fique sem comunicação no dia oficial da campanha, ela receberá a oferta do dia junto à base geral da Data Dupla via <b>Template D0-B</b>, garantindo que ela participe da campanha sem duplicidade de disparos.</li>
+            <li><b>Template D0-B (Distinto do D0-A):</b> No dia oficial da campanha (11/11), ela é impactada com o <b>Template D0-B</b>, contendo banner visual de alto impacto e a mecânica agressiva de <b>até 50% OFF + 30% OFF extra com cupom 11DO11</b>.</li>
+            <li><b>Gatilho de Urgência & Escassez:</b> O copy destaca que são as <b>últimas horas</b> e os estoques acabam rápido, estimulando a compra imediata.</li>
+            <li><b>Vitrine Completa (Link Pendente):</b> ⚠️ <i>Ainda NÃO recebemos o link final desta vitrine geral; será inserida uma URL parametrizada oficial direcionando para a vitrine geral do 11/11 assim que fornecida pela C&A.</i></li>
           </ul>
 
           <h3>🛍️ Benefício para o Negócio</h3>
-          <p>Evita frustração da consumidora e mantém 100% de cobertura de impacto comercial no dia 11/11.</p>
+          <p>Reativação da base fria em escala com apelo promocional direto, foco em volume de vendas e tráfego geral no e-commerce.</p>
         `;
       }
-    } else {
-      spec.innerHTML = `
-        <span class="badge fria">JORNADA GERAL · TEMPLATE D0-B (BASE NÃO ENGAJADA / FRIA)</span>
-        <h3>🎯 Objetivo & Estratégia</h3>
-        <p>Destinada à cliente que recebeu a notificação de esquenta em D-2, mas não realizou nenhuma escolha de categoria (base não engajada).</p>
-        
-        <h3>✨ O que acontece na conversa?</h3>
-        <ul>
-          <li><b>Template D0-B (Distinto do D0-A):</b> No dia oficial da campanha (11/11), ela é impactada com o <b>Template D0-B</b>, contendo banner visual de alto impacto e mensagem direta sobre o início da Data Dupla.</li>
-          <li><b>Gatilho de Urgência & Escassez:</b> O copy destaca que são as <b>últimas horas</b> e os estoques acabam rápido, estimulando a compra por impulso.</li>
-          <li><b>Vitrine Completa (Link Pendente):</b> ⚠️ <i>Ainda NÃO recebemos o link final desta vitrine geral; será inserida uma URL parametrizada oficial direcionando para a vitrine geral do 11/11 assim que fornecida pela C&A.</i></li>
-        </ul>
-
-        <h3>🛍️ Benefício para o Negócio</h3>
-        <p>Reativação da base fria em escala com foco em volume de vendas e tráfego geral no e-commerce.</p>
-      `;
     }
   },
 
@@ -365,7 +349,7 @@ window.simuladorApp = {
         
         <div class="msg-group">
           <div class="row in">
-            <div class="bub">Perfeito, Maria! Aproveite agora as peças de <b>${catFormatada}</b> selecionadas para o <b>esquenta</b>! 🛍️<span class="meta">18:30 (10/11)</span></div>
+            <div class="bub">Perfeito, Maria! Aproveite agora as peças de <b>${catFormatada}</b> selecionadas para o <b>esquenta</b> com até <b>50% OFF + 30% OFF</b> extra usando o cupom <b>11DO11</b>! 🛍️<span class="meta">18:30 (10/11)</span></div>
           </div>
           <div class="stacked-menu">
             <a href="${targetLink}" target="_blank" rel="noopener noreferrer" class="cta-link-btn">Garantir agora</a>
@@ -401,7 +385,7 @@ window.simuladorApp = {
       
       <div class="msg-group">
         <div class="row in">
-          <div class="bub">Perfeito, Maria! Aproveite agora as peças de <b>${catFormatada}</b> selecionadas para o <b>esquenta</b>! 🛍️<span class="meta">09:01</span></div>
+          <div class="bub">Perfeito, Maria! Aproveite agora as peças de <b>${catFormatada}</b> selecionadas para o <b>esquenta</b> com até <b>50% OFF + 30% OFF</b> extra usando o cupom <b>11DO11</b>! 🛍️<span class="meta">09:01</span></div>
         </div>
         <div class="stacked-menu">
           <a href="${targetLink}" target="_blank" rel="noopener noreferrer" class="cta-link-btn">Garantir agora</a>
@@ -474,7 +458,7 @@ window.simuladorApp = {
           <div class="row in">
             <div class="bub">
               <img src="${this.IMG_D0_FRIA}" class="msg-img" alt="11/11 C&A Ofertas" onerror="this.style.display='none'">
-              Maria, chegou o dia! A <b>Data Dupla 11/11</b> já começou com novidades e descontos exclusivos! 🔥<br><br>São as <b>últimas horas</b> pra garantir os melhores achadinhos. ⏰🛍️<span class="meta">10:00</span>
+              Maria, chegou o dia! A <b>Data Dupla 11/11</b> já começou com até <b>50% OFF + 30% OFF</b> extra usando o cupom <b>11DO11</b>! 🔥<br><br>São as <b>últimas horas</b> pra garantir os melhores achadinhos. ⏰🛍️<span class="meta">10:00</span>
             </div>
           </div>
           <div class="stacked-menu">
