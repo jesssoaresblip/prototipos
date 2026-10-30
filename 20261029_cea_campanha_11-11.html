@@ -128,12 +128,12 @@ button { cursor: pointer; font-family: inherit; }
     </div>
     <div class="panel-body">
       <button type="button" class="scen-btn" id="btnQuente" aria-pressed="true" onclick="window.simuladorApp.carregarCenario('quente')">
-        <b>🔥 Versão A (Interagiu no D-2)</b>
+        <b>🔥 Versão A (Interagiu no D-2 &rarr; Template D0-A)</b>
         <span>Cliente escolhe a categoria e tem a jornada personalizada de esquenta e conversão.</span>
       </button>
       
       <button type="button" class="scen-btn" id="btnFria" aria-pressed="false" onclick="window.simuladorApp.carregarCenario('fria')">
-        <b>❄️ Versão B (Sem Interação)</b>
+        <b>❄️ Versão B (Sem Interação &rarr; Template D0-B)</b>
         <span>Cliente recebe D-2 mas não interage. Em D0 recebe o disparo em massa com a oferta geral.</span>
       </button>
 
@@ -142,17 +142,17 @@ button { cursor: pointer; font-family: inherit; }
         <label>Momento da Interação D-2:</label>
         <div class="timing-options">
           <button type="button" class="timing-btn" id="btnAntes18" aria-pressed="true" onclick="window.simuladorApp.setTiming('antes')">
-            Até D-1 (18:00h)<br><small>(Janela Normal / Agendado)</small>
+            Até D-1 (18:00h)<br><small>(Agenda D0-A)</small>
           </button>
           <button type="button" class="timing-btn" id="btnDepois18" aria-pressed="false" onclick="window.simuladorApp.setTiming('depois')">
-            Após D-1 (18:00h)<br><small>(Fora do Corte / Sem Agend.)</small>
+            Após D-1 (18:00h)<br><small>(Sem Agend. &rarr; D0-B)</small>
           </button>
         </div>
       </div>
 
       <div style="margin-top: 15px; padding: 12px; background: var(--soft); border-radius: 8px; font-size: 12px; line-height: 1.4;">
         <b>💡 Regra Atualizada (Pós-18h):</b>
-        <p style="margin: 4px 0 0;">A pessoa que interagir após as 18h <b>recebe o acesso ao esquenta normalmente</b> sem fricção ou mensagem de encerramento! Apenas a regra de agendamento do D0 Quente não é disparada, caindo com segurança na base da Versão B.</p>
+        <p style="margin: 4px 0 0;">A pessoa que interagir após as 18h <b>recebe o acesso ao esquenta normalmente</b> sem fricção ou mensagem de encerramento! Apenas a regra de agendamento do <b>Template D0-A</b> não é disparada, caindo com segurança na base do <b>Template D0-B</b>.</p>
       </div>
 
       <button type="button" class="reset-btn" onclick="window.simuladorApp.reiniciar()">🔄 Reiniciar Conversa</button>
@@ -254,7 +254,7 @@ window.simuladorApp = {
     if (this.cenarioAtual === 'quente') {
       if (this.timingAtual === 'antes') {
         spec.innerHTML = `
-          <span class="badge quente">JORNADA PERSONALIZADA (CLIENTE ENGAJADA)</span>
+          <span class="badge quente">JORNADA PERSONALIZADA · TEMPLATE D0-A (CLIENTE ENGAJADA)</span>
           <h3>🎯 Objetivo & Estratégia</h3>
           <p>A cliente antecipa sua preferência no <b>D-2 (09/11)</b>, garantindo acesso prioritário aos achadinhos de esquenta da categoria de seu interesse (Feminina ou Masculina).</p>
           
@@ -262,7 +262,7 @@ window.simuladorApp = {
           <ul>
             <li><b>Acolhimento Imediato:</b> Ao responder a mensagem, ela recebe o botão com link direto para a vitrine antecipada da categoria que escolheu.</li>
             <li><b>Geração de Expectativa:</b> A C&A avisa que retornará no grande dia com novidades exclusivas.</li>
-            <li><b>Impacto Certeiro no 11/11 (D0):</b> Como ela interagiu antes do horário de corte (18h do dia 10), ela recebe a mensagem do dia 11/11 100% personalizada para sua categoria, aumentando a taxa de conversão e relevância da marca.</li>
+            <li><b>Impacto Certeiro no 11/11 com Template D0-A:</b> Como interagiu antes do corte (18h do dia 10), ela recebe o <b>Template D0-A</b> (personalizado para sua categoria), elevando a relevância e a taxa de conversão.</li>
           </ul>
 
           <h3>🛍️ Benefício para o Negócio</h3>
@@ -270,15 +270,15 @@ window.simuladorApp = {
         `;
       } else {
         spec.innerHTML = `
-          <span class="badge expirada">JORNADA CONTINUADA (INTERAÇÃO PÓS-CORTE)</span>
+          <span class="badge expirada">JORNADA CONTINUADA · RECEBE TEMPLATE D0-B (INTERAÇÃO PÓS-CORTE)</span>
           <h3>🎯 Objetivo & Estratégia</h3>
-          <p>A cliente interagiu com o esquenta após as 18h do dia 10/11 (fora da janela operacional para agendamento do envio segmentado do D0).</p>
+          <p>A cliente interagiu com o esquenta após as 18h do dia 10/11 (fora da janela operacional para agendamento do envio segmentado no <b>Template D0-A</b>).</p>
           
           <h3>✨ O que acontece na conversa?</h3>
           <ul>
             <li><b>Experiência Positiva (Sem Fricção):</b> A cliente <b>não</b> recebe mensagens de "prazo encerrado". Ela acessa o esquenta da categoria normalmente pelo botão.</li>
             <li><b>Alinhamento Suave:</b> A C&A confirma a escolha e promete novidades para o 11/11 com tom convidativo.</li>
-            <li><b>Garantia de Impacto no D0:</b> Para que ela não fique sem comunicação no dia oficial da campanha, ela receberá a oferta do dia junto à base geral da Data Dupla (Versão B), garantindo que ela participe da campanha sem duplicidade de disparos.</li>
+            <li><b>Garantia de Impacto no D0 com Template D0-B:</b> Para que ela não fique sem comunicação no dia oficial da campanha, ela receberá a oferta do dia junto à base geral da Data Dupla via <b>Template D0-B</b>, garantindo que ela participe da campanha sem duplicidade de disparos.</li>
           </ul>
 
           <h3>🛍️ Benefício para o Negócio</h3>
@@ -287,15 +287,15 @@ window.simuladorApp = {
       }
     } else {
       spec.innerHTML = `
-        <span class="badge fria">JORNADA GERAL (ALCANCE & URGÊNCIA)</span>
+        <span class="badge fria">JORNADA GERAL · TEMPLATE D0-B (BASE NÃO ENGAJADA / FRIA)</span>
         <h3>🎯 Objetivo & Estratégia</h3>
-        <p>Destinada à cliente que recebeu a notificação de esquenta em D-2, mas não realizou nenhuma escolha de categoria.</p>
+        <p>Destinada à cliente que recebeu a notificação de esquenta em D-2, mas não realizou nenhuma escolha de categoria (base não engajada).</p>
         
         <h3>✨ O que acontece na conversa?</h3>
         <ul>
-          <li><b>Comunicação Ampla:</b> No dia oficial da campanha (11/11), ela é impactada com um banner visual de alto impacto e mensagem direta sobre o início da Data Dupla.</li>
+          <li><b>Template D0-B (Distinto do D0-A):</b> No dia oficial da campanha (11/11), ela é impactada com o <b>Template D0-B</b>, contendo banner visual de alto impacto e mensagem direta sobre o início da Data Dupla.</li>
           <li><b>Gatilho de Urgência & Escassez:</b> O copy destaca que são as <b>últimas horas</b> e os estoques acabam rápido, estimulando a compra por impulso.</li>
-          <li><b>Vitrine Completa:</b> O botão direciona para a vitrine principal do site C&A com todas as promoções do dia.</li>
+          <li><b>Vitrine Completa (Link Pendente):</b> ⚠️ <i>Ainda NÃO recebemos o link final desta vitrine geral; será inserida uma URL parametrizada oficial direcionando para a vitrine geral do 11/11 assim que fornecida pela C&A.</i></li>
         </ul>
 
         <h3>🛍️ Benefício para o Negócio</h3>
@@ -335,7 +335,7 @@ window.simuladorApp = {
     if (this.cenarioAtual === 'fria') {
       flow.innerHTML += `
         <div style="margin-top: 12px;" id="anchorD2Fria">
-          <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Simular Envio D0 (Sem resposta ao D-2)</button>
+          <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Simular Envio D0 (Template D0-B · Sem resposta ao D-2)</button>
         </div>
         <div id="anchorD0"></div>
       `;
@@ -384,11 +384,11 @@ window.simuladorApp = {
             <b>Regras Técnicas de Execução:</b><br>
             • <b>Variáveis Salvas:</b> <code>nome</code>, <code>categoriaEscolhida = "${catFormatada}"</code> e <code>horario_interacao = &gt; 10/11 18h</code>.<br>
             • <b>Exibição do CTA:</b> Envio do card interativo com o link específico da categoria selecionada para navegação imediata.<br>
-            • <b>Regra de Agendamento (Corte 18h):</b> Como o horário é superior a 18:00h de D-1, a chamada à API de agendamento não é executada. O usuário não entra na lista da Versão A e é mantido no público da <b>Versão B (Base Fria / Geral)</b> para o disparo de D0.
+            • <b>Regra de Agendamento (Corte 18h):</b> Como o horário é superior a 18:00h de D-1, o <b>Template D0-A</b> NÃO é agendado. O usuário é direcionado para a base de disparo em massa do <b>Template D0-B (Base Não Engajada / Geral)</b> no dia 11/11.
           </div>
         </div>
 
-        <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Enviar Disparo D0 (Versão B)</button>
+        <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Enviar Disparo D0 (Template D0-B)</button>
         <div id="anchorD0"></div>
       `;
       return;
@@ -420,12 +420,12 @@ window.simuladorApp = {
           <b>Regras Técnicas de Execução:</b><br>
           • <b>Variáveis Salvas:</b> <code>nome = "Maria"</code>, <code>categoriaEscolhida = "${catFormatada}"</code> e <code>horario_interacao = &lt; 10/11 18h</code>.<br>
           • <b>Exibição do Link:</b> O botão "Garantir agora" recebe dinamicamente a URL da categoria escolhida com os parâmetros UTM parametrizados.<br>
-          • <b>API de Agendamento:</b> Dispara requisição HTTP para agendar o envio do template D0 personalizado (Versão A) para o dia 11/11.<br>
-          • <b>Negativação da Base Geral:</b> Adiciona o identificador do contato à lista de exclusão do disparo massivo da Versão B.
+          • <b>API de Agendamento:</b> Dispara requisição HTTP para agendar o envio do <b>Template D0-A</b> personalizado para o dia 11/11.<br>
+          • <b>Negativação da Base Geral:</b> Adiciona o identificador do contato à lista de exclusão do disparo do <b>Template D0-B</b>.
         </div>
       </div>
       
-      <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Enviar Mensagem D0 (11/11 · Conversão)</button>
+      <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Enviar Mensagem D0 (Template D0-A · Conversão)</button>
       <div id="anchorD0"></div>
     `;
   },
@@ -445,7 +445,7 @@ window.simuladorApp = {
       var targetLink = (this.categoriaEscolhida === 'feminina') ? this.LINK_FEMININA : this.LINK_MASCULINA;
 
       anchorD0.innerHTML += `
-        <div class="day">D0 (11/11)</div>
+        <div class="day">D0 (11/11) · Template D0-A</div>
         
         <div class="msg-group">
           <div class="row in">
@@ -459,16 +459,16 @@ window.simuladorApp = {
         <div class="rule-wrapper">
           <button type="button" class="btn-rule-trigger" onclick="window.simuladorApp.toggleRule('ruleT2')">🔍 Ver detalhes técnicos (Devs)</button>
           <div class="rule-box" id="ruleT2">
-            <b>Regras Técnicas de Execução:</b><br>
-            • <b>Disparo Agendado:</b> Executado a partir do lote gerado pela API de agendamento em D-2/D-1.<br>
-            • <b>Preenchimento Dinâmico:</b> Parâmetro do corpo preenchido com o valor da variável <code>categoriaEscolhida</code>.<br>
-            • <b>Diretriz Meta HSM:</b> Botão tipo URL sem emoji (<code>Aproveitar agora</code>) direcionando para a landing page da categoria com tracking ativo.
+            <b>Regras Técnicas de Execução · Template D0-A:</b><br>
+            • <b>Identificação:</b> Template HSM <code>D0-A</code> (exclusivo para contatos engajados até 18h de D-1).<br>
+            • <b>Preenchimento Dinâmico:</b> Parâmetro do corpo preenchido com a variável <code>categoriaEscolhida</code>.<br>
+            • <b>Diretriz Meta HSM:</b> Botão tipo URL sem emoji (<code>Aproveitar agora</code>) direcionando para a URL parametrizada da categoria com tracking ativo.
           </div>
         </div>
       `;
     } else {
       anchorD0.innerHTML += `
-        <div class="day">D0 (11/11)</div>
+        <div class="day">D0 (11/11) · Template D0-B</div>
         
         <div class="msg-group">
           <div class="row in">
@@ -485,10 +485,10 @@ window.simuladorApp = {
         <div class="rule-wrapper">
           <button type="button" class="btn-rule-trigger" onclick="window.simuladorApp.toggleRule('ruleT3')">🔍 Ver detalhes técnicos (Devs)</button>
           <div class="rule-box" id="ruleT3">
-            <b>Regras Técnicas de Execução:</b><br>
-            • <b>Público-Alvo:</b> Contatos da base que não interagiram no D-2 somados aos contatos com interação pós-corte (após 18h de D-1).<br>
+            <b>Regras Técnicas de Execução · Template D0-B:</b><br>
+            • <b>Identificação:</b> Template HSM <code>D0-B</code> (disparo massivo para a base não engajada / interações pós-corte).<br>
             • <b>Template HSM com Imagem:</b> Mídia vinculada no header do template aprovado na Meta.<br>
-            • <b>Diretriz Meta HSM:</b> Botão tipo URL sem emoji (<code>Aproveitar ofertas</code>) apontando para a vitrine geral da campanha.
+            • <b>Aviso de Link do CTA:</b> ⚠️ <i>Ainda NÃO recebemos o link oficial da vitrine geral; no momento foi configurada uma URL provisória no botão tipo URL (<code>Aproveitar ofertas</code>), que será substituída pela URL parametrizada final assim que validada pela C&A.</i>
           </div>
         </div>
       `;
