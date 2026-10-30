@@ -127,35 +127,35 @@ button { cursor: pointer; font-family: inherit; }
       <p>Escolha o fluxo e o momento da interação:</p>
     </div>
     <div class="panel-body">
-      <button class="scen-btn" id="btnQuente" aria-pressed="true" onclick="carregarCenario('quente')">
+      <button type="button" class="scen-btn" id="btnQuente" aria-pressed="true" onclick="window.simuladorApp.carregarCenario('quente')">
         <b>🔥 Versão A (Interagiu no D-2)</b>
-        <span>Cliente seleciona a categoria no D-2 e recebe a versão direcionada no D0.</span>
+        <span>Cliente escolhe a categoria e tem a jornada personalizada de esquenta e conversão.</span>
       </button>
       
-      <button class="scen-btn" id="btnFria" aria-pressed="false" onclick="carregarCenario('fria')">
+      <button type="button" class="scen-btn" id="btnFria" aria-pressed="false" onclick="window.simuladorApp.carregarCenario('fria')">
         <b>❄️ Versão B (Sem Interação)</b>
-        <span>Cliente recebe D-2 mas não interage. Em D0 recebe a oferta geral de escassez.</span>
+        <span>Cliente recebe D-2 mas não interage. Em D0 recebe o disparo em massa com a oferta geral.</span>
       </button>
 
       <!-- Sub-menu de Momento da Interação -->
       <div class="timing-selector" id="timingSelector">
         <label>Momento da Interação D-2:</label>
         <div class="timing-options">
-          <button class="timing-btn" id="btnAntes18" aria-pressed="true" onclick="setTiming('antes')">
-            Até D-1 (18:00h)<br><small>(Janela Normal)</small>
+          <button type="button" class="timing-btn" id="btnAntes18" aria-pressed="true" onclick="window.simuladorApp.setTiming('antes')">
+            Até D-1 (18:00h)<br><small>(Janela Normal / Agendado)</small>
           </button>
-          <button class="timing-btn" id="btnDepois18" aria-pressed="false" onclick="setTiming('depois')">
-            Após D-1 (18:00h)<br><small>(Fora do Corte)</small>
+          <button type="button" class="timing-btn" id="btnDepois18" aria-pressed="false" onclick="window.simuladorApp.setTiming('depois')">
+            Após D-1 (18:00h)<br><small>(Fora do Corte / Sem Agend.)</small>
           </button>
         </div>
       </div>
 
       <div style="margin-top: 15px; padding: 12px; background: var(--soft); border-radius: 8px; font-size: 12px; line-height: 1.4;">
-        <b>💡 Instrução:</b>
-        <p style="margin: 4px 0 0;">Utilize os botões do simulador para navegar no fluxo. Clique em "🔍 Ver regras de negócio" para analisar detalhes de parâmetros, UTMs dinâmicas e gravação de variáveis.</p>
+        <b>💡 Regra Atualizada (Pós-18h):</b>
+        <p style="margin: 4px 0 0;">A pessoa que interagir após as 18h <b>recebe o acesso ao esquenta normalmente</b> sem fricção ou mensagem de encerramento! Apenas a regra de agendamento do D0 Quente não é disparada, caindo com segurança na base da Versão B.</p>
       </div>
 
-      <button class="reset-btn" onclick="carregarCenario(cenarioAtual)">🔄 Reiniciar Conversa</button>
+      <button type="button" class="reset-btn" onclick="window.simuladorApp.reiniciar()">🔄 Reiniciar Conversa</button>
     </div>
   </aside>
 
@@ -169,17 +169,17 @@ button { cursor: pointer; font-family: inherit; }
           <div class="who"><b>C&A</b><span>Conta Comercial Oficial</span></div>
         </header>
         <div class="chat" id="chat">
-          <!-- Conteúdo dinâmico via JS -->
+          <!-- Conteúdo dinâmico montado via JS -->
         </div>
       </div>
     </div>
   </main>
 
-  <!-- Especificações Técnicas -->
+  <!-- Especificações de Negócio / Visão C&A -->
   <aside class="panel">
     <div class="panel-head">
-      <h2>Regras & Especificações</h2>
-      <p>Regras de negócio e parâmetros do cenário:</p>
+      <h2>Entenda a Estratégia</h2>
+      <p>Visão de negócio e jornada da cliente C&A:</p>
     </div>
     <div class="panel-body spec" id="specPanel">
       <!-- Mapeamento dinâmico via JS -->
@@ -189,283 +189,321 @@ button { cursor: pointer; font-family: inherit; }
 </div>
 
 <script>
-let cenarioAtual = 'quente';
-let timingAtual = 'antes'; // 'antes' ou 'depois' das 18h de D-1 (10/11)
-let estadoEsquentaEnviado = false;
-let estadoRespostaEsquenta = false;
-let estadoD0Enviado = false;
-let categoriaEscolhida = '';
+// Objeto controlador encapsulado no window para evitar qualquer problema de escopo
+window.simuladorApp = {
+  cenarioAtual: 'quente',
+  timingAtual: 'antes',
+  estadoEsquentaEnviado: false,
+  estadoRespostaEsquenta: false,
+  estadoD0Enviado: false,
+  categoriaEscolhida: '',
 
-const LINK_FEMININA = "https://www.cea.com.br/moda-feminina?utm_source=wppm&utm_medium=notification&utm_campaign=Z_WSF_JOR_MIS_MAS_T000_20261028_DXL_WGO_PRECHURNALGODAOPONTUALAT";
-const LINK_MASCULINA = "https://www.cea.com.br/moda-masculina?utm_source=wppm&utm_medium=notification&utm_campaign=Z_WSF_JOR_MIS_MAS_T000_20261028_DXL_WGO_PRECHURNALGODAOPONTUALAT";
-const LINK_GERAL = "https://www.cea.com.br/?utm_source=wppm&utm_medium=notification&utm_campaign=Z_WSF_JOR_MIS_MAS_T000_20261028_DXL_WGO_PRECHURNALGODAOPONTUALAT";
+  LINK_FEMININA: "https://www.cea.com.br/moda-feminina?utm_source=wppm&utm_medium=notification&utm_campaign=Z_WSF_JOR_MIS_MAS_T000_20261028_DXL_WGO_PRECHURNALGODAOPONTUALAT",
+  LINK_MASCULINA: "https://www.cea.com.br/moda-masculina?utm_source=wppm&utm_medium=notification&utm_campaign=Z_WSF_JOR_MIS_MAS_T000_20261028_DXL_WGO_PRECHURNALGODAOPONTUALAT",
+  LINK_GERAL: "https://www.cea.com.br/?utm_source=wppm&utm_medium=notification&utm_campaign=Z_WSF_JOR_MIS_MAS_T000_20261028_DXL_WGO_PRECHURNALGODAOPONTUALAT",
 
-const IMG_D2 = "https://blipmediastore.blob.core.windows.net/public-medias/Media_8dda668b-e2f4-429f-b9d3-90cea91da7d4";
-const IMG_D0_FRIA = "https://blipmediastore.blob.core.windows.net/public-medias/Media_f79e7f30-57ae-4b90-b192-248d35028b46";
+  IMG_D2: "https://blipmediastore.blob.core.windows.net/public-medias/Media_8dda668b-e2f4-429f-b9d3-90cea91da7d4",
+  IMG_D0_FRIA: "https://blipmediastore.blob.core.windows.net/public-medias/Media_f79e7f30-57ae-4b90-b192-248d35028b46",
 
-function toggleRule(id) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-  }
-}
+  toggleRule: function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+  },
 
-function setTiming(momento) {
-  timingAtual = momento;
-  document.getElementById('btnAntes18').setAttribute('aria-pressed', momento === 'antes');
-  document.getElementById('btnDepois18').setAttribute('aria-pressed', momento === 'depois');
-  carregarCenario(cenarioAtual);
-}
+  setTiming: function(momento) {
+    this.timingAtual = momento;
+    var btnAntes = document.getElementById('btnAntes18');
+    var btnDepois = document.getElementById('btnDepois18');
+    if (btnAntes) btnAntes.setAttribute('aria-pressed', momento === 'antes' ? 'true' : 'false');
+    if (btnDepois) btnDepois.setAttribute('aria-pressed', momento === 'depois' ? 'true' : 'false');
+    this.carregarCenario(this.cenarioAtual);
+  },
 
-function carregarCenario(tipo) {
-  cenarioAtual = tipo;
-  estadoEsquentaEnviado = false;
-  estadoRespostaEsquenta = false;
-  estadoD0Enviado = false;
-  categoriaEscolhida = '';
+  reiniciar: function() {
+    this.carregarCenario(this.cenarioAtual);
+  },
 
-  document.getElementById('btnQuente').setAttribute('aria-pressed', tipo === 'quente');
-  document.getElementById('btnFria').setAttribute('aria-pressed', tipo === 'fria');
-  document.getElementById('timingSelector').style.display = (tipo === 'quente') ? 'block' : 'none';
-  
-  const chat = document.getElementById('chat');
-  chat.innerHTML = `
-    <button class="in-chat-trigger" id="btnChatEsquenta" onclick="enviarEsquenta()">📩 Enviar Warm Up (D-2 · 09/11)</button>
-    <div id="flowContent"></div>
-  `;
-  atualizarSpec();
-}
+  carregarCenario: function(tipo) {
+    this.cenarioAtual = tipo;
+    this.estadoEsquentaEnviado = false;
+    this.estadoRespostaEsquenta = false;
+    this.estadoD0Enviado = false;
+    this.categoriaEscolhida = '';
 
-function atualizarSpec() {
-  const spec = document.getElementById('specPanel');
-  if (cenarioAtual === 'quente') {
-    if (timingAtual === 'antes') {
-      spec.innerHTML = `
-        <span class="badge quente">VERSÃO A (INTERAGIU NO D-2)</span>
-        <h3>⚙️ Regras de Envio & Variáveis</h3>
-        <ul>
-          <li><b>Mídia Header (D-2):</b> Banner ativo da campanha 11/11.</li>
-          <li><b>Gravação de Contexto:</b> A seleção salva a variável <code>Categoria</code> (<code>feminina</code> ou <code>masculina</code>).</li>
-          <li><b>Links Dinâmicos de Categoria:</b><br>
-            - <b>Feminina:</b> <code style="word-break:break-all;">cea.com.br/moda-feminina?...</code><br>
-            - <b>Masculina:</b> <code style="word-break:break-all;">cea.com.br/moda-masculina?...</code>
-          </li>
-          <li><b>Agendamento D0:</b> Interação até 10/11 às 18:00h agenda a <b>Versão A</b> para o D0 (11/11).</li>
-          <li><b>Negativação:</b> O lead entra na lista extraída às 18h para ser <b>excluído</b> do disparo geral em massa (Versão B).</li>
-          <li><b>Template Meta:</b> Conforme diretrizes da Meta, os botões HSM <b>não possuem emojis</b>.</li>
-        </ul>
-        <h3>📄 CTA & Destino</h3>
-        <p><b>D-2 (Resposta Imediata):</b> Direct Link com UTM para esquenta na vitrine da categoria escolhida.</p>
-        <p><b>D0:</b> Link direcionado para a categoria <code>%%Categoria%%</code> com a oferta da Data Dupla ativa.</p>
-      `;
+    var btnQ = document.getElementById('btnQuente');
+    var btnF = document.getElementById('btnFria');
+    var tSel = document.getElementById('timingSelector');
+
+    if (btnQ) btnQ.setAttribute('aria-pressed', tipo === 'quente' ? 'true' : 'false');
+    if (btnF) btnF.setAttribute('aria-pressed', tipo === 'fria' ? 'true' : 'false');
+    if (tSel) tSel.style.display = (tipo === 'quente') ? 'block' : 'none';
+    
+    var chat = document.getElementById('chat');
+    if (chat) {
+      chat.innerHTML = '<button type="button" class="in-chat-trigger" id="btnChatEsquenta" onclick="window.simuladorApp.enviarEsquenta()">📩 Enviar Warm Up (D-2 · 09/11)</button><div id="flowContent"></div>';
+    }
+    this.atualizarSpec();
+  },
+
+  atualizarSpec: function() {
+    var spec = document.getElementById('specPanel');
+    if (!spec) return;
+
+    if (this.cenarioAtual === 'quente') {
+      if (this.timingAtual === 'antes') {
+        spec.innerHTML = `
+          <span class="badge quente">JORNADA PERSONALIZADA (CLIENTE ENGAJADA)</span>
+          <h3>🎯 Objetivo & Estratégia</h3>
+          <p>A cliente antecipa sua preferência no <b>D-2 (09/11)</b>, garantindo acesso prioritário aos achadinhos de esquenta da categoria de seu interesse (Feminina ou Masculina).</p>
+          
+          <h3>✨ O que acontece na conversa?</h3>
+          <ul>
+            <li><b>Acolhimento Imediato:</b> Ao responder a mensagem, ela recebe o botão com link direto para a vitrine antecipada da categoria que escolheu.</li>
+            <li><b>Geração de Expectativa:</b> A C&A avisa que retornará no grande dia com novidades exclusivas.</li>
+            <li><b>Impacto Certeiro no 11/11 (D0):</b> Como ela interagiu antes do horário de corte (18h do dia 10), ela recebe a mensagem do dia 11/11 100% personalizada para sua categoria, aumentando a taxa de conversão e relevância da marca.</li>
+          </ul>
+
+          <h3>🛍️ Benefício para o Negócio</h3>
+          <p>Menor atrito de busca, maior taxa de clique (CTR) e sensação de atendimento sob medida, blindando a cliente de ofertas genéricas.</p>
+        `;
+      } else {
+        spec.innerHTML = `
+          <span class="badge expirada">JORNADA CONTINUADA (INTERAÇÃO PÓS-CORTE)</span>
+          <h3>🎯 Objetivo & Estratégia</h3>
+          <p>A cliente interagiu com o esquenta após as 18h do dia 10/11 (fora da janela operacional para agendamento do envio segmentado do D0).</p>
+          
+          <h3>✨ O que acontece na conversa?</h3>
+          <ul>
+            <li><b>Experiência Positiva (Sem Fricção):</b> A cliente <b>não</b> recebe mensagens de "prazo encerrado". Ela acessa o esquenta da categoria normalmente pelo botão.</li>
+            <li><b>Alinhamento Suave:</b> A C&A confirma a escolha e promete novidades para o 11/11 com tom convidativo.</li>
+            <li><b>Garantia de Impacto no D0:</b> Para que ela não fique sem comunicação no dia oficial da campanha, ela receberá a oferta do dia junto à base geral da Data Dupla (Versão B), garantindo que ela participe da campanha sem duplicidade de disparos.</li>
+          </ul>
+
+          <h3>🛍️ Benefício para o Negócio</h3>
+          <p>Evita frustração da consumidora e mantém 100% de cobertura de impacto comercial no dia 11/11.</p>
+        `;
+      }
     } else {
       spec.innerHTML = `
-        <span class="badge expirada">VERSÃO A (INTERAÇÃO APÓS CORTE DE 18H EM D-1)</span>
-        <h3>⚙️ Regras de Negócio Pós-Corte</h3>
+        <span class="badge fria">JORNADA GERAL (ALCANCE & URGÊNCIA)</span>
+        <h3>🎯 Objetivo & Estratégia</h3>
+        <p>Destinada à cliente que recebeu a notificação de esquenta em D-2, mas não realizou nenhuma escolha de categoria.</p>
+        
+        <h3>✨ O que acontece na conversa?</h3>
         <ul>
-          <li><b>Horário Expirado:</b> Interação realizada após o corte das 18:00h de D-1 (10/11).</li>
-          <li><b>Mensagem de Resposta:</b> Informa que o esquenta acabou, mas promete novidades para o D0.</li>
-          <li><b>Fallback D0:</b> O cliente entra na base do disparo geral em massa (<b>Versão B</b>) em D0 para garantir recebimento sem duplicação de disparos.</li>
+          <li><b>Comunicação Ampla:</b> No dia oficial da campanha (11/11), ela é impactada com um banner visual de alto impacto e mensagem direta sobre o início da Data Dupla.</li>
+          <li><b>Gatilho de Urgência & Escassez:</b> O copy destaca que são as <b>últimas horas</b> e os estoques acabam rápido, estimulando a compra por impulso.</li>
+          <li><b>Vitrine Completa:</b> O botão direciona para a vitrine principal do site C&A com todas as promoções do dia.</li>
         </ul>
+
+        <h3>🛍️ Benefício para o Negócio</h3>
+        <p>Reativação da base fria em escala com foco em volume de vendas e tráfego geral no e-commerce.</p>
       `;
     }
-  } else {
-    spec.innerHTML = `
-      <span class="badge fria">VERSÃO B (SEM INTERAÇÃO NO D-2)</span>
-      <h3>⚙️ Regras de Envio & Variáveis</h3>
-      <ul>
-        <li><b>Mídia Header (D0):</b> Banner ativo com apelo de escassez/urgência.</li>
-        <li><b>Sem Interação Prévia:</b> Cliente recebeu D-2 mas não clicou em nenhuma opção.</li>
-        <li><b>Base de Disparo D0:</b> Disparo em massa para a base geral.</li>
-        <li><b>Link de Destino:</b> Vitrine Geral do 11/11 com a mecânica promocional do dia ativa em todo o site.</li>
-        <li><b>Template Meta:</b> Botão HSM sem emoji (<code>Aproveitar ofertas</code>).</li>
-      </ul>
-    `;
-  }
-}
+  },
 
-function enviarEsquenta() {
-  if (estadoEsquentaEnviado) return;
-  estadoEsquentaEnviado = true;
-  
-  const btn = document.getElementById('btnChatEsquenta');
-  if (btn) btn.style.display = 'none';
+  enviarEsquenta: function() {
+    if (this.estadoEsquentaEnviado) return;
+    this.estadoEsquentaEnviado = true;
+    
+    var btn = document.getElementById('btnChatEsquenta');
+    if (btn) btn.style.display = 'none';
 
-  const flow = document.getElementById('flowContent');
-  flow.innerHTML += `
-    <div class="day">D-2 (09/11)</div>
-    <div class="msg-group">
-      <div class="row in">
-        <div class="bub">
-          <img src="${IMG_D2}" class="msg-img" alt="11/11 C&A">
-          Maria, o <b>11/11</b> está chegando e os <b>descontos exclusivos</b> da data dupla também! ✨<br><br>Quer garantir o caminho direto pros melhores achadinhos e aproveitar primeiro? Escolha abaixo: 👇<span class="meta">09:00</span>
-        </div>
-      </div>
-      
-      <div class="stacked-menu" id="menuD2">
-        <button onclick="selecionarCategoria('feminina')">Moda Feminina</button>
-        <button onclick="selecionarCategoria('masculina')">Moda Masculina</button>
-      </div>
-    </div>
-    <div id="anchorEsquenta"></div>
-  `;
+    var flow = document.getElementById('flowContent');
+    if (!flow) return;
 
-  if (cenarioAtual === 'fria') {
     flow.innerHTML += `
-      <div style="margin-top: 12px;" id="anchorD2Fria">
-        <button class="in-chat-trigger" id="btnChatAgendado" onclick="enviarAgendado()">📩 Simular Envio D0 (Sem resposta ao D-2)</button>
-      </div>
-      <div id="anchorD0"></div>
-    `;
-  }
-}
-
-function selecionarCategoria(cat) {
-  if (cenarioAtual !== 'quente' || estadoRespostaEsquenta) return;
-  estadoRespostaEsquenta = true;
-  categoriaEscolhida = cat;
-
-  document.getElementById('menuD2').style.display = 'none';
-  const anchor = document.getElementById('anchorEsquenta');
-  const btnLabel = (cat === 'feminina') ? 'Moda Feminina' : 'Moda Masculina';
-  const catFormatada = (cat === 'feminina') ? 'moda feminina' : 'moda masculina';
-  const targetLink = (cat === 'feminina') ? LINK_FEMININA : LINK_MASCULINA;
-
-  if (timingAtual === 'depois') {
-    anchor.innerHTML = `
-      <div class="row out">
-        <div class="bub">${btnLabel}<span class="meta">18:30 (10/11)</span></div>
-      </div>
-      
-      <div class="msg-group">
-        <div class="row in">
-          <div class="bub">Nosso esquenta já terminou, mas não se preocupa: amanhã eu volto com novidades. 👀✨<span class="meta">18:30 (10/11)</span></div>
-        </div>
-      </div>
-
-      <div class="rule-wrapper">
-        <button class="btn-rule-trigger" onclick="toggleRule('ruleExpiracao')">🔍 Ver regras de negócio</button>
-        <div class="rule-box" id="ruleExpiracao">
-          <b>Janela de Corte Expirada (Pós 18:00h de D-1):</b><br>
-          A resposta do usuário ocorreu após as 18:00h de 10/11. Por isso, a confirmação informa o fim do esquenta e o cliente receberá o disparo da <b>Versão B (Fria)</b> no D0 para evitar divergência nos relatórios de agendamento.
-        </div>
-      </div>
-
-      <button class="in-chat-trigger" id="btnChatAgendado" onclick="enviarAgendado()">📩 Enviar Disparo D0 (Versão B)</button>
-      <div id="anchorD0"></div>
-    `;
-    return;
-  }
-
-  anchor.innerHTML = `
-    <div class="row out">
-      <div class="bub">${btnLabel}<span class="meta">09:01</span></div>
-    </div>
-    
-    <div class="msg-group">
-      <div class="row in">
-        <div class="bub">Perfeito, Maria! Aproveite agora as peças de <b>${catFormatada}</b> selecionadas para o <b>esquenta</b>! 🛍️<span class="meta">09:01</span></div>
-      </div>
-      <div class="stacked-menu">
-        <a href="${targetLink}" target="_blank" class="cta-link-btn" onclick="alert('Redirecionando para: ' + '${targetLink}')">Garantir agora</a>
-      </div>
-    </div>
-
-    <div class="msg-group" style="margin-top: 6px;">
-      <div class="row in">
-        <div class="bub">E fique de olho por aqui: no dia 11/11 eu volto para te avisar das novidades! 👀✨<span class="meta">09:01</span></div>
-      </div>
-    </div>
-
-    <div class="ps-direct-box">
-      <b>Variável Gravada & Link Atribuído:</b>
-      <div class="ps-payload-text">
-        Categoria = "${catFormatada}"<br>
-        Target_URL = "${targetLink}"
-      </div>
-    </div>
-
-    <div class="rule-wrapper">
-      <button class="btn-rule-trigger" onclick="toggleRule('ruleAgendamento')">🔍 Ver regras de negócio</button>
-      <div class="rule-box" id="ruleAgendamento">
-        <b>Salvamento de Variáveis & Agendamento D0:</b><br>
-        • Variável <code>Categoria</code> gravada com sucesso.<br>
-        • Mensagem e botão dinamizados com o link correspondente a <code>${catFormatada}</code>.<br>
-        • Lead adicionado à lista do agendamento da <b>Versão A</b> para o disparo do dia 11/11 e excluído da Versão B.
-      </div>
-    </div>
-    
-    <button class="in-chat-trigger" id="btnChatAgendado" onclick="enviarAgendado()">📩 Enviar Mensagem D0 (11/11 · Conversão)</button>
-    <div id="anchorD0"></div>
-  `;
-}
-
-function enviarAgendado() {
-  if (estadoD0Enviado) return;
-  estadoD0Enviado = true;
-
-  const btn = document.getElementById('btnChatAgendado');
-  if (btn) btn.style.display = 'none';
-
-  const anchorD0 = document.getElementById('anchorD0');
-
-  if (cenarioAtual === 'quente' && timingAtual === 'antes') {
-    const catFormatada = (categoriaEscolhida === 'feminina') ? 'moda feminina' : 'moda masculina';
-    const targetLink = (categoriaEscolhida === 'feminina') ? LINK_FEMININA : LINK_MASCULINA;
-
-    anchorD0.innerHTML += `
-      <div class="day">D0 (11/11)</div>
-      
-      <div class="msg-group">
-        <div class="row in">
-          <div class="bub">O 11/11 da C&A começou, Maria! 🔥<br><br>Novas peças em <b>${catFormatada}</b> acabaram de entrar, mas é por tempo limitado e os estoques costumam voar, hein? 🛍️<span class="meta">10:00</span></div>
-        </div>
-        <div class="stacked-menu">
-          <a href="${targetLink}" target="_blank" class="cta-link-btn" onclick="alert('Redirecionando para: ' + '${targetLink}')">Aproveitar agora</a>
-        </div>
-      </div>
-
-      <div class="rule-wrapper">
-        <button class="btn-rule-trigger" onclick="toggleRule('ruleT2')">🔍 Ver regras de negócio</button>
-        <div class="rule-box" id="ruleT2">
-          <b>D0 · Versão A (Engajados):</b><br>
-          • Template HSM direcionado para a categoria <code>${catFormatada}</code>.<br>
-          • Sem emojis no botão HSM de acordo com o padrão Meta.<br>
-          • Destino com parâmetros UTM ativos de atribuição.
-        </div>
-      </div>
-    `;
-  } else {
-    anchorD0.innerHTML += `
-      <div class="day">D0 (11/11)</div>
-      
+      <div class="day">D-2 (09/11)</div>
       <div class="msg-group">
         <div class="row in">
           <div class="bub">
-            <img src="${IMG_D0_FRIA}" class="msg-img" alt="11/11 C&A Ofertas">
-            Maria, chegou o dia! A <b>Data Dupla 11/11</b> já começou com novidades e descontos exclusivos! 🔥<br><br>São as <b>últimas horas</b> pra garantir os melhores achadinhos. ⏰🛍️<span class="meta">10:00</span>
+            <img src="${this.IMG_D2}" class="msg-img" alt="11/11 C&A" onerror="this.style.display='none'">
+            Maria, o <b>11/11</b> está chegando e os <b>descontos exclusivos</b> da data dupla também! ✨<br><br>Quer garantir o caminho direto pros melhores achadinhos e aproveitar primeiro? Escolha abaixo: 👇<span class="meta">09:00</span>
           </div>
         </div>
+        
+        <div class="stacked-menu" id="menuD2">
+          <button type="button" onclick="window.simuladorApp.selecionarCategoria('feminina')">Moda feminina</button>
+          <button type="button" onclick="window.simuladorApp.selecionarCategoria('masculina')">Moda masculina</button>
+        </div>
+      </div>
+      <div id="anchorEsquenta"></div>
+    `;
+
+    if (this.cenarioAtual === 'fria') {
+      flow.innerHTML += `
+        <div style="margin-top: 12px;" id="anchorD2Fria">
+          <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Simular Envio D0 (Sem resposta ao D-2)</button>
+        </div>
+        <div id="anchorD0"></div>
+      `;
+    }
+  },
+
+  selecionarCategoria: function(cat) {
+    if (this.cenarioAtual !== 'quente' || this.estadoRespostaEsquenta) return;
+    this.estadoRespostaEsquenta = true;
+    this.categoriaEscolhida = cat;
+
+    var menu = document.getElementById('menuD2');
+    if (menu) menu.style.display = 'none';
+
+    var anchor = document.getElementById('anchorEsquenta');
+    if (!anchor) return;
+
+    var btnLabel = (cat === 'feminina') ? 'Moda feminina' : 'Moda masculina';
+    var catFormatada = (cat === 'feminina') ? 'moda feminina' : 'moda masculina';
+    var targetLink = (cat === 'feminina') ? this.LINK_FEMININA : this.LINK_MASCULINA;
+
+    if (this.timingAtual === 'depois') {
+      anchor.innerHTML = `
+        <div class="row out">
+          <div class="bub">${btnLabel}<span class="meta">18:30 (10/11)</span></div>
+        </div>
+        
+        <div class="msg-group">
+          <div class="row in">
+            <div class="bub">Perfeito, Maria! Aproveite agora as peças de <b>${catFormatada}</b> selecionadas para o <b>esquenta</b>! 🛍️<span class="meta">18:30 (10/11)</span></div>
+          </div>
+          <div class="stacked-menu">
+            <a href="${targetLink}" target="_blank" rel="noopener noreferrer" class="cta-link-btn">Garantir agora</a>
+          </div>
+        </div>
+
+        <div class="msg-group" style="margin-top: 6px;">
+          <div class="row in">
+            <div class="bub">No dia 11/11 eu volto para te avisar das novidades! 👀✨<span class="meta">18:30 (10/11)</span></div>
+          </div>
+        </div>
+
+        <div class="rule-wrapper">
+          <button type="button" class="btn-rule-trigger" onclick="window.simuladorApp.toggleRule('ruleExpiracao')">🔍 Ver detalhes técnicos (Devs)</button>
+          <div class="rule-box" id="ruleExpiracao">
+            <b>Regras Técnicas de Execução:</b><br>
+            • <b>Variáveis Salvas:</b> <code>nome</code>, <code>categoriaEscolhida = "${catFormatada}"</code> e <code>horario_interacao = &gt; 10/11 18h</code>.<br>
+            • <b>Exibição do CTA:</b> Envio do card interativo com o link específico da categoria selecionada para navegação imediata.<br>
+            • <b>Regra de Agendamento (Corte 18h):</b> Como o horário é superior a 18:00h de D-1, a chamada à API de agendamento não é executada. O usuário não entra na lista da Versão A e é mantido no público da <b>Versão B (Base Fria / Geral)</b> para o disparo de D0.
+          </div>
+        </div>
+
+        <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Enviar Disparo D0 (Versão B)</button>
+        <div id="anchorD0"></div>
+      `;
+      return;
+    }
+
+    anchor.innerHTML = `
+      <div class="row out">
+        <div class="bub">${btnLabel}<span class="meta">09:01</span></div>
+      </div>
+      
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">Perfeito, Maria! Aproveite agora as peças de <b>${catFormatada}</b> selecionadas para o <b>esquenta</b>! 🛍️<span class="meta">09:01</span></div>
+        </div>
         <div class="stacked-menu">
-          <a href="${LINK_GERAL}" target="_blank" class="cta-link-btn" onclick="alert('Redirecionando para vitrine geral: ' + '${LINK_GERAL}')">Aproveitar ofertas</a>
+          <a href="${targetLink}" target="_blank" rel="noopener noreferrer" class="cta-link-btn">Garantir agora</a>
+        </div>
+      </div>
+
+      <div class="msg-group" style="margin-top: 6px;">
+        <div class="row in">
+          <div class="bub">E fique de olho por aqui: no dia 11/11 eu volto para te avisar das novidades! 👀✨<span class="meta">09:01</span></div>
         </div>
       </div>
 
       <div class="rule-wrapper">
-        <button class="btn-rule-trigger" onclick="toggleRule('ruleT3')">🔍 Ver regras de negócio</button>
-        <div class="rule-box" id="ruleT3">
-          <b>D0 · Versão B (Disparo Geral / Sem Interação Prévia):</b><br>
-          • Contém imagem header de campanha no template.<br>
-          • Direciona para a vitrine geral do site.<br>
-          • Botão HSM sem emoji (<code>Aproveitar ofertas</code>).
+        <button type="button" class="btn-rule-trigger" onclick="window.simuladorApp.toggleRule('ruleAgendamento')">🔍 Ver detalhes técnicos (Devs)</button>
+        <div class="rule-box" id="ruleAgendamento">
+          <b>Regras Técnicas de Execução:</b><br>
+          • <b>Variáveis Salvas:</b> <code>nome = "Maria"</code>, <code>categoriaEscolhida = "${catFormatada}"</code> e <code>horario_interacao = &lt; 10/11 18h</code>.<br>
+          • <b>Exibição do Link:</b> O botão "Garantir agora" recebe dinamicamente a URL da categoria escolhida com os parâmetros UTM parametrizados.<br>
+          • <b>API de Agendamento:</b> Dispara requisição HTTP para agendar o envio do template D0 personalizado (Versão A) para o dia 11/11.<br>
+          • <b>Negativação da Base Geral:</b> Adiciona o identificador do contato à lista de exclusão do disparo massivo da Versão B.
         </div>
       </div>
+      
+      <button type="button" class="in-chat-trigger" id="btnChatAgendado" onclick="window.simuladorApp.enviarAgendado()">📩 Enviar Mensagem D0 (11/11 · Conversão)</button>
+      <div id="anchorD0"></div>
     `;
-  }
-}
+  },
 
-// Inicializar simulador
-carregarCenario('quente');
+  enviarAgendado: function() {
+    if (this.estadoD0Enviado) return;
+    this.estadoD0Enviado = true;
+
+    var btn = document.getElementById('btnChatAgendado');
+    if (btn) btn.style.display = 'none';
+
+    var anchorD0 = document.getElementById('anchorD0');
+    if (!anchorD0) return;
+
+    if (this.cenarioAtual === 'quente' && this.timingAtual === 'antes') {
+      var catFormatada = (this.categoriaEscolhida === 'feminina') ? 'moda feminina' : 'moda masculina';
+      var targetLink = (this.categoriaEscolhida === 'feminina') ? this.LINK_FEMININA : this.LINK_MASCULINA;
+
+      anchorD0.innerHTML += `
+        <div class="day">D0 (11/11)</div>
+        
+        <div class="msg-group">
+          <div class="row in">
+            <div class="bub">O 11/11 da C&A começou, Maria! 🔥<br><br>Novas peças em <b>${catFormatada}</b> acabaram de entrar, mas é por tempo limitado e os estoques costumam voar, hein? 🛍️<span class="meta">10:00</span></div>
+          </div>
+          <div class="stacked-menu">
+            <a href="${targetLink}" target="_blank" rel="noopener noreferrer" class="cta-link-btn">Aproveitar agora</a>
+          </div>
+        </div>
+
+        <div class="rule-wrapper">
+          <button type="button" class="btn-rule-trigger" onclick="window.simuladorApp.toggleRule('ruleT2')">🔍 Ver detalhes técnicos (Devs)</button>
+          <div class="rule-box" id="ruleT2">
+            <b>Regras Técnicas de Execução:</b><br>
+            • <b>Disparo Agendado:</b> Executado a partir do lote gerado pela API de agendamento em D-2/D-1.<br>
+            • <b>Preenchimento Dinâmico:</b> Parâmetro do corpo preenchido com o valor da variável <code>categoriaEscolhida</code>.<br>
+            • <b>Diretriz Meta HSM:</b> Botão tipo URL sem emoji (<code>Aproveitar agora</code>) direcionando para a landing page da categoria com tracking ativo.
+          </div>
+        </div>
+      `;
+    } else {
+      anchorD0.innerHTML += `
+        <div class="day">D0 (11/11)</div>
+        
+        <div class="msg-group">
+          <div class="row in">
+            <div class="bub">
+              <img src="${this.IMG_D0_FRIA}" class="msg-img" alt="11/11 C&A Ofertas" onerror="this.style.display='none'">
+              Maria, chegou o dia! A <b>Data Dupla 11/11</b> já começou com novidades e descontos exclusivos! 🔥<br><br>São as <b>últimas horas</b> pra garantir os melhores achadinhos. ⏰🛍️<span class="meta">10:00</span>
+            </div>
+          </div>
+          <div class="stacked-menu">
+            <a href="${this.LINK_GERAL}" target="_blank" rel="noopener noreferrer" class="cta-link-btn">Aproveitar ofertas</a>
+          </div>
+        </div>
+
+        <div class="rule-wrapper">
+          <button type="button" class="btn-rule-trigger" onclick="window.simuladorApp.toggleRule('ruleT3')">🔍 Ver detalhes técnicos (Devs)</button>
+          <div class="rule-box" id="ruleT3">
+            <b>Regras Técnicas de Execução:</b><br>
+            • <b>Público-Alvo:</b> Contatos da base que não interagiram no D-2 somados aos contatos com interação pós-corte (após 18h de D-1).<br>
+            • <b>Template HSM com Imagem:</b> Mídia vinculada no header do template aprovado na Meta.<br>
+            • <b>Diretriz Meta HSM:</b> Botão tipo URL sem emoji (<code>Aproveitar ofertas</code>) apontando para a vitrine geral da campanha.
+          </div>
+        </div>
+      `;
+    }
+  }
+};
+
+// Inicialização imediata à prova de falhas de carregamento assíncrono
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    window.simuladorApp.carregarCenario('quente');
+  });
+} else {
+  window.simuladorApp.carregarCenario('quente');
+}
 </script>
 </body>
 </html>
