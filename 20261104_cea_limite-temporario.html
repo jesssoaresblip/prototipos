@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C&A Pay | Simulador da Jornada de Limite Temporário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EDEDEB;
+  --panel: #FFFFFF;
+  --ink: #0A0A0A;
+  --on-ink: #FFFFFF;
+  --muted: #666666;
+  --line: #D8D8D6;
+  --soft: #F6F6F5;
+  --wa-dark: #075E54;
+  --wa-teal: #008069;
+  --wa-bg: #EFEAE2;
+  --wa-out: #D9FDD3;
+  --cea-blue: #002B49;
+  --ui-font: "Instrument Sans", system-ui, sans-serif;
+  --wa-font: "Instrument Sans", Roboto, Helvetica, Arial, sans-serif;
+  --mono-font: "JetBrains Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--ui-font); font-size: 13.5px; line-height: 1.45; display: flex; flex-direction: column; min-height: 100vh; }
+button { cursor: pointer; font-family: inherit; }
+
+/* Topbar */
+.topbar { background: #0A0A0A; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; min-height: 56px; border-bottom: 1px solid #222; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand b { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+.brand span { font-size: 13px; color: #A8A8A8; border-left: 1px solid #333; padding-left: 12px; margin-left: 4px; }
+
+/* Grid Principal */
+.bench { flex: 1; display: grid; grid-template-columns: 290px minmax(390px, 1fr) 360px; gap: 16px; padding: 16px; min-height: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+.panel-head { padding: 14px 16px; border-bottom: 1px solid var(--line); background: #FAF9F8; }
+.panel-head h2 { margin: 0; font-size: 14px; font-weight: 700; color: #111; }
+.panel-head p { margin: 2px 0 0; color: var(--muted); font-size: 11.5px; }
+.panel-body { overflow-y: auto; padding: 14px 16px; flex: 1; }
+
+/* Painel Esquerdo */
+.config-group { padding: 12px; background: var(--soft); border-radius: 8px; border: 1px solid var(--line); }
+.config-group label { font-size: 11px; font-weight: 600; display: block; margin-bottom: 4px; color: #333; }
+.config-group input { width: 100%; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--line); font-size: 12.5px; font-family: inherit; margin-bottom: 10px; background: #FFF; }
+.config-group input:last-child { margin-bottom: 0; }
+
+.placeholder-note { margin-top: 12px; padding: 10px 12px; background: #FFF9E6; border: 1px dashed #D4A106; border-radius: 8px; font-size: 11px; line-height: 1.45; color: #735100; }
+.placeholder-note b { display: block; margin-bottom: 3px; color: #5B4000; }
+
+.reset-btn { width: 100%; background: #FFF; color: var(--ink); border: 1px solid var(--line); padding: 10px; border-radius: 6px; font-weight: 600; font-size: 12.5px; margin-top: 14px; transition: 0.15s; }
+.reset-btn:hover { background: #EFEFEF; }
+
+/* Simulador WhatsApp Central */
+.stage { display: flex; align-items: center; justify-content: center; }
+.phone { width: 380px; height: 750px; background: #111B21; border-radius: 36px; padding: 10px; box-shadow: 0 24px 44px rgba(0,0,0,0.35); position: relative; }
+.screen { background: var(--wa-bg); border-radius: 28px; height: 100%; overflow: hidden; display: flex; flex-direction: column; font-family: var(--wa-font); }
+.status { height: 24px; background: var(--wa-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 11px; }
+.wa-head { background: var(--wa-dark); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.wa-head .av { width: 34px; height: 34px; border-radius: 50%; background: #0A0A0A; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 11px; border: 1.5px solid rgba(255,255,255,0.25); }
+.wa-head .who b { display: block; font-size: 13.5px; }
+.wa-head .who span { font-size: 11px; opacity: 0.85; }
+
+.chat { flex: 1; overflow-y: auto; padding: 10px; background-image: radial-gradient(rgba(7,94,84,0.06) 1px, transparent 1.2px); background-size: 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.day { margin: 4px auto 2px; background: #fff; color: #54656F; font-size: 10.5px; padding: 3px 8px; border-radius: 6px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.12); text-align: center; font-weight: 500; }
+.row { display: flex; margin: 1px 0; width: 100%; }
+.row.in { justify-content: flex-start; }
+.row.out { justify-content: flex-end; }
+
+.bub { max-width: 88%; padding: 7px 9px; border-radius: 8px; font-size: 12.8px; line-height: 1.35; color: #111B21; background: #fff; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word; }
+.bub p { margin: 0 0 6px 0; }
+.bub p:last-child { margin-bottom: 0; }
+.bub img.msg-img { width: 100%; height: auto; max-height: 150px; border-radius: 6px; margin-bottom: 6px; display: block; object-fit: cover; background: #e0e0e0; }
+.out .bub { background: var(--wa-out); }
+.meta { float: right; margin: 3px 0 -2px 8px; font-size: 10px; color: #667781; }
+
+/* Botões Nativos do Chat */
+.stacked-menu { display: flex; flex-direction: column; gap: 4px; margin-top: 3px; width: 88%; }
+.stacked-menu button, .cta-link-btn { border: 0; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 12.5px; padding: 9px; border-radius: 8px; text-align: center; width: 100%; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); text-decoration: none; display: block; box-sizing: border-box; cursor: pointer; transition: 0.15s; }
+.stacked-menu button:hover { background: #F8F9FA; }
+
+/* Controles de Ação na Conversa */
+.chat-action-menu { display: flex; flex-direction: column; gap: 5px; margin: 6px 0; width: 100%; }
+.btn-chat-action { background: #FFFFFF; border: 1px solid #C5D0D6; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 600; color: #125B50; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.06); transition: 0.15s; }
+.btn-chat-action:hover { background: #F0F7F6; border-color: var(--wa-teal); }
+.btn-chat-action.alt { background: #FFF8E6; border-color: #E2B93B; color: #735100; }
+.btn-chat-action.alt:hover { background: #FFEFA8; }
+
+/* Input Livre na Conversa */
+.in-chat-input-bar { display: flex; gap: 6px; margin: 4px 0 6px; width: 100%; }
+.in-chat-input-bar input { flex: 1; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; font-family: inherit; background: #fff; }
+.in-chat-input-bar button { background: var(--wa-teal); color: #fff; border: 0; border-radius: 8px; padding: 0 12px; font-weight: 600; font-size: 12px; }
+.in-chat-input-bar button:hover { background: #006b57; }
+
+/* Carrossel Horizontal WhatsApp */
+.carousel-container { width: 100%; overflow-x: auto; padding: 6px 2px 10px; display: flex; gap: 8px; scrollbar-width: thin; }
+.carousel-card { flex: 0 0 200px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.16); display: flex; flex-direction: column; }
+.carousel-card img { width: 100%; height: 110px; object-fit: cover; background: #E9ECEF; }
+.carousel-card-body { padding: 8px 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.carousel-card-title { font-weight: 700; font-size: 12px; color: #111; margin-bottom: 3px; }
+.carousel-card-desc { font-size: 11px; color: #54656F; line-height: 1.35; margin-bottom: 8px; }
+.carousel-card button { background: #F0F4F4; border: none; color: var(--wa-teal); font-weight: 600; font-size: 11.5px; padding: 7px; border-radius: 6px; width: 100%; cursor: pointer; text-align: center; }
+.carousel-card button:hover { background: #E1ECEC; }
+
+/* Notificação Visual de Conexão com Personal Shopper */
+.muse-transition { background: #F4EFFC; border-left: 3px solid #7E3AF2; padding: 8px 12px; border-radius: 6px; font-size: 12px; color: #5119B7; margin: 4px 0 6px; }
+.muse-transition .trans-header { font-weight: 600; margin-bottom: 2px; }
+.muse-transition .trans-payload { font-family: var(--mono-font); font-size: 10.5px; color: #2E1065; background: #EDE5F8; padding: 3px 6px; border-radius: 4px; display: inline-block; margin-top: 3px; word-break: break-all; }
+
+/* Painel Direito Simplificado */
+.exec-item { border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 12px; }
+.exec-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.exec-item h3 { margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: var(--cea-blue); }
+.exec-item p { margin: 0; font-size: 12px; color: #444; line-height: 1.45; }
+.exec-tag { display: inline-block; background: #E9ECEF; color: #495057; font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <b>C&amp;A Pay</b>
+    <span>Simulador da Jornada de Limite Temporário</span>
+  </div>
+</header>
+
+<div class="bench">
+  
+  <!-- Painel Esquerdo: Parâmetros, Placeholder e Reinício -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Parâmetros da Cliente</h2>
+      <p>Configure os dados dinâmicos da mensagem:</p>
+    </div>
+    <div class="panel-body">
+      <div class="config-group">
+        <label>Nome da Cliente ([Nome] / {{contact.extras.1}}):</label>
+        <input type="text" id="cfgNome" value="Ana" oninput="window.simuladorApp.atualizarVariaveis()">
+
+        <label>Valor do Limite ([valor] / {{contact.extras.2}}):</label>
+        <input type="text" id="cfgValor" value="2.000,00" oninput="window.simuladorApp.atualizarVariaveis()">
+
+        <label>Data de Validade ([data] / {{contact.extras.3}}):</label>
+        <input type="text" id="cfgValidade" value="15/11" oninput="window.simuladorApp.atualizarVariaveis()">
+      </div>
+
+      <div class="placeholder-note">
+        <b>🖼️ Imagem de cabeçalho:</b>
+        A imagem exibida no topo do template é um placeholder de referência. O criativo oficial final está em produção.
+      </div>
+
+      <button type="button" class="reset-btn" onclick="window.simuladorApp.reiniciar()">🔄 Reiniciar Conversa</button>
+    </div>
+  </aside>
+
+  <!-- Simulador Central WhatsApp -->
+  <main class="stage">
+    <div class="phone">
+      <div class="screen">
+        <div class="status"><span>11:06</span><span>5G ▮▮▮</span></div>
+        <header class="wa-head">
+          <div class="av">C&amp;A</div>
+          <div class="who"><b>C&amp;A</b><span>Conta Comercial Oficial</span></div>
+        </header>
+        <div class="chat" id="chat">
+          <!-- Mensagens geradas dinamicamente -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Painel Direito Simplificado: Regras de Negócio Executivas -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Regras de Negócio</h2>
+      <p>Mapeamento executivo da mecânica:</p>
+    </div>
+    <div class="panel-body">
+      
+      <div class="exec-item">
+        <span class="exec-tag">Disparo Ativo</span>
+        <h3>1. Concessão de Limite (Utility)</h3>
+        <p>Disparo proativo para base pré-elegível, informando valor aprovado e validade para gerar urgência sem apelo promocional direto, cumprindo as diretrizes da Meta.</p>
+      </div>
+
+      <div class="exec-item">
+        <span class="exec-tag">Engajamento</span>
+        <h3>2. Ativação &amp; Coleção de Verão</h3>
+        <p>Ao clicar em "Consultar meu limite", a cliente tem seu novo poder de compra confirmado e é convidado a explorar as peças leves e novidades da estação.</p>
+      </div>
+
+      <div class="exec-item">
+        <span class="exec-tag">Régua 1 Hora</span>
+        <h3>3. Recuperação por Inatividade</h3>
+        <p>Se a cliente não interagir em até 60 minutos, o sistema dispara automaticamente um carrossel de reativação (Feminino, Masculino e Infantil) para despertar o desejo de compra com o clima do verão.</p>
+      </div>
+
+      <div class="exec-item">
+        <span class="exec-tag">Roteamento Inteligente</span>
+        <h3>4. Encaminhamento</h3>
+        <p>Ao responder por texto ou clicar em um card do carrossel, o contato é transferido para a Personal Shopper para continuidade da consultoria de estilo, encaminhando o payload formatado (input livre ou categoria selecionada).</p>
+      </div>
+
+      <div class="exec-item">
+        <span class="exec-tag">Encerramento</span>
+        <h3>5. Finalização</h3>
+        <p>Caso permaneça 2h sem resposta após o carrossel, a sessão é encerrada sem nova mensagem.</p>
+      </div>
+
+    </div>
+  </aside>
+
+</div>
+
+<script>
+window.simuladorApp = {
+  dados: {
+    nome: 'Ana',
+    valor: '2.000,00',
+    validade: '15/11'
+  },
+
+  // Mídias do carrossel
+  IMG_HEADER: "https://s3-sa-east-1.amazonaws.com/i.imgtake.takenet.com.br/hrcw4uxb.vcm/[FAVORITOS_DE_INVERNO]_WPP.png",
+  IMG_CARD_FEM: "https://blipmediastore.blob.core.windows.net/public-medias/Media_0b54cd4e-7c51-4abf-b72f-432a5c038ed5",
+  IMG_CARD_MASC: "https://blipmediastore.blob.core.windows.net/public-medias/Media_6f79cb61-83bb-4f38-84a7-3c371167a5ef",
+  IMG_CARD_KIDS: "https://blipmediastore.blob.core.windows.net/public-medias/Media_8fd31ab1-909d-4d21-afdd-d87d8995e71a",
+
+  atualizarVariaveis: function() {
+    this.dados.nome = document.getElementById('cfgNome').value.trim() || 'Ana';
+    this.dados.valor = document.getElementById('cfgValor').value.trim() || '400,00';
+    this.dados.validade = document.getElementById('cfgValidade').value.trim() || '15/11';
+    this.reiniciar();
+  },
+
+  reiniciar: function() {
+    var chat = document.getElementById('chat');
+    chat.innerHTML = `
+      <div class="row in">
+        <div class="bub">
+          <img src="${this.IMG_HEADER}" class="msg-img" alt="Header Placeholder" onerror="this.style.display='none'">
+          <p>Olá, <b>${this.dados.nome}</b>, tudo bem?</p>
+          <p>Este é um lembrete que seu limite disponível foi atualizado temporariamente para R$ <b>${this.dados.valor}</b>, com validade até <b>${this.dados.validade}</b>.</p>
+          <p>Acesse o app C&amp;A para mais informações.</p>
+          <span class="meta">11:06</span>
+        </div>
+      </div>
+      <div class="stacked-menu" id="menuInicial">
+        <button type="button" onclick="window.simuladorApp.consultarLimite()">Consultar meu limite</button>
+      </div>
+      <div id="flowAnchor"></div>
+    `;
+  },
+
+  consultarLimite: function() {
+    var menu = document.getElementById('menuInicial');
+    if (menu) menu.style.display = 'none';
+
+    var anchor = document.getElementById('flowAnchor');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Consultar meu limite
+          <span class="meta">11:06</span>
+        </div>
+      </div>
+      <div class="row in">
+        <div class="bub">
+          <p>É isso mesmo, ${this.dados.nome}! 🙂</p>
+          <p>Seu limite no C&amp;A Pay aumentou para <b>R$ ${this.dados.valor}</b> e vale até o dia <b>${this.dados.validade}.</b></p>
+          <p>E para aproveitar esse limite novo, que tal aproveitar as novidades da estação? ☀️✨</p>
+          <p>Me conta qual é o seu estilo para eu te mostrar as novidades que mais combinam com você.</p>
+          <span class="meta">11:06</span>
+        </div>
+      </div>
+
+      <!-- Ações na Conversa: Input Livre ou Simulação de Inatividade -->
+      <div class="chat-action-menu" id="acoesAposOferta">
+        <div class="in-chat-input-bar">
+          <input type="text" id="txtInputLivre" placeholder="Digite uma resposta livre..." onkeydown="if(event.key==='Enter') window.simuladorApp.enviarInputLivre()">
+          <button type="button" onclick="window.simuladorApp.enviarInputLivre()">Enviar</button>
+        </div>
+        <button type="button" class="btn-chat-action alt" onclick="window.simuladorApp.acionarInatividade1h()">
+          ⏳ Simular inatividade de 1h (sem resposta)
+        </button>
+      </div>
+      <div id="anchorAposOferta"></div>
+    `;
+
+    this.scrollToBottom();
+  },
+
+  enviarInputLivre: function(textoCustom) {
+    var inputEl = document.getElementById('txtInputLivre');
+    var texto = textoCustom || (inputEl ? inputEl.value.trim() : '') || 'Gostaria de ver peças leves para o calor';
+    
+    var acoes = document.getElementById('acoesAposOferta');
+    if (acoes) acoes.style.display = 'none';
+
+    var acoesCarrossel = document.getElementById('acoesCarrossel');
+    if (acoesCarrossel) acoesCarrossel.style.display = 'none';
+
+    var anchor = document.getElementById('anchorAposOferta') || document.getElementById('flowAnchor');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          ${texto}
+          <span class="meta">11:08</span>
+        </div>
+      </div>
+      <div class="muse-transition">
+        <div class="trans-header">✨ Conectando com a Personal Shopper...</div>
+        <div class="trans-payload">Payload enviado: "${texto}"</div>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  acionarInatividade1h: function() {
+    var acoes = document.getElementById('acoesAposOferta');
+    if (acoes) acoes.style.display = 'none';
+
+    var anchor = document.getElementById('anchorAposOferta');
+    anchor.innerHTML += `
+      <div class="day" style="background:#FFF3CD; color:#856404; margin-top:10px;">Após 1h sem resposta da cliente</div>
+      <div class="row in">
+        <div class="bub">
+          <p>Ainda na dúvida de como estrear o seu novo limite? 👀</p>
+          <p>A nova coleção de verão desembarcou com peças leves e cheias de estilo! ☀️✨</p>
+          <p>Dá só uma olhada nas opções que separei para você conferir comigo:</p>
+          <span class="meta">12:06</span>
+        </div>
+      </div>
+
+      <!-- Carrossel de 3 Cards com as Novas Mídias de Verão -->
+      <div class="carousel-container">
+        
+        <!-- Card 1: Looks femininos -->
+        <div class="carousel-card">
+          <img src="${this.IMG_CARD_FEM}" alt="Looks femininos" onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400'">
+          <div class="carousel-card-body">
+            <div>
+              <div class="carousel-card-title">Looks femininos</div>
+              <div class="carousel-card-desc">Cores e tecidos leves para criar looks cheios de estilo.</div>
+            </div>
+            <button type="button" onclick="window.simuladorApp.selecionarCardCarrossel('looks femininos')">Explorar novidades</button>
+          </div>
+        </div>
+
+        <!-- Card 2: Looks masculinos -->
+        <div class="carousel-card">
+          <img src="${this.IMG_CARD_MASC}" alt="Looks masculinos" onerror="this.src='https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=400'">
+          <div class="carousel-card-body">
+            <div>
+              <div class="carousel-card-title">Looks masculinos</div>
+              <div class="carousel-card-desc">Peças versáteis e confortáveis para qualquer ocasião.</div>
+            </div>
+            <button type="button" onclick="window.simuladorApp.selecionarCardCarrossel('looks masculinos')">Explorar novidades</button>
+          </div>
+        </div>
+
+        <!-- Card 3: Looks kids -->
+        <div class="carousel-card">
+          <img src="${this.IMG_CARD_KIDS}" alt="Looks kids" onerror="this.src='https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=400'">
+          <div class="carousel-card-body">
+            <div>
+              <div class="carousel-card-title">Looks kids</div>
+              <div class="carousel-card-desc">Novidades práticas e divertidas para os pequenos curtirem a estação.</div>
+            </div>
+            <button type="button" onclick="window.simuladorApp.selecionarCardCarrossel('looks kids')">Explorar novidades</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Opção de Input Livre ou Abandono após o Carrossel -->
+      <div class="chat-action-menu" id="acoesCarrossel">
+        <div class="in-chat-input-bar">
+          <input type="text" id="txtInputLivre2" placeholder="Ou digite o que deseja procurar..." onkeydown="if(event.key==='Enter') window.simuladorApp.enviarInputLivre(this.value)">
+          <button type="button" onclick="window.simuladorApp.enviarInputLivre(document.getElementById('txtInputLivre2').value)">Enviar</button>
+        </div>
+        <button type="button" class="btn-chat-action alt" onclick="window.simuladorApp.simularAbandonoTotal()">
+          ⏳ Simular sem resposta por mais 2h (Finalizar)
+        </button>
+      </div>
+      <div id="anchorCarrossel"></div>
+    `;
+
+    this.scrollToBottom();
+  },
+
+  selecionarCardCarrossel: function(opcaoEscolhida) {
+    var acoes = document.getElementById('acoesCarrossel');
+    if (acoes) acoes.style.display = 'none';
+
+    var payloadText = "Quero ver as últimas novidades para " + opcaoEscolhida + " de verão";
+
+    var anchor = document.getElementById('anchorCarrossel');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Explorar novidades
+          <span class="meta">12:08</span>
+        </div>
+      </div>
+      <div class="muse-transition">
+        <div class="trans-header">✨ Conectando com a Personal Shopper...</div>
+        <div class="trans-payload">Payload enviado: "${payloadText}"</div>
+      </div>
+    `;
+
+    this.scrollToBottom();
+  },
+
+  simularAbandonoTotal: function() {
+    var acoes = document.getElementById('acoesCarrossel');
+    if (acoes) acoes.style.display = 'none';
+
+    var anchor = document.getElementById('anchorCarrossel');
+    anchor.innerHTML += `
+      <div class="day" style="background:#F8D7DA; color:#721C24; margin-top:10px;">Sem resposta após 2h · Conversa encerrada</div>
+    `;
+    this.scrollToBottom();
+  },
+
+  scrollToBottom: function() {
+    setTimeout(function() {
+      var chat = document.getElementById('chat');
+      if (chat) chat.scrollTop = chat.scrollHeight;
+    }, 60);
+  }
+};
+
+// Inicialização
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    window.simuladorApp.reiniciar();
+  });
+} else {
+  window.simuladorApp.reiniciar();
+}
+</script>
+</body>
+</html>
