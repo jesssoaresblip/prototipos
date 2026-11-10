@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C&A Modas | Protótipo Interativo MBA FAQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --font-instrument: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: var(--font-instrument);
+    }
+    body {
+      background-color: #FFFFFF;
+      color: #111827;
+      margin: 0;
+    }
+
+    /* Ocultar barra de rolagem mantendo funcionalidade */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Fundo chapado do WhatsApp */
+    .wa-bg-flat {
+      background-color: #EFEAE2;
+    }
+
+    /* Pontas de balões do WhatsApp */
+    .tail-in {
+      position: absolute;
+      top: 0;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border-top: 9px solid #FFFFFF;
+      border-left: 9px solid transparent;
+    }
+    .tail-out {
+      position: absolute;
+      top: 0;
+      right: -8px;
+      width: 0;
+      height: 0;
+      border-top: 9px solid #D9FDD3;
+      border-right: 9px solid transparent;
+    }
+
+    /* Animação do Typing Indicator */
+    @keyframes typingPulse {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .typing-dot {
+      animation: typingPulse 1.4s infinite ease-in-out both;
+    }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    .typing-dot:nth-child(3) { animation-delay: 0s; }
+
+    /* Efeito de fade-in para mensagens */
+    .msg-fade-in {
+      animation: fadeInMsg 0.25s ease-out forwards;
+    }
+    @keyframes fadeInMsg {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col lg:flex-row">
+
+  <!-- ==============================================
+       BARRA LATERAL ESQUERDA: NAVEGAÇÃO & CONTROLES FORA DO CELULAR
+       ============================================== -->
+  <aside class="w-full lg:w-[380px] border-b lg:border-b-0 lg:border-r border-zinc-200 bg-white p-6 flex flex-col justify-between shrink-0">
+    <div class="space-y-6">
+      
+      <!-- Cabeçalho Institucional -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center font-bold text-sm tracking-wider">
+          C&A
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-zinc-900 leading-tight">Simulador Meta Business Agent</h1>
+          <p class="text-xs text-zinc-500 font-medium">Testes de integração com Base de FAQ</p>
+        </div>
+      </div>
+
+      <!-- Seletor de Telas / Fluxos -->
+      <div class="space-y-2">
+        <label class="text-xs font-semibold text-zinc-500 uppercase tracking-wider block">Escolha o Ponto da Jornada:</label>
+        
+        <button 
+          id="navTab1" 
+          onclick="app.trocarFluxo(1)" 
+          class="w-full text-left p-3.5 rounded-xl border-2 transition-all flex items-start gap-3 border-[#008069] bg-emerald-50/60 text-zinc-900 font-semibold shadow-xs">
+          <span class="text-lg">👋</span>
+          <div>
+            <div class="text-sm font-bold">1. Menu Inicial (Onboarding)</div>
+            <div class="text-xs text-zinc-600 font-normal mt-0.5">Dúvida sobre Troca & Devolução com entrada livre no menu.</div>
+          </div>
+        </button>
+
+        <button 
+          id="navTab2" 
+          onclick="app.trocarFluxo(2)" 
+          class="w-full text-left p-3.5 rounded-xl border border-zinc-200 hover:border-zinc-300 bg-white text-zinc-700 transition-all flex items-start gap-3">
+          <span class="text-lg">👗</span>
+          <div>
+            <div class="text-sm font-bold text-zinc-900">2. Vitrine de Produtos</div>
+            <div class="text-xs text-zinc-500 font-normal mt-0.5">Busca de vestidos &gt; Handoff para MBA FAQ de Frete/Entrega.</div>
+          </div>
+        </button>
+
+        <button 
+          id="navTab3" 
+          onclick="app.trocarFluxo(3)" 
+          class="w-full text-left p-3.5 rounded-xl border border-zinc-200 hover:border-zinc-300 bg-white text-zinc-700 transition-all flex items-start gap-3">
+          <span class="text-lg">🛍️</span>
+          <div>
+            <div class="text-sm font-bold text-zinc-900">3. Algo mais (Pós-Compra)</div>
+            <div class="text-xs text-zinc-500 font-normal mt-0.5">Jornada completa de compra concluída &gt; FAQ sobre Vale-troca.</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Caixa de Status da Interação -->
+      <div class="bg-zinc-50 border border-zinc-200 rounded-xl p-4 space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-semibold text-zinc-600">Progresso do Fluxo:</span>
+          <span id="stepBadge" class="bg-zinc-200 text-zinc-800 font-bold px-2 py-0.5 rounded-full text-[11px]">Pronto para iniciar</span>
+        </div>
+        <p id="stepDescription" class="text-xs text-zinc-600 leading-relaxed font-medium">
+          Clique no botão abaixo para iniciar a demonstração completa da conversa de forma automática.
+        </p>
+      </div>
+
+      <!-- Ações de Controle (100% fora do celular) -->
+      <div class="space-y-2.5 pt-2">
+        <button 
+          id="btnPlayPause" 
+          onclick="app.togglePlayPause()" 
+          class="w-full py-3.5 px-4 bg-[#008069] hover:bg-[#006e5a] active:scale-[0.99] text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
+          <span id="btnPlayPauseLabel">▶️ Iniciar Conversa</span>
+        </button>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button 
+            id="btnStepByStep"
+            onclick="app.avancarUmPassoManual()" 
+            class="py-2.5 px-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium text-xs rounded-xl transition-all">
+            ⏭️ Próximo Passo
+          </button>
+          <button 
+            onclick="app.reiniciar()" 
+            class="py-2.5 px-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium text-xs rounded-xl transition-all">
+            🔄 Reiniciar
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Informações da Base de Conhecimento Ativada -->
+    <div class="mt-8 pt-4 border-t border-zinc-200 text-[11.5px] text-zinc-500 space-y-1">
+      <div class="flex items-center gap-1.5 text-zinc-700 font-bold">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        Meta Business Agent FAQ Conectado
+      </div>
+      <p id="kbTopicText">Tema ativo: <b>Política de Troca & Devolução</b> (7 dias devolução / 30 dias loja física).</p>
+    </div>
+  </aside>
+
+  <!-- ==============================================
+       PALCO PRINCIPAL: VISUALIZADOR DE CELULAR WHATSAPP
+       ============================================== -->
+  <main class="flex-1 bg-white p-4 sm:p-8 flex items-center justify-center min-h-[750px]">
+    
+    <!-- Carcaça do Smartphone -->
+    <div class="w-full max-w-[395px] h-[810px] bg-[#111B21] rounded-[50px] p-2.5 shadow-2xl border-4 border-zinc-800 relative flex flex-col overflow-hidden">
+      
+      <!-- Câmera Frontal / Dynamic Island -->
+      <div class="absolute top-3.5 left-1/2 -translate-x-1/2 w-28 h-4 bg-black rounded-full z-40 flex items-center justify-end px-3 pointer-events-none">
+        <span class="w-2.5 h-2.5 rounded-full bg-zinc-900 border border-zinc-800"></span>
+      </div>
+
+      <!-- Tela interna do celular -->
+      <div class="w-full h-full rounded-[42px] overflow-hidden flex flex-col wa-bg-flat relative">
+        
+        <!-- Status Bar Android/iOS -->
+        <div class="h-7 bg-[#008069] text-white text-[11px] font-medium px-6 flex justify-between items-center shrink-0 z-30 select-none">
+          <span>14:00</span>
+          <div class="flex items-center gap-1.5 opacity-90 text-[10px]">
+            <span>5G</span>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 21l3.52-.92C9.37 20.66 10.65 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <!-- Topbar WhatsApp Oficial C&A Modas -->
+        <header class="bg-[#008069] text-white px-3 py-2 flex items-center justify-between shrink-0 shadow-xs z-30 select-none">
+          <div class="flex items-center gap-2.5">
+            <!-- Seta Voltar -->
+            <button type="button" class="text-white/90 p-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            
+            <!-- Foto de Perfil Oficial C&A -->
+            <div class="w-9 h-9 rounded-full overflow-hidden bg-black shrink-0 border border-white/20">
+              <img 
+                src="https://blipmediastore.blob.core.windows.net/public-medias/Media_143d6ea3-31d8-451e-b546-e754f3b80bac" 
+                alt="C&A Modas" 
+                class="w-full h-full object-cover"
+                onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=C%26A'"
+              />
+            </div>
+
+            <!-- Nome da Conta & Status Dinâmico -->
+            <div class="flex flex-col leading-tight">
+              <div class="flex items-center gap-1">
+                <span class="text-[14px] font-semibold tracking-tight">C&A Modas</span>
+                <!-- Selo Verificado Verde Oficial WhatsApp -->
+                <svg class="w-3.5 h-3.5 text-[#25D366] fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+              <span id="headerStatus" class="text-[11px] text-white/80 transition-all font-normal">online</span>
+            </div>
+          </div>
+
+          <!-- Ícones WhatsApp -->
+          <div class="flex items-center gap-3 text-white/90">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/></svg>
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          </div>
+        </header>
+
+        <!-- Conversa WhatsApp com Rolagem Oculta -->
+        <div id="chatArea" class="flex-1 overflow-y-auto px-2.5 py-3 space-y-2.5 no-scrollbar text-[#111B21] text-[13px] leading-relaxed">
+          <!-- Carimbo de Data -->
+          <div class="flex justify-center my-1 select-none">
+            <span class="bg-white text-[#54656F] text-[11px] font-medium px-2.5 py-0.5 rounded-md shadow-xs">
+              Hoje
+            </span>
+          </div>
+
+          <!-- Container de mensagens injetadas via JS -->
+          <div id="messagesContainer" class="space-y-2.5"></div>
+
+          <!-- Balão de Digitando (Pulsante) -->
+          <div id="typingBubble" class="hidden flex items-start max-w-[85px] relative msg-fade-in">
+            <span class="tail-in"></span>
+            <div class="bg-white rounded-lg rounded-tl-none px-3.5 py-2.5 shadow-xs border border-black/5 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-zinc-500 typing-dot"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-zinc-500 typing-dot"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-zinc-500 typing-dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra inferior do WhatsApp (Mockup nativo) -->
+        <div class="bg-[#F0F2F5] px-2.5 py-2 flex items-center gap-2 shrink-0 border-t border-zinc-200 select-none z-30">
+          <svg class="w-6 h-6 text-[#54656F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <svg class="w-5 h-5 text-[#54656F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+          </svg>
+          <div class="flex-1 bg-white rounded-full px-3.5 py-1.5 border border-zinc-200 flex items-center">
+            <span id="footerInputPlaceholder" class="text-xs text-zinc-400">Mensagem</span>
+          </div>
+          <div class="w-9 h-9 rounded-full bg-[#008069] text-white flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ==============================================
+       LÓGICA JAVASCRIPT DA SIMULAÇÃO
+       ============================================== -->
+  <script>
+    const app = {
+      fluxoAtual: 1,
+      passoAtual: 0,
+      emExecucao: false,
+      reproduzindoAuto: false,
+      timeoutId: null,
+
+      // Tempos calibrados para um ritmo ágil e natural (sem lentidão excessiva)
+      TEMPO_DIGITANDO: 1400,
+      TEMPO_ENTRE_PASSOS: 1200,
+
+      // Dados do Fluxo 1: Onboarding + FAQ Devolução + Reengajamento
+      fluxo1Steps: [
+        {
+          tipo: 'user',
+          texto: 'Oi',
+          hora: '14:00',
+          desc: 'Cliente inicia conversa enviando "Oi".'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'Olá, eu sou a *Personal Shopper, especialista em vendas da C&A.*\n\nPor aqui, te ajudo a *encontrar* e *comprar looks personalizados* para qualquer ocasião, seja para presentear alguém ou renovar seu guarda-roupa...\n\n💬 Te entendo por texto ou áudio.\n📸 Viu um look que amou? Envie uma foto e eu encontro opções parecidas.\n\nMe conte: o que você gostaria de *comprar* hoje?',
+          hora: '14:00',
+          desc: 'Bot apresenta a Personal Shopper com a mensagem oficial.'
+        },
+        {
+          tipo: 'bot_carousel_onboarding',
+          hora: '14:00',
+          desc: 'Bot envia o carrossel nativo de cards com opções de início.'
+        },
+        {
+          tipo: 'user',
+          texto: 'Como funciona a troca ou devolução se eu comprar um vestido e não servir?',
+          hora: '14:01',
+          desc: 'Cliente faz pergunta livre sobre a política de devolução e troca.'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'Você pode trocar ou devolver sem complicações!\n\n• *Devolução por arrependimento:* em até *7 dias corridos* após receber o pedido.\n• *Troca:* pode ser feita em qualquer loja física C&A em até *30 dias corridos*, apresentando a *Nota Fiscal*.\n\nSe preferir, solicite também pelo site ou app em *Meus Pedidos* > *Troca e devolução*.\n\nConsegui te ajudar com essa informação? 😊',
+          hora: '14:01',
+          desc: 'Meta Business Agent responde de forma curta e objetiva com a política C&A.'
+        },
+        {
+          tipo: 'user',
+          texto: 'Ajudou sim, obrigada!',
+          hora: '14:02',
+          desc: 'Cliente confirma que a dúvida foi resolvida.'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'Que bom! 💙 Agora me conta: que tipo de look ou peça você gostaria de ver hoje?',
+          hora: '14:02',
+          desc: 'Transição do orquestrador de volta para a Personal Shopper (personal_seller) para continuar a compra.'
+        }
+      ],
+
+      // Dados do Fluxo 2: Vitrine de Produtos + FAQ Prazos & Entrega + Retorno à Vitrine
+      fluxo2Steps: [
+        {
+          tipo: 'user',
+          texto: 'Oi',
+          hora: '14:00',
+          desc: 'Cliente inicia a conversa com "Oi".'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'Olá, eu sou a *Personal Shopper, especialista em vendas da C&A.*\n\nPor aqui, te ajudo a *encontrar* e *comprar looks personalizados* para qualquer ocasião, seja para presentear alguém ou renovar seu guarda-roupa...\n\n💬 Te entendo por texto ou áudio.\n📸 Viu um look que amou? Envie uma foto e eu encontro opções parecidas.\n\nMe conte: o que você gostaria de *comprar* hoje?',
+          hora: '14:00',
+          desc: 'Bot responde com o menu de Onboarding.'
+        },
+        {
+          tipo: 'bot_carousel_onboarding',
+          hora: '14:00',
+          desc: 'Carrossel nativo da Meta exibido para o usuário.'
+        },
+        {
+          tipo: 'user',
+          texto: 'quero vestidos para festa',
+          hora: '14:01',
+          desc: 'Cliente expressa intenção de compra livre: "quero vestidos para festa".'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'Só um segundinho...\n\nEstou localizando as opções disponíveis.',
+          hora: '14:01',
+          desc: 'Mensagem intermediária padrão do JSON (bloco de busca de produtos).'
+        },
+        {
+          tipo: 'bot_carousel_vitrine',
+          hora: '14:01',
+          desc: 'Carrossel de produtos com botões rápidos: Adicionar à sacola, Detalhes e Sugestões.'
+        },
+        {
+          tipo: 'user',
+          texto: 'Quais são os prazos e opções de entrega caso eu compre agora?',
+          hora: '14:02',
+          desc: 'Cliente faz pergunta de FAQ sobre frete. O orquestrador aciona o Meta Business Agent.'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'O prazo é calculado pela distância até seu endereço, mas temos duas opções práticas:\n\n• *Entrega em casa:* entregas de segunda a sexta, das *08h às 20h*.\n• *Retirada na loja (Clique & Retire):* costuma ser a opção mais rápida! Fica disponível por até *30 dias corridos* na loja escolhida (basta levar documento com foto e o código de 4 dígitos gerado na compra).\n\nConsegui te ajudar com essa informação? 😊',
+          hora: '14:02',
+          desc: 'Meta Business Agent FAQ responde de forma curta, clara e objetiva.'
+        },
+        {
+          tipo: 'user',
+          texto: 'Sim, perfeito!',
+          hora: '14:03',
+          desc: 'Cliente confirma que a dúvida sobre entrega foi esclarecida.'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'Ótimo! 💙 Quer continuar de onde paramos? Qual daqueles vestidos de festa chamou mais sua atenção?',
+          hora: '14:03',
+          desc: 'Bot reengaja a usuária no fluxo da vitrine para finalizar a escolha.'
+        }
+      ],
+
+      // Dados do Fluxo 3: Algo mais (Compra completa -> Pergunta sobre Vale-Troca -> Finalização com carinho)
+      fluxo3Steps: [
+        {
+          tipo: 'user',
+          texto: 'Oi',
+          hora: '14:00',
+          desc: 'Cliente inicia conversa enviando "Oi".'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'Olá, eu sou a *Personal Shopper, especialista em vendas da C&A.*\n\nPor aqui, te ajudo a *encontrar* e *comprar looks personalizados* para qualquer ocasião, seja para presentear alguém ou renovar seu guarda-roupa...\n\n💬 Te entendo por texto ou áudio.\n📸 Viu um look que amou? Envie uma foto e eu encontro opções parecidas.\n\nMe conte: o que você gostaria de *comprar* hoje?',
+          hora: '14:00',
+          desc: 'Bot exibe a mensagem de Onboarding.'
+        },
+        {
+          tipo: 'bot_carousel_onboarding',
+          hora: '14:00',
+          desc: 'Bot envia o carrossel interativo de entrada.'
+        },
+        {
+          tipo: 'user',
+          texto: 'quero um vestido preto',
+          hora: '14:01',
+          desc: 'Cliente digita o item que deseja buscar.'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'Só um segundinho...\n\nEstou localizando as opções disponíveis.',
+          hora: '14:01',
+          desc: 'Mensagem técnica de busca do catálogo.'
+        },
+        {
+          tipo: 'bot_carousel_vitrine_algomais',
+          hora: '14:01',
+          desc: 'Carrossel completo de produtos fictícios com botões visuais de Adicionar à sacola e Detalhes.'
+        },
+        {
+          tipo: 'user',
+          texto: 'Quero adicionar o Vestido Curto Canelado na sacola',
+          hora: '14:02',
+          desc: 'Cliente seleciona o vestido para compra.'
+        },
+        {
+          tipo: 'bot_size_selector',
+          texto: 'Ótimo! Antes de colocar na sua sacola, *selecione o tamanho que você prefere:*\n\n> Toque em um dos botões abaixo para definir o tamanho.',
+          hora: '14:02',
+          desc: 'Bot solicita o tamanho sem citar P, M ou G no texto, deixando estritamente nos botões.'
+        },
+        {
+          tipo: 'user',
+          texto: 'M',
+          hora: '14:02',
+          desc: 'Cliente toca no botão de tamanho M.'
+        },
+        {
+          tipo: 'bot_cta_checkout',
+          texto: '✅ *Sua sacola está pronta!*\n\nAgora é só *tocar no botão abaixo* para ser direcionado para o *site ou app da C&A* para concluir sua compra.\n\nLá você poderá calcular o frete, escolher endereço de entrega e definir a forma de pagamento.\n\n💰 *Subtotal:* R$ 149,99',
+          hora: '14:03',
+          desc: 'Bot envia o CTA URL nativo da Meta para pagar no app/site.'
+        },
+        {
+          tipo: 'user',
+          texto: 'Prontinho, acabei de finalizar o pedido pelo app!',
+          hora: '14:05',
+          desc: 'Cliente simula a compra concluída no app/site.'
+        },
+        {
+          tipo: 'bot_quick_reply_algomais',
+          texto: 'Posso te ajudar em mais alguma coisa? 😊',
+          hora: '14:05',
+          desc: 'Bot dispara o bloco de [MSG] AM.1.0.0 - Algo mais com os botões Sim e Não.'
+        },
+        {
+          tipo: 'user',
+          texto: 'Se eu precisar trocar esse produto depois, como funciona o vale-troca da C&A?',
+          hora: '14:06',
+          desc: 'Cliente faz pergunta livre sobre o funcionamento do vale-troca.'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'O *vale-troca da C&A* é uma das nossas formas de reembolso e inclui o *valor pago pela peça + valor do frete* (em compras pelo site/app).\n\n• Ele gera um código com *validade de 6 meses*.\n• Você pode usar para comprar tanto na *loja física, quanto no site ou app da C&A*.\n• Nas lojas físicas, inclusive, é permitido usar mais de um vale-troca na mesma compra!\n\nConsegui te ajudar com essa informação? 😊',
+          hora: '14:06',
+          desc: 'Meta Business Agent responde com base no material de FAQ sobre Vale-troca.'
+        },
+        {
+          tipo: 'user',
+          texto: 'Ajudou muito, era isso! Obrigada.',
+          hora: '14:07',
+          desc: 'Cliente confirma que esclareceu todas as dúvidas.'
+        },
+        {
+          tipo: 'bot_text',
+          texto: 'Adorei falar com você! 💙\n\nSe precisar de ajuda ou quiser descobrir as novidades da C&A, é só me mandar um “Oi”, tá bem?\n\nAté logo! 👋',
+          hora: '14:07',
+          desc: 'Mensagem final de despedida da Personal Shopper.'
+        }
+      ],
+
+      init: function() {
+        this.trocarFluxo(1);
+      },
+
+      trocarFluxo: function(fluxoId) {
+        this.pararAuto();
+        this.fluxoAtual = fluxoId;
+        this.passoAtual = 0;
+        this.emExecucao = false;
+
+        const tab1 = document.getElementById('navTab1');
+        const tab2 = document.getElementById('navTab2');
+        const tab3 = document.getElementById('navTab3');
+        const kbTopic = document.getElementById('kbTopicText');
+
+        const defaultClass = "w-full text-left p-3.5 rounded-xl border border-zinc-200 hover:border-zinc-300 bg-white text-zinc-700 transition-all flex items-start gap-3";
+        const activeClass = "w-full text-left p-3.5 rounded-xl border-2 transition-all flex items-start gap-3 border-[#008069] bg-emerald-50/60 text-zinc-900 font-semibold shadow-xs";
+
+        tab1.className = defaultClass;
+        tab2.className = defaultClass;
+        tab3.className = defaultClass;
+
+        if (fluxoId === 1) {
+          tab1.className = activeClass;
+          kbTopic.innerHTML = 'Tema ativo: <b>Política de Troca & Devolução</b> (7 dias devolução / 30 dias loja física).';
+        } else if (fluxoId === 2) {
+          tab2.className = activeClass;
+          kbTopic.innerHTML = 'Tema ativo: <b>Prazos e Opções de Entrega</b> (Entrega em casa e Retirada Clique & Retire).';
+        } else {
+          tab3.className = activeClass;
+          kbTopic.innerHTML = 'Tema ativo: <b>Vale-troca C&A</b> (Reembolso peça + frete, validade 6 meses, site/app/loja).';
+        }
+
+        this.reiniciar();
+      },
+
+      reiniciar: function() {
+        this.pararAuto();
+        this.passoAtual = 0;
+        this.emExecucao = false;
+        document.getElementById('messagesContainer').innerHTML = '';
+        this.esconderDigitando();
+        this.atualizarStatusPainel();
+      },
+
+      pararAuto: function() {
+        this.reproduzindoAuto = false;
+        if (this.timeoutId) {
+          clearTimeout(this.timeoutId);
+          this.timeoutId = null;
+        }
+        this.atualizarBotaoPlayPause();
+      },
+
+      togglePlayPause: function() {
+        const steps = this.getSteps();
+        if (this.passoAtual >= steps.length) {
+          this.reiniciar();
+        }
+
+        if (this.reproduzindoAuto) {
+          this.pararAuto();
+        } else {
+          this.reproduzindoAuto = true;
+          this.atualizarBotaoPlayPause();
+          this.executarProximoCicloAuto();
+        }
+      },
+
+      atualizarBotaoPlayPause: function() {
+        const btnLabel = document.getElementById('btnPlayPauseLabel');
+        const steps = this.getSteps();
+
+        if (this.passoAtual >= steps.length) {
+          btnLabel.innerHTML = '🔄 Reiniciar e Reproduzir';
+        } else if (this.reproduzindoAuto) {
+          btnLabel.innerHTML = '⏸️ Pausar Simulação';
+        } else {
+          btnLabel.innerHTML = this.passoAtual === 0 ? '▶️ Iniciar Conversa' : '▶️ Continuar Conversa';
+        }
+      },
+
+      executarProximoCicloAuto: function() {
+        if (!this.reproduzindoAuto) return;
+        const steps = this.getSteps();
+
+        if (this.passoAtual >= steps.length) {
+          this.pararAuto();
+          this.atualizarStatusPainel();
+          return;
+        }
+
+        this.avancarPasso(() => {
+          if (!this.reproduzindoAuto) return;
+          this.timeoutId = setTimeout(() => {
+            this.executarProximoCicloAuto();
+          }, this.TEMPO_ENTRE_PASSOS);
+        });
+      },
+
+      avancarUmPassoManual: function() {
+        this.pararAuto();
+        const steps = this.getSteps();
+        if (this.passoAtual >= steps.length) {
+          this.reiniciar();
+          return;
+        }
+        this.avancarPasso();
+      },
+
+      getSteps: function() {
+        if (this.fluxoAtual === 1) return this.fluxo1Steps;
+        if (this.fluxoAtual === 2) return this.fluxo2Steps;
+        return this.fluxo3Steps;
+      },
+
+      atualizarStatusPainel: function() {
+        const steps = this.getSteps();
+        const badge = document.getElementById('stepBadge');
+        const desc = document.getElementById('stepDescription');
+
+        badge.innerText = `Passo ${this.passoAtual} de ${steps.length}`;
+
+        if (this.passoAtual === 0) {
+          desc.innerText = 'Pronto para iniciar. Clique em "▶️ Iniciar Conversa" para rodar a conversa completa automaticamente.';
+        } else if (this.passoAtual < steps.length) {
+          const prox = steps[this.passoAtual];
+          desc.innerHTML = `<b>Em andamento (${this.passoAtual + 1}/${steps.length}):</b> ${prox.desc}`;
+        } else {
+          desc.innerHTML = '✅ <b>Conversa concluída!</b> Todo o fluxo e as respostas do MBA FAQ foram demonstrados.';
+        }
+
+        this.atualizarBotaoPlayPause();
+      },
+
+      mostrarDigitando: function() {
+        document.getElementById('headerStatus').innerText = 'digitando...';
+        const typing = document.getElementById('typingBubble');
+        typing.classList.remove('hidden');
+        this.scrollChat();
+      },
+
+      esconderDigitando: function() {
+        document.getElementById('headerStatus').innerText = 'online';
+        document.getElementById('typingBubble').classList.add('hidden');
+      },
+
+      scrollChat: function() {
+        const area = document.getElementById('chatArea');
+        setTimeout(() => {
+          area.scrollTop = area.scrollHeight;
+        }, 40);
+      },
+
+      avancarPasso: function(callback) {
+        const steps = this.getSteps();
+        if (this.passoAtual >= steps.length || this.emExecucao) return;
+
+        const passo = steps[this.passoAtual];
+        this.emExecucao = true;
+
+        if (passo.tipo === 'user') {
+          this.renderizarMensagemUsuario(passo.texto, passo.hora);
+          this.passoAtual++;
+          this.emExecucao = false;
+          this.atualizarStatusPainel();
+          this.scrollChat();
+          if (callback) callback();
+        } else {
+          this.mostrarDigitando();
+          this.timeoutId = setTimeout(() => {
+            this.esconderDigitando();
+            this.renderizarPassoBot(passo);
+            this.passoAtual++;
+            this.emExecucao = false;
+            this.atualizarStatusPainel();
+            this.scrollChat();
+            if (callback) callback();
+          }, this.TEMPO_DIGITANDO);
+        }
+      },
+
+      renderizarMensagemUsuario: function(texto, hora) {
+        const container = document.getElementById('messagesContainer');
+        const div = document.createElement('div');
+        div.className = "flex flex-col items-end w-full relative msg-fade-in";
+        div.innerHTML = `
+          <span class="tail-out"></span>
+          <div class="bg-[#D9FDD3] rounded-lg rounded-tr-none px-3 py-2 shadow-xs max-w-[85%] relative border border-emerald-600/10">
+            <p class="text-[13px] leading-relaxed text-[#111B21]">${texto.replace(/\n/g, '<br>')}</p>
+            <div class="flex items-center justify-end gap-1 mt-1 text-[10.5px] text-[#667781]">
+              <span>${hora}</span>
+              <svg class="w-3.5 h-3.5 text-[#53bdeb] fill-current" viewBox="0 0 16 15">
+                <path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.879a.32.32 0 0 1-.484.033l-.358-.325a.319.319 0 0 0-.484.032l-.378.483a.418.418 0 0 0 .036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.879a.32.32 0 0 1-.484.033L1.891 7.769a.366.366 0 0 0-.515.006l-.423.433a.364.364 0 0 0 .006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 0 0-.063-.51z"/>
+              </svg>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      },
+
+      renderizarPassoBot: function(passo) {
+        const container = document.getElementById('messagesContainer');
+        const div = document.createElement('div');
+        div.className = "msg-fade-in";
+
+        if (passo.tipo === 'bot_text') {
+          const textoFormatado = passo.texto
+            .replace(/\*(.*?)\*/g, '<b>$1</b>')
+            .replace(/\n/g, '<br>');
+
+          div.innerHTML = `
+            <div class="flex flex-col items-start max-w-[94%] relative">
+              <span class="tail-in"></span>
+              <div class="bg-white rounded-lg rounded-tl-none p-3 shadow-xs border border-black/5 w-full">
+                <p class="leading-relaxed text-[#111B21]">${textoFormatado}</p>
+                <div class="flex justify-end items-center mt-1 text-[10.5px] text-[#667781]">
+                  <span>${passo.hora}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } 
+        else if (passo.tipo === 'bot_carousel_onboarding') {
+          div.innerHTML = `
+            <div class="w-full pl-0">
+              <div class="flex gap-2.5 overflow-x-auto no-scrollbar py-1 w-full" style="scroll-snap-type: x mandatory;">
+                
+                <!-- Card 1 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://blipmediastore.blob.core.windows.net/public-medias/Media_927bdd0b-1ad4-427b-bcc7-495e8f62a72e" 
+                      alt="Encontrar o look ideal" 
+                      class="w-full h-24 object-cover bg-zinc-100"
+                    />
+                    <div class="p-2.5 text-[11.5px] leading-snug text-zinc-900">
+                      <b>Encontrar o look ideal</b><br>
+                      <span class="text-zinc-600">Te ajudo a encontrar roupas e acessórios para qualquer ocasião que combinam com seu estilo!</span>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0">
+                    <button type="button" class="w-full py-2 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-xs font-semibold text-center border border-zinc-200 transition-all pointer-events-none">
+                      Buscar looks
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://blipmediastore.blob.core.windows.net/public-medias/Media_2d6b9f14-0d44-4988-a289-ff54c1419ec0" 
+                      alt="Dicas para presentear" 
+                      class="w-full h-24 object-cover bg-zinc-100"
+                    />
+                    <div class="p-2.5 text-[11.5px] leading-snug text-zinc-900">
+                      <b>Dicas para presentear</b><br>
+                      <span class="text-zinc-600">Me conta para quem é o presente que eu te ajudo a encontrar o presente ideal!</span>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0">
+                    <button type="button" class="w-full py-2 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-xs font-semibold text-center border border-zinc-200 transition-all pointer-events-none">
+                      Buscar um presente
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://blipmediastore.blob.core.windows.net/public-medias/Media_605fff63-9b1b-43e7-bdc3-09cad87b34df" 
+                      alt="Buscar por imagem" 
+                      class="w-full h-24 object-cover bg-zinc-100"
+                    />
+                    <div class="p-2.5 text-[11.5px] leading-snug text-zinc-900">
+                      <b>Buscar por imagem</b><br>
+                      <span class="text-zinc-600">Me manda uma foto de look que eu encontro os produtos mais próximos aqui para você!</span>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0">
+                    <button type="button" class="w-full py-2 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-xs font-semibold text-center border border-zinc-200 transition-all pointer-events-none">
+                      Buscar por imagem
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          `;
+        }
+        else if (passo.tipo === 'bot_carousel_vitrine') {
+          div.innerHTML = `
+            <div class="w-full pl-0">
+              <div class="flex gap-2.5 overflow-x-auto no-scrollbar py-1 w-full" style="scroll-snap-type: x mandatory;">
+                
+                <!-- Produto 1 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&auto=format&fit=crop&q=80" 
+                      alt="Vestido Longo Acetinado Fenda" 
+                      class="w-full h-32 object-cover bg-zinc-100"
+                    />
+                    <div class="p-2.5 text-[12px] leading-snug text-zinc-900">
+                      <b>Vestido Longo Acetinado Fenda</b>
+                      <div class="font-bold text-[13px] mt-1 text-zinc-900">R$ 219,99</div>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0 space-y-1">
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Adicionar à sacola
+                    </button>
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Detalhes do produto
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Produto 2 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=500&auto=format&fit=crop&q=80" 
+                      alt="Vestido Curto Paetê Decote V" 
+                      class="w-full h-32 object-cover bg-zinc-100"
+                    />
+                    <div class="p-2.5 text-[12px] leading-snug text-zinc-900">
+                      <b>Vestido Curto Paetê Decote V</b>
+                      <div class="font-bold text-[13px] mt-1 text-zinc-900">R$ 189,99</div>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0 space-y-1">
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Adicionar à sacola
+                    </button>
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Detalhes do produto
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Card Estático do JSON: Sugestões -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://s3-sa-east-1.amazonaws.com/i.imgtake.takenet.com.br/nok40ylq.xry/banner_aiShopper@2x%201.png" 
+                      alt="Mais Sugestões" 
+                      class="w-full h-32 object-cover bg-zinc-100"
+                      onerror="this.src='https://placehold.co/400x300/008069/ffffff?text=C%26A+Personal+Shopper'"
+                    />
+                    <div class="p-2.5 text-[11.5px] leading-snug text-zinc-900">
+                      <b>Quer mais sugestões?</b><br>
+                      <span class="text-zinc-600">Posso te mostrar mais peças no mesmo estilo ou procurar outro!</span>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0 space-y-1">
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Sugerir mais peças
+                    </button>
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Sugerir outro estilo
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          `;
+        }
+        else if (passo.tipo === 'bot_carousel_vitrine_algomais') {
+          div.innerHTML = `
+            <div class="w-full pl-0">
+              <div class="flex gap-2.5 overflow-x-auto no-scrollbar py-1 w-full" style="scroll-snap-type: x mandatory;">
+                
+                <!-- Produto 1: Vestido Preto Canelado -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=500&auto=format&fit=crop&q=80" 
+                      alt="Vestido Curto Canelado Preto" 
+                      class="w-full h-32 object-cover bg-zinc-100"
+                    />
+                    <div class="p-2.5 text-[12px] leading-snug text-zinc-900">
+                      <b>Vestido Curto Canelado Preto</b>
+                      <div class="font-bold text-[13px] mt-1 text-zinc-900">R$ 149,99</div>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0 space-y-1">
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Adicionar à sacola
+                    </button>
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Detalhes
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Produto 2: Vestido Midi Tubinho Alfaiataria -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=500&auto=format&fit=crop&q=80" 
+                      alt="Vestido Midi Tubinho Alfaiataria" 
+                      class="w-full h-32 object-cover bg-zinc-100"
+                    />
+                    <div class="p-2.5 text-[12px] leading-snug text-zinc-900">
+                      <b>Vestido Midi Alfaiataria Preto</b>
+                      <div class="font-bold text-[13px] mt-1 text-zinc-900">R$ 199,99</div>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0 space-y-1">
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Adicionar à sacola
+                    </button>
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Detalhes
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Produto 3: Vestido Longo Evasê com Fenda -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500&auto=format&fit=crop&q=80" 
+                      alt="Vestido Longo Evasê Preto" 
+                      class="w-full h-32 object-cover bg-zinc-100"
+                    />
+                    <div class="p-2.5 text-[12px] leading-snug text-zinc-900">
+                      <b>Vestido Longo Evasê Preto</b>
+                      <div class="font-bold text-[13px] mt-1 text-zinc-900">R$ 229,99</div>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0 space-y-1">
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Adicionar à sacola
+                    </button>
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Detalhes
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Card de Sugestões C&A -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-xs border border-zinc-200 shrink-0 w-[215px] flex flex-col justify-between" style="scroll-snap-align: start;">
+                  <div>
+                    <img 
+                      src="https://s3-sa-east-1.amazonaws.com/i.imgtake.takenet.com.br/nok40ylq.xry/banner_aiShopper@2x%201.png" 
+                      alt="Mais Sugestões" 
+                      class="w-full h-32 object-cover bg-zinc-100"
+                      onerror="this.src='https://placehold.co/400x300/008069/ffffff?text=C%26A+Personal+Shopper'"
+                    />
+                    <div class="p-2.5 text-[11.5px] leading-snug text-zinc-900">
+                      <b>Quer mais sugestões?</b><br>
+                      <span class="text-zinc-600">Posso te mostrar mais opções de vestidos pretos ou outro visual!</span>
+                    </div>
+                  </div>
+                  <div class="p-1.5 pt-0 space-y-1">
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Sugerir mais peças
+                    </button>
+                    <button type="button" class="w-full py-1.5 bg-zinc-50 hover:bg-zinc-100 text-[#008069] rounded-lg text-[11.5px] font-semibold text-center border border-zinc-200 pointer-events-none">
+                      Sugerir outro estilo
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          `;
+        }
+        else if (passo.tipo === 'bot_size_selector') {
+          const textoFormatado = passo.texto
+            .replace(/\*(.*?)\*/g, '<b>$1</b>')
+            .replace(/\n/g, '<br>');
+
+          div.innerHTML = `
+            <div class="flex flex-col items-start max-w-[94%] relative">
+              <span class="tail-in"></span>
+              <div class="bg-white rounded-lg rounded-tl-none p-3 shadow-xs border border-black/5 w-full">
+                <p class="leading-relaxed text-[#111B21]">${textoFormatado}</p>
+                <div class="flex justify-end items-center mt-1 text-[10.5px] text-[#667781]">
+                  <span>${passo.hora}</span>
+                </div>
+              </div>
+              <!-- Botões rápidos de tamanho -->
+              <div class="w-full mt-2 grid grid-cols-4 gap-1.5">
+                <button type="button" class="py-2 bg-white text-[#008069] rounded-lg text-xs font-bold text-center border border-zinc-200 shadow-xs pointer-events-none">
+                  PP
+                </button>
+                <button type="button" class="py-2 bg-white text-[#008069] rounded-lg text-xs font-bold text-center border border-zinc-200 shadow-xs pointer-events-none">
+                  P
+                </button>
+                <button type="button" class="py-2 bg-white text-[#008069] rounded-lg text-xs font-bold text-center border border-zinc-200 shadow-xs ring-1 ring-[#008069] bg-emerald-50/50 pointer-events-none">
+                  M
+                </button>
+                <button type="button" class="py-2 bg-white text-[#008069] rounded-lg text-xs font-bold text-center border border-zinc-200 shadow-xs pointer-events-none">
+                  G
+                </button>
+              </div>
+            </div>
+          `;
+        }
+        else if (passo.tipo === 'bot_cta_checkout') {
+          const textoFormatado = passo.texto
+            .replace(/\*(.*?)\*/g, '<b>$1</b>')
+            .replace(/\n/g, '<br>');
+
+          div.innerHTML = `
+            <div class="flex flex-col items-start max-w-[94%] relative">
+              <span class="tail-in"></span>
+              <div class="bg-white rounded-lg rounded-tl-none p-3 shadow-xs border border-black/5 w-full">
+                <p class="leading-relaxed text-[#111B21]">${textoFormatado}</p>
+                <div class="flex justify-end items-center mt-1 text-[10.5px] text-[#667781]">
+                  <span>${passo.hora}</span>
+                </div>
+              </div>
+              <div class="w-full mt-1.5">
+                <div class="w-full py-2.5 bg-white text-[#008069] rounded-lg text-xs font-bold text-center border border-zinc-200 shadow-xs flex items-center justify-center gap-1.5 pointer-events-none">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                  <span>Pagar no App/Site</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        else if (passo.tipo === 'bot_quick_reply_algomais') {
+          div.innerHTML = `
+            <div class="flex flex-col items-start max-w-[94%] relative">
+              <span class="tail-in"></span>
+              <div class="bg-white rounded-lg rounded-tl-none p-3 shadow-xs border border-black/5 w-full">
+                <p class="leading-relaxed text-[#111B21]">${passo.texto}</p>
+                <div class="flex justify-end items-center mt-1 text-[10.5px] text-[#667781]">
+                  <span>${passo.hora}</span>
+                </div>
+              </div>
+              <div class="w-full mt-1.5 grid grid-cols-2 gap-1.5">
+                <button type="button" class="py-2 bg-white text-[#008069] rounded-lg text-xs font-semibold text-center border border-zinc-200 shadow-xs pointer-events-none">
+                  Sim
+                </button>
+                <button type="button" class="py-2 bg-white text-[#008069] rounded-lg text-xs font-semibold text-center border border-zinc-200 shadow-xs pointer-events-none">
+                  Não
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        container.appendChild(div);
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      app.init();
+    });
+  </script>
+</body>
+</html>
