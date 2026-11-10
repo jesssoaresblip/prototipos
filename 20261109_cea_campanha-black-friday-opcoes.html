@@ -1,0 +1,2261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C&A | Simulador de Ofertas - Black Friday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EDEDEB;
+  --panel: #FFFFFF;
+  --ink: #0A0A0A;
+  --on-ink: #FFFFFF;
+  --muted: #666666;
+  --line: #D8D8D6;
+  --soft: #F6F6F5;
+  --wa-dark: #075E54;
+  --wa-teal: #008069;
+  --wa-green: #25D366;
+  --wa-bg: #EFEAE2;
+  --wa-out: #E7FED8;
+  --cea-blue: #002B49;
+  --cea-red: #E0001A;
+  --ui-font: "Instrument Sans", system-ui, sans-serif;
+  --wa-font: "Instrument Sans", Roboto, Helvetica, Arial, sans-serif;
+  --mono-font: "JetBrains Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--ui-font); font-size: 13.5px; line-height: 1.45; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+button { cursor: pointer; font-family: inherit; }
+
+/* Topbar */
+.topbar { background: #0A0A0A; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; min-height: 56px; border-bottom: 1px solid #222; flex-shrink: 0; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand b { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+.brand span { font-size: 13px; color: #A8A8A8; border-left: 1px solid #333; padding-left: 12px; margin-left: 4px; }
+.badge-bf { background: #E0001A; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+/* Grid Principal Responsiva e Alinhada nas extremidades */
+.bench { 
+  flex: 1; 
+  display: grid; 
+  grid-template-columns: 290px minmax(380px, 1fr) 360px; 
+  gap: 16px; 
+  padding: 16px; 
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1080px) {
+  .bench {
+    grid-template-columns: 260px minmax(340px, 1fr) 320px;
+    gap: 12px;
+    padding: 12px;
+  }
+}
+
+.panel { 
+  background: var(--panel); 
+  border: 1px solid var(--line); 
+  border-radius: 12px; 
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
+  height: 100%;
+}
+
+.panel-head { padding: 14px 16px; border-bottom: 1px solid var(--line); background: #FAF9F8; flex-shrink: 0; }
+.panel-head h2 { margin: 0; font-size: 14px; font-weight: 700; color: #111; }
+.panel-head p { margin: 2px 0 0; color: var(--muted); font-size: 11.5px; }
+.panel-body { overflow-y: auto; padding: 14px 16px; flex: 1; }
+
+/* Stage e Celular WhatsApp */
+.stage { display: flex; align-items: center; justify-content: center; height: 100%; }
+.phone { width: 380px; height: 750px; max-height: 100%; background: #111B21; border-radius: 36px; padding: 10px; box-shadow: 0 24px 44px rgba(0,0,0,0.35); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+
+/* Painel Esquerdo: Seletor de Versões e Janelas de Tempo */
+.version-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.version-card { border: 1.5px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #FFF; text-align: left; cursor: pointer; transition: all 0.2s ease; position: relative; }
+.version-card:hover { border-color: #B5B5B5; background: #FAFAFA; }
+.version-card.active { border-color: var(--cea-blue); background: #F0F5FA; box-shadow: 0 2px 6px rgba(0, 43, 73, 0.08); }
+.version-card .v-title { font-size: 13.5px; font-weight: 700; color: #111; margin-bottom: 2px; }
+.version-card.active .v-title { color: var(--cea-blue); }
+.version-card .v-sub { font-size: 11px; font-style: italic; color: #666; display: block; }
+.version-card .v-indicator { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 8px; height: 8px; border-radius: 50%; background: transparent; }
+.version-card.active .v-indicator { background: var(--cea-blue); }
+
+.timing-box { background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+.timing-box label { font-size: 11.5px; font-weight: 700; color: #111; display: block; margin-bottom: 8px; }
+.timing-options { display: flex; flex-direction: column; gap: 6px; }
+.timing-opt-btn { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; text-align: left; font-size: 11.5px; color: #333; cursor: pointer; transition: 0.15s; }
+.timing-opt-btn:hover { border-color: #999; }
+.timing-opt-btn.active { border-color: var(--wa-teal); background: #E6F4F1; color: #005A4A; font-weight: 600; }
+.timing-opt-btn small { display: block; font-size: 10px; opacity: 0.8; margin-top: 2px; font-weight: normal; }
+
+.reset-btn { width: 100%; background: #FFF; color: var(--ink); border: 1px solid var(--line); padding: 10px; border-radius: 8px; font-weight: 600; font-size: 12.5px; transition: 0.15s; }
+.reset-btn:hover { background: #EFEFEF; }
+
+/* Simulador WhatsApp Central */
+.screen { background: var(--wa-bg); border-radius: 28px; height: 100%; overflow: hidden; display: flex; flex-direction: column; font-family: var(--wa-font); position: relative; }
+.status { height: 24px; background: var(--wa-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 11px; flex-shrink: 0; }
+.wa-head { background: var(--wa-dark); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px 12px; flex-shrink: 0; }
+.wa-head .av { width: 34px; height: 34px; border-radius: 50%; background: #0A0A0A; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 11px; border: 1.5px solid rgba(255,255,255,0.25); }
+.wa-head .who b { display: flex; align-items: center; gap: 4px; font-size: 13.5px; }
+.wa-head .who .verified { color: #20C65A; font-size: 12px; }
+.wa-head .who span { font-size: 11px; opacity: 0.85; transition: all 0.2s; }
+.wa-head .who span.typing { color: #25D366; font-weight: 600; }
+
+.chat { flex: 1; overflow-y: auto; padding: 10px; background-image: radial-gradient(rgba(7,94,84,0.06) 1px, transparent 1.2px); background-size: 16px 16px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
+.day { margin: 4px auto 2px; background: #fff; color: #54656F; font-size: 10.5px; padding: 3px 8px; border-radius: 6px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.12); text-align: center; font-weight: 500; }
+.row { display: flex; margin: 1px 0; width: 100%; animation: fadeInMsg 0.25s ease-out; }
+.row.in { justify-content: flex-start; }
+.row.out { justify-content: flex-end; }
+
+@keyframes fadeInMsg {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bub { max-width: 86%; padding: 7px 10px; border-radius: 8px; font-size: 12.8px; line-height: 1.38; color: #111B21; background: #fff; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word; }
+.bub p { margin: 0 0 6px 0; }
+.bub p:last-child { margin-bottom: 0; }
+.bub .footer-text { font-size: 11.5px; color: #667781; font-style: italic; margin-top: 6px; }
+.bub img.template-header-img { width: 100%; height: auto; max-height: 160px; border-radius: 6px; margin-bottom: 8px; display: block; object-fit: cover; background: #eaeaea; }
+.out .bub { background: var(--wa-out); }
+.meta { float: right; margin: 3px 0 -2px 8px; font-size: 10px; color: #667781; }
+
+/* Indicador de Digitando */
+.typing-bubble { display: flex; align-items: center; gap: 4px; padding: 10px 14px; background: #fff; border-radius: 12px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); animation: fadeInMsg 0.2s ease-out; }
+.typing-dot { width: 6px; height: 6px; background: #8696A0; border-radius: 50%; animation: typingAnimation 1.4s infinite ease-in-out; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingAnimation {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* Botões Nativos WhatsApp */
+.btn-wpp-single { width: 86%; margin-top: 3px; }
+.btn-wpp-single button, .cta-link-box a { border: 0; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 12.5px; padding: 9px; border-radius: 8px; text-align: center; width: 100%; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); cursor: pointer; transition: 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
+.btn-wpp-single button:hover, .cta-link-box a:hover { background: #F8F9FA; }
+
+/* Barra e Ações no Chat */
+.chat-action-menu { display: flex; flex-direction: column; gap: 6px; margin: 6px 0; width: 100%; }
+.btn-chat-action { background: #FFFFFF; border: 1px solid #C5D0D6; border-radius: 8px; padding: 8px 10px; font-size: 12px; font-weight: 600; color: #125B50; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.06); transition: 0.15s; }
+.btn-chat-action:hover { background: #F0F7F6; border-color: var(--wa-teal); }
+.btn-chat-action.alt { background: #FFF8E6; border-color: #E2B93B; color: #735100; }
+.btn-chat-action.alt:hover { background: #FFEFA8; }
+.btn-chat-action.primary { background: var(--wa-teal); color: #fff; border-color: var(--wa-teal); }
+.btn-chat-action.primary:hover { background: #006b57; }
+
+/* Barra de Input no Chat */
+.chat-action-menu { display: flex; flex-direction: column; gap: 6px; margin: 6px 0; width: 100%; box-sizing: border-box; }
+.in-chat-input-bar { display: flex; gap: 6px; margin: 4px 0; width: 100%; box-sizing: border-box; align-items: stretch; }
+.in-chat-input-bar input { flex: 1; padding: 8px 12px; border: 1px solid var(--line); border-radius: 20px; font-size: 12px; font-family: inherit; background: #fff; outline: none; box-sizing: border-box; }
+.in-chat-input-bar input:focus { border-color: var(--wa-teal); }
+.in-chat-input-bar button { background: var(--wa-teal); color: #fff; border: 0; border-radius: 20px; padding: 0 14px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.15s; flex-shrink: 0; }
+.in-chat-input-bar button:hover { background: #006b57; }
+
+/* Interactive List Message do WhatsApp */
+.list-msg-container { width: 86%; margin: 4px 0; display: flex; flex-direction: column; }
+.list-msg-box { background: #fff; border-radius: 8px; padding: 10px 12px; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); }
+.btn-open-list { border: none; border-top: 1px solid #EEF1F2; background: transparent; color: var(--wa-teal); font-weight: 600; font-size: 12.5px; padding: 10px 0 2px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.15s; }
+.btn-open-list:hover { color: #006b57; }
+
+/* Carrossel Horizontal WhatsApp */
+.carousel-container { width: 100%; overflow-x: auto; padding: 6px 2px 10px; display: flex; gap: 10px; scrollbar-width: thin; animation: fadeInMsg 0.3s ease-out; }
+
+/* Cards de Categorias (Template de Carrossel) */
+.cat-card { flex: 0 0 205px; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+.cat-card-img-wrap { width: 100%; height: 130px; background: #F3F4F6; overflow: hidden; position: relative; }
+.cat-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.cat-card-body { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.cat-card-title { font-weight: 700; font-size: 13px; color: #111; margin-bottom: 4px; }
+.cat-card-desc { font-size: 11px; color: #667781; line-height: 1.35; margin-bottom: 10px; }
+.cat-card button.cat-btn { background: transparent; border: none; border-top: 1px solid #EEF1F2; color: var(--wa-teal); font-weight: 600; font-size: 12.5px; padding: 9px 0 2px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; transition: 0.15s; }
+.cat-card button.cat-btn:hover { color: #006b57; background: #FAFAFA; }
+.cat-card .qr-icon { font-size: 13px; line-height: 1; transform: scaleX(-1); display: inline-block; }
+
+.cta-svg { vertical-align: -1px; flex-shrink: 0; }
+
+/* Cards de Produtos */
+.prod-card { flex: 0 0 215px; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+.prod-card-img-wrap { position: relative; width: 100%; height: 165px; background: #F8F9FA; display: flex; align-items: center; justify-content: center; }
+.prod-card img { width: 100%; height: 100%; object-fit: cover; }
+.prod-card-body { padding: 9px 11px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.prod-title { font-size: 12px; line-height: 1.35; color: #111; margin-bottom: 6px; }
+.prod-title b { font-weight: 600; }
+.prod-price-box { margin-bottom: 4px; }
+.prod-price-old { font-size: 10.5px; color: #888; text-decoration: line-through; margin-right: 4px; }
+.prod-price-current { font-size: 13.5px; font-weight: 700; color: #111; }
+.prod-sizes { font-size: 10.5px; color: #667781; margin-bottom: 8px; }
+.prod-actions { border-top: 1px solid #EEF1F2; margin-top: 4px; }
+.prod-btn { background: transparent; border: none; border-bottom: 1px solid #EEF1F2; color: var(--wa-teal); font-size: 11.5px; font-weight: 600; padding: 8px 0; width: 100%; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: 0.15s; }
+.prod-btn:last-child { border-bottom: none; }
+.prod-btn:hover { background: #FAFAFA; }
+
+.prod-card.suggestion-card { background: #fff; }
+.suggestion-banner { width: 100%; height: 165px; background: linear-gradient(135deg, #1C0DE2 0%, #3F00E8 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-size: 32px; position: relative; }
+.suggestion-banner .sparkles { position: relative; }
+
+/* Interactive List Bottom-Sheet (Fiel ao WhatsApp) */
+.list-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; border-radius: 28px; }
+.list-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.list-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 82%; background: #FFFFFF; border-radius: 20px 20px 0 0; z-index: 101; transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -8px 24px rgba(0,0,0,0.25); font-family: var(--wa-font); }
+.list-sheet.open { transform: translateY(0); }
+
+.list-sheet-header { display: flex; align-items: center; justify-content: center; position: relative; padding: 16px 18px 12px; border-bottom: 1px solid #F0F2F5; flex-shrink: 0; }
+.list-sheet-title { font-weight: 700; font-size: 16px; color: #111B21; letter-spacing: -0.2px; }
+.list-sheet-close { position: absolute; right: 14px; top: 12px; width: 30px; height: 30px; border-radius: 50%; background: #E9EDEF; border: none; font-size: 15px; color: #54656F; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.15s; }
+.list-sheet-close:hover { background: #D1D7DB; color: #111; }
+
+.list-sheet-content { overflow-y: auto; flex: 1; padding: 4px 0 16px; }
+.list-section-title { font-size: 13px; font-weight: 600; color: #54656F; padding: 14px 18px 6px; letter-spacing: -0.1px; }
+.list-row { padding: 12px 18px; border-bottom: 1px solid #F0F2F5; cursor: pointer; transition: background 0.15s; display: flex; flex-direction: column; }
+.list-row:hover { background: #F5F6F6; }
+.list-row-title { font-size: 15px; font-weight: 600; color: #111B21; line-height: 1.3; }
+.list-row-desc { font-size: 13px; color: #667781; margin-top: 2px; line-height: 1.35; }
+.list-sheet-footer-hint { text-align: center; font-size: 12px; color: #8696A0; padding: 22px 18px 8px; font-weight: 500; }
+
+.bub.list-msg-bubble { padding: 0; overflow: hidden; }
+.list-msg-body { padding: 8px 10px 4px; margin: 0; }
+.btn-list-action { width: 100%; border: none; border-top: 1px solid #E9EDEF; background: transparent; color: var(--wa-teal); font-weight: 600; font-size: 13px; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.15s; font-family: inherit; }
+.btn-list-action:hover { background: #F8F9FA; }
+
+/* Painel Direito: Regras de Negócio */
+.exec-item { border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 12px; }
+.exec-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.exec-item h3 { margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: var(--cea-blue); }
+.exec-item p { margin: 0; font-size: 12px; color: #444; line-height: 1.45; }
+.exec-tag { display: inline-block; background: #E9ECEF; color: #495057; font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; }
+.exec-tag.red { background: #FDE8E8; color: #C81E1E; }
+.exec-tag.blue { background: #E1EFFE; color: #1E429F; }
+.exec-tag.purple { background: #EDEBFE; color: #5521B5; }
+.exec-tag.green { background: #DEF7EC; color: #03543F; }
+.exec-tag.amber { background: #FEF3C7; color: #92400E; }
+
+.alert-attention { background: #FFFBEB; border: 1px solid #FCD34D; border-left: 4px solid #F59E0B; padding: 10px 12px; border-radius: 6px; margin: 10px 0 14px; font-size: 11.5px; color: #78350F; line-height: 1.45; }
+.alert-attention .alert-title { color: #92400E; font-weight: 700; font-size: 12px; display: block; margin-bottom: 4px; }
+.alert-attention b, .alert-attention strong { font-weight: 700; display: inline; color: #92400E; }
+
+.strategic-note { background: #F0FDF4; border: 1px solid #BBF7D0; border-left: 4px solid #16A34A; padding: 10px 12px; border-radius: 6px; margin: 10px 0 14px; font-size: 11.5px; color: #166534; line-height: 1.45; }
+.strategic-note .strategic-title { color: #14532D; font-weight: 700; font-size: 12px; display: block; margin-bottom: 4px; }
+.strategic-note b, .strategic-note strong { font-weight: 700; display: inline; color: #14532D; }
+
+/* Notificação Visual Técnica */
+details.muse-transition { background: #F3EEFA; border-left: 3px solid #6E2A8D; padding: 6px 10px; border-radius: 6px; font-size: 11.5px; color: #4B1A64; margin: 6px 0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); cursor: pointer; }
+details.muse-transition.dy { background: #FFF8E6; border-left-color: #D97706; color: #78350F; }
+details.muse-transition summary { font-weight: 700; display: flex; align-items: center; justify-content: space-between; user-select: none; list-style: none; outline: none; }
+details.muse-transition summary::-webkit-details-marker { display: none; }
+details.muse-transition summary::after { content: '▾'; font-size: 12px; color: inherit; transition: transform 0.2s; }
+details.muse-transition[open] summary::after { transform: rotate(180deg); }
+.muse-details-content { margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.15); font-size: 11px; line-height: 1.4; }
+.muse-details-content .trans-payload { font-family: var(--mono-font); font-size: 10px; background: rgba(0,0,0,0.06); padding: 3px 6px; border-radius: 4px; display: inline-block; margin: 3px 0; word-break: break-all; }
+.badge-status-pending { background: #FEF3C7; color: #92400E; border: 1px solid #F59E0B; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; display: inline-block; margin-bottom: 4px; text-transform: uppercase; }
+
+/* WhatsApp Flows Bottom-Sheet Modal */
+.flows-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; border-radius: 28px; }
+.flows-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.flows-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 90%; background: #FFFFFF; border-radius: 20px 20px 0 0; z-index: 101; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -8px 24px rgba(0,0,0,0.25); }
+.flows-sheet.open { transform: translateY(0); }
+
+.flows-drag-handle { width: 36px; height: 4px; background: #D1D5DB; border-radius: 2px; margin: 8px auto 4px; flex-shrink: 0; }
+.flows-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px 10px; border-bottom: 2.5px solid #00A884; flex-shrink: 0; }
+.flows-header-title { font-weight: 700; font-size: 15px; color: #111; }
+.flows-close-btn { background: none; border: none; font-size: 18px; color: #4B5563; padding: 2px 6px; cursor: pointer; }
+
+.flows-content { overflow-y: auto; padding: 12px 16px; flex: 1; font-family: var(--wa-font); }
+.flows-media-gallery { width: 100%; height: 210px; background: #F9FAFB; border-radius: 10px; overflow: hidden; position: relative; margin-bottom: 12px; }
+.flows-media-gallery img { width: 100%; height: 100%; object-fit: cover; }
+.flows-dots { position: absolute; bottom: 8px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; }
+.flows-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.6); }
+.flows-dot.active { background: #FFFFFF; }
+
+.flows-prod-title { font-size: 14.5px; font-weight: 700; line-height: 1.35; color: #111; margin-bottom: 6px; }
+.flows-price-box { font-size: 13px; margin-bottom: 12px; }
+.flows-price-old { color: #888; text-decoration: line-through; margin-right: 6px; }
+.flows-price-new { font-size: 15px; font-weight: 700; color: #111; }
+
+.flows-field-group { margin-bottom: 14px; position: relative; }
+.flows-input-box { border: 1px solid #D1D5DB; border-radius: 8px; padding: 8px 12px; font-size: 13px; position: relative; background: #fff; }
+.flows-label-floating { position: absolute; top: -8px; left: 10px; background: #fff; padding: 0 4px; font-size: 10.5px; color: #6B7280; font-weight: 500; }
+
+.flows-chips-label { font-size: 12px; font-weight: 600; color: #111; margin-bottom: 2px; }
+.flows-chips-sub { font-size: 10.5px; color: #6B7280; margin-bottom: 8px; }
+.flows-chips-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.flows-chip { border: 1px solid #D1D5DB; border-radius: 18px; padding: 6px 14px; font-size: 12px; font-weight: 600; color: #374151; background: #fff; cursor: pointer; transition: 0.15s; }
+.flows-chip:hover { border-color: #00A884; }
+.flows-chip.selected { border-color: #00A884; background: #E6F7F2; color: #007A60; font-weight: 700; }
+.flows-chip.disabled { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; background: #F3F4F6; }
+
+.flows-description { font-size: 11.5px; color: #4B5563; line-height: 1.45; border-top: 1px solid #E5E7EB; padding-top: 10px; margin-top: 10px; }
+.flows-description b { color: #111; }
+
+.flows-footer { padding: 12px 16px; background: #fff; border-top: 1px solid #F3F4F6; flex-shrink: 0; }
+.flows-btn-submit { width: 100%; background: #00A884; color: #fff; font-size: 14px; font-weight: 700; padding: 11px; border: none; border-radius: 24px; cursor: pointer; transition: 0.15s; }
+.flows-btn-submit:hover { background: #008f6f; }
+.flows-admin-note { font-size: 10px; color: #9CA3AF; text-align: center; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <b>C&amp;A</b>
+    <span>Simulador de Ofertas — Black Friday</span>
+  </div>
+  <span class="badge-bf">Black Friday 2026</span>
+</header>
+
+<div class="bench">
+  
+  <!-- Painel Esquerdo: Seletor de Versão e Momentos de Interação -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Abordagem da Campanha</h2>
+      <p>Configure a jornada e o fluxo de interação:</p>
+    </div>
+    <div class="panel-body">
+      
+      <div class="version-list">
+        <!-- Abordagem 1: Envio geral + lembrete -->
+        <button type="button" class="version-card active" id="btnVersao1" onclick="window.simuladorApp.selecionarVersao('geral')">
+          <div class="v-title">Envio geral + lembrete</div>
+          <span class="v-sub">CTAs para o site</span>
+          <span class="v-indicator"></span>
+        </button>
+
+        <!-- Abordagem 2: Produtos remarcados (Shopping Muse) -->
+        <button type="button" class="version-card" id="btnVersao2" onclick="window.simuladorApp.selecionarVersao('remarcados')">
+          <div class="v-title">Produtos remarcados</div>
+          <span class="v-sub">Shopping Muse</span>
+          <span class="v-indicator"></span>
+        </button>
+
+        <!-- Abordagem 3: Vitrine DY (Seletor Black Friday) -->
+        <button type="button" class="version-card" id="btnVersao3" onclick="window.simuladorApp.selecionarVersao('vitrinedy')">
+          <div class="v-title">Vitrine DY</div>
+          <span class="v-sub">Seletor Black Friday</span>
+          <span class="v-indicator"></span>
+        </button>
+      </div>
+
+      <!-- Seletor de Janela Temporal de Interação (Apenas para Abordagem 1) -->
+      <div class="timing-box" id="boxTimingAbordagem1">
+        <label>Momento em que a cliente interage:</label>
+        <div class="timing-options">
+          <button type="button" class="timing-opt-btn active" id="optAntes25" onclick="window.simuladorApp.setTiming('antes25')">
+            Até 25/11 às 23:59h
+            <small>Lembrete programado para 26/11 às 14h</small>
+          </button>
+          <button type="button" class="timing-opt-btn" id="optAntes26" onclick="window.simuladorApp.setTiming('antes26')">
+            De 26/11 até 26/11 às 23:59h
+            <small>Lembrete programado para 27/11 às 00h (D-Day)</small>
+          </button>
+          <button type="button" class="timing-opt-btn" id="optDepois27" onclick="window.simuladorApp.setTiming('depois27')">
+            Após 27/11 às 23:59h
+            <small>Black encerrada &rarr; Shopping Muse</small>
+          </button>
+        </div>
+      </div>
+
+      <!-- Seletor de Disparo para Abordagem 2 (Shopping Muse) -->
+      <div class="timing-box" id="boxDisparosAbordagem2" style="display: none;">
+        <label>Disparo para toda a base:</label>
+        <div class="timing-options">
+          <button type="button" class="timing-opt-btn active" id="optDisparoEsquenta2" onclick="window.simuladorApp.setDisparoV2('esquenta')">
+            21/11 · Esquenta Black Friday
+            <small>Disparo 1 com carrossel de categorias</small>
+          </button>
+          <button type="button" class="timing-opt-btn" id="optDisparoUltimas2" onclick="window.simuladorApp.setDisparoV2('ultimas')">
+            26/11 às 14:00h · Últimas Horas
+            <small>Disparo 2 com conexão Shopping Muse</small>
+          </button>
+        </div>
+      </div>
+
+      <!-- Seletor de Disparo para Abordagem 3 (Vitrine DY) -->
+      <div class="timing-box" id="boxDisparosAbordagem3" style="display: none;">
+        <label>Disparo para toda a base (Vitrine DY):</label>
+        <div class="timing-options">
+          <button type="button" class="timing-opt-btn active" id="optDisparoEsquenta3" onclick="window.simuladorApp.setDisparoV3('esquenta')">
+            21/11 · Esquenta Black Friday
+            <small>Categorias &rarr; Vitrine filtrada DY + WhatsApp Flows</small>
+          </button>
+          <button type="button" class="timing-opt-btn" id="optDisparoUltimas3" onclick="window.simuladorApp.setDisparoV3('ultimas')">
+            26/11 às 14:00h · Últimas Horas
+            <small>Disparo com criativo oficial e recomendação DY</small>
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="reset-btn" onclick="window.simuladorApp.reiniciar()">🔄 Reiniciar Conversa</button>
+    </div>
+  </aside>
+
+  <!-- Simulador Central WhatsApp -->
+  <main class="stage">
+    <div class="phone">
+      <div class="screen">
+        <div class="status"><span>10:00</span><span>5G ▮▮▮</span></div>
+        <header class="wa-head">
+          <div class="av">C&amp;A</div>
+          <div class="who">
+            <b>C&amp;A <span class="verified">●</span></b>
+            <span id="waStatusHeader">Conta Comercial Oficial</span>
+          </div>
+        </header>
+        <div class="chat" id="chat">
+          <!-- Mensagens geradas dinamicamente via JS -->
+        </div>
+
+        <!-- WhatsApp Flows Bottom Sheet Modal -->
+        <div class="flows-backdrop" id="flowsBackdrop" onclick="window.simuladorApp.fecharFlows()"></div>
+        <div class="flows-sheet" id="flowsSheet">
+          <div class="flows-drag-handle"></div>
+          <div class="flows-header">
+            <span class="flows-header-title">Detalhe do produto</span>
+            <button type="button" class="flows-close-btn" onclick="window.simuladorApp.fecharFlows()">✕</button>
+          </div>
+          <div class="flows-content" id="flowsContent">
+            <!-- Conteúdo montado via JS a partir do payload fornecido -->
+          </div>
+          <div class="flows-footer">
+            <button type="button" class="flows-btn-submit" onclick="window.simuladorApp.submeterFlows()">Adicionar ao carrinho</button>
+            <div class="flows-admin-note">
+              <span>●</span> Administrado por C&amp;A Modas
+            </div>
+          </div>
+        </div>
+
+        <!-- WhatsApp Interactive List Bottom Sheet Modal (Fiel ao print) -->
+        <div class="list-backdrop" id="listBackdrop" onclick="window.simuladorApp.fecharLista()"></div>
+        <div class="list-sheet" id="listSheet">
+          <div class="list-sheet-header">
+            <span class="list-sheet-title">Categorias</span>
+            <button type="button" class="list-sheet-close" onclick="window.simuladorApp.fecharLista()">✕</button>
+          </div>
+          <div class="list-sheet-content">
+            <div class="list-section-title">CATEGORIAS EM DESTAQUE</div>
+            
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Moda Feminina', 'feminino')">
+              <div class="list-row-title">Moda Feminina</div>
+              <div class="list-row-desc">Vestidos, blusas, alfaiataria e tendências</div>
+            </div>
+
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Moda Masculina', 'masculino')">
+              <div class="list-row-title">Moda Masculina</div>
+              <div class="list-row-desc">Camisas, polos, bermudas e básicos</div>
+            </div>
+
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Jeans', 'jeans')">
+              <div class="list-row-title">Jeans</div>
+              <div class="list-row-desc">Calças, jaquetas e shorts jeans</div>
+            </div>
+
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Beleza', 'beleza')">
+              <div class="list-row-title">Beleza</div>
+              <div class="list-row-desc">Perfumes importados, skincare e maquiagens</div>
+            </div>
+
+            <div class="list-section-title">CATÁLOGO GERAL</div>
+
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Todas as ofertas', 'todas')">
+              <div class="list-row-title">Todas as ofertas</div>
+              <div class="list-row-desc">Vitrine completa com todas as ofertas reunidas</div>
+            </div>
+
+            <div class="list-sheet-footer-hint">Toque em um item para selecionar</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Painel Direito: Regras de Negócio Dinâmicas -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2 id="rnPainelTitulo">Regras de Negócio</h2>
+      <p id="rnPainelSub">Mapeamento executivo da abordagem ativa</p>
+    </div>
+    <div class="panel-body" id="regrasNegocioBody">
+      <!-- Regras injetadas dinamicamente -->
+    </div>
+  </aside>
+
+</div>
+
+<script>
+window.simuladorApp = {
+  versaoAtiva: 'geral', // 'geral', 'remarcados' ou 'vitrinedy'
+  timingAtual: 'antes25', // 'antes25', 'antes26' ou 'depois27'
+  disparoV2Atual: 'esquenta', // 'esquenta' ou 'ultimas'
+  disparoV3Atual: 'esquenta', // 'esquenta' ou 'ultimas'
+  categoriaSelecionada: 'Moda Feminina',
+  categoriInteresse: 'moda feminina',
+  linkCategoriaSelecionada: 'https://www.cea.com.br/black-friday/moda-feminina',
+
+  // Payload oficial de produto Dynamic Yield (sem parcelamento C&A Pay)
+  PRODUTO_DY_FEM: {
+    id: "4536957",
+    name: "vestido midi feminino decote v manga curta listrado off white",
+    price: 119.99,
+    oldPrice: 179.99,
+    discount: 33,
+    images: [
+      "https://cea.vtexassets.com/arquivos/ids/59291567/Foto-0.jpg?v=638978791412100000",
+      "https://cea.vtexassets.com/arquivos/ids/59291568/Foto-1.jpg?v=638978791414430000",
+      "https://cea.vtexassets.com/arquivos/ids/59291569/Foto-2.jpg?v=638978791417330000"
+    ],
+    sizes: [
+      { id: "6498021", name: "PP", available: true },
+      { id: "6498020", name: "P", available: true },
+      { id: "6498018", name: "M", available: false },
+      { id: "6498019", name: "G", available: false },
+      { id: "6498022", name: "GG", available: true }
+    ],
+    color: "Off white",
+    description: "Este vestido midi listrado é a escolha perfeita para quem busca elegância e conforto em uma única peça. Decote em V que valoriza o colo, mangas curtas com franzidos delicados e cintura com elástico embutido. Composição: 55% poliéster, 45% algodão."
+  },
+
+  PRODUTO_ATUAL_FLOWS: null,
+  tamanhoSelecionadoDY: 'P',
+  quantidadeSelecionadaDY: 1,
+
+  // Imagens oficiais da campanha
+  IMG_ULTIMAS_HORAS: "https://blipmediastore.blob.core.windows.net/public-medias/Media_10d25c0b-48b6-46b8-b19b-85b478741aea",
+  IMG_CAT_FEM: "https://blipmediastore.blob.core.windows.net/public-medias/Media_fc93c9bb-df0b-4cc5-8995-4ed6e835f84d",
+  IMG_CAT_MASC: "https://blipmediastore.blob.core.windows.net/public-medias/Media_6a52e406-65d9-4915-8a9e-5d0decbd0c64",
+  IMG_CAT_JEANS: "https://blipmediastore.blob.core.windows.net/public-medias/Media_89747f4d-e264-4c0d-898f-72d79af4379d",
+  IMG_CAT_BELEZA: "https://blipmediastore.blob.core.windows.net/public-medias/Media_f6e51f6f-44f9-4862-a00b-55c3bd4094ef",
+  IMG_CAT_TODAS: "https://blipmediastore.blob.core.windows.net/public-medias/Media_4e80383e-6352-481c-b51b-cfd554d9250e",
+
+  // Imagens de catálogo para demonstração das vitrines
+  IMG_PROD_FEM_1: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=450&auto=format&fit=crop",
+  IMG_PROD_FEM_2: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=450&auto=format&fit=crop",
+  IMG_PROD_MASC_1: "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=450&auto=format&fit=crop",
+  IMG_PROD_JEANS_1: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=450&auto=format&fit=crop",
+  IMG_PROD_BELEZA_1: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=450&auto=format&fit=crop",
+
+  sleep: function(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  },
+
+  setTyping: function(isTyping) {
+    var headerStatus = document.getElementById('waStatusHeader');
+    var existingTyping = document.getElementById('typingIndicator');
+    var chat = document.getElementById('chat');
+
+    if (isTyping) {
+      if (headerStatus) {
+        headerStatus.textContent = 'digitando...';
+        headerStatus.classList.add('typing');
+      }
+      if (!existingTyping && chat) {
+        var typingDiv = document.createElement('div');
+        typingDiv.className = 'row in';
+        typingDiv.id = 'typingIndicator';
+        typingDiv.innerHTML = `
+          <div class="typing-bubble">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+        `;
+        chat.appendChild(typingDiv);
+        this.scrollToBottom();
+      }
+    } else {
+      if (headerStatus) {
+        headerStatus.textContent = 'Conta Comercial Oficial';
+        headerStatus.classList.remove('typing');
+      }
+      if (existingTyping) {
+        existingTyping.remove();
+      }
+    }
+  },
+
+  selecionarVersao: function(versao) {
+    this.versaoAtiva = versao;
+    document.getElementById('btnVersao1').classList.toggle('active', versao === 'geral');
+    document.getElementById('btnVersao2').classList.toggle('active', versao === 'remarcados');
+    document.getElementById('btnVersao3').classList.toggle('active', versao === 'vitrinedy');
+    
+    document.getElementById('boxTimingAbordagem1').style.display = (versao === 'geral') ? 'block' : 'none';
+    document.getElementById('boxDisparosAbordagem2').style.display = (versao === 'remarcados') ? 'block' : 'none';
+    document.getElementById('boxDisparosAbordagem3').style.display = (versao === 'vitrinedy') ? 'block' : 'none';
+
+    this.renderizarRegrasNegocio();
+    this.reiniciar();
+  },
+
+  setTiming: function(timing) {
+    this.timingAtual = timing;
+    document.getElementById('optAntes25').classList.toggle('active', timing === 'antes25');
+    document.getElementById('optAntes26').classList.toggle('active', timing === 'antes26');
+    document.getElementById('optDepois27').classList.toggle('active', timing === 'depois27');
+    this.renderizarRegrasNegocio();
+    this.reiniciar();
+  },
+
+  setDisparoV2: function(disparo) {
+    this.disparoV2Atual = disparo;
+    document.getElementById('optDisparoEsquenta2').classList.toggle('active', disparo === 'esquenta');
+    document.getElementById('optDisparoUltimas2').classList.toggle('active', disparo === 'ultimas');
+    this.reiniciar();
+  },
+
+  setDisparoV3: function(disparo) {
+    this.disparoV3Atual = disparo;
+    document.getElementById('optDisparoEsquenta3').classList.toggle('active', disparo === 'esquenta');
+    document.getElementById('optDisparoUltimas3').classList.toggle('active', disparo === 'ultimas');
+    this.reiniciar();
+  },
+
+  renderizarRegrasNegocio: function() {
+    var rnBody = document.getElementById('regrasNegocioBody');
+    var rnTitulo = document.getElementById('rnPainelTitulo');
+    var rnSub = document.getElementById('rnPainelSub');
+    
+    if (this.versaoAtiva === 'geral') {
+      rnTitulo.textContent = "Regras | Envio geral + lembrete";
+      rnSub.textContent = "CTAs para o site & Retargeting por Janela de Corte";
+
+      var infoAgendamento = "";
+      if (this.timingAtual === 'antes25') {
+        infoAgendamento = "• <b>Data de Corte Atual:</b> Interação registrada até 25/11 às 23:59h.<br>• <b>Lembrete Programado:</b> Disparo agendado para <b>26/11 às 14:00h</b>.";
+      } else if (this.timingAtual === 'antes26') {
+        infoAgendamento = "• <b>Data de Corte Atual:</b> Interação registrada durante o dia 26/11 (até 23:50h).<br>• <b>Lembrete Programado:</b> Disparo agendado para <b>27/11 às 00:00h (Virada Black Friday)</b>.";
+      } else {
+        infoAgendamento = "• <b>Data de Corte Atual:</b> Interação após 27/11 às 23:59h.<br>• <b>Comportamento:</b> Comunica término do esquenta/Black Friday com botão <i>Explorar novidades</i> para engajamento contínuo via Shopping Muse.";
+      }
+
+      rnBody.innerHTML = `
+        <div class="strategic-note">
+          <span class="strategic-title">💡 Estratégia de Esquenta + Lembrete Retargeting:</span>
+          Esta abordagem combina descoberta inicial por carrossel de categorias no dia 21/11 com agendamento automático de lembrete de escassez (últimas horas), resgatando dinamicamente a categoria de interesse escolhida pela cliente.
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag blue">Disparo 1 · 21/11</span>
+          <h3>1. Template Carrossel de Categorias</h3>
+          <p>Disparo em massa de abertura da Black Friday diretamente em texto e carrossel de 4 categorias prioritárias (<i>Moda Feminina, Moda Masculina, Jeans C&amp;A, Beleza &amp; Perfumaria</i>) + 1 card final de <i>Vitrine completa</i> com botões nominais identificados.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag green">Interação &amp; CTA</span>
+          <h3>2. Entrega do Link Direto</h3>
+          <p>Ao interagir com o quick reply de um card, o bot entrega o botão CTA nativo com texto padrão <i>Aproveitar ofertas</i> e direcionamento dinâmico para a URL correspondente.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag amber">Agendamento Dinâmico</span>
+          <h3>3. Lógica de Corte e Agendamento</h3>
+          <p>${infoAgendamento}</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag red">Disparo 2 · Lembrete</span>
+          <h3>4. Lembrete Últimas Horas</h3>
+          <p>Disparo automático utilizando o criativo oficial de <b>Últimas Horas</b>, reforçando o encerramento da campanha com botão CTA <i>Aproveitar agora</i> apontando diretamente para a vitrine geral de Black Friday da C&amp;A.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag purple">Pós-Evento</span>
+          <h3>5. Transição Pós 27/11 (23h59) &amp; Shopping Muse</h3>
+          <p>Interações após o dia 27 recebem a notificação de encerramento da Black Friday com o botão interativo <b>Explorar novidades</b>, que simula o envio de <code>"quero ver novidades"</code> para conexão com a assistente de estilo Shopping Muse da C&amp;A.</p>
+        </div>
+      `;
+    } else if (this.versaoAtiva === 'remarcados') {
+      // Abordagem 2: Produtos remarcados (Shopping Muse)
+      rnTitulo.textContent = "Regras | Produtos remarcados";
+      rnSub.textContent = "Shopping Muse & Carrossel Nativo In-App";
+
+      rnBody.innerHTML = `
+        <div class="strategic-note">
+          <span class="strategic-title">💡 Mecânica Conversacional com Shopping Muse:</span>
+          Ao interagir com qualquer categoria ou botão de oferta, o sistema aciona o fluxo de IA implementado atualmente, gerando uma vitrine nativa com produtos remarcados (preço anterior riscado vs promocional) e continuidade da consultoria de moda no próprio chat.
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag blue">Disparo 1 · 21/11</span>
+          <h3>1. Disparo de Esquenta (Base Total)</h3>
+          <p>Disparo proativo para toda a base apresentando o carrossel de categorias de abertura da Black Friday sem imagem de cabeçalho, com botões de quick reply nominais (<i>Moda Feminina, Moda Masculina, Jeans, Beleza, Todas as ofertas</i>).</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag purple">Integração Shopping Muse</span>
+          <h3>2. Envio de Comando Invisível</h3>
+          <p>Ao selecionar uma categoria, o sistema envia o comando silencioso para o Shopping Muse: <code>"quero ver peças em [categoria]"</code> (ex: <i>"quero ver peças em moda feminina"</i>). O Shopping Muse é acionado com filtro exclusivo para itens remarcados.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag green">Carrossel nativo</span>
+          <h3>3. Carrossel nativo</h3>
+          <p>O ShoppingMuse responde com carrossel nativo contendo apenas produtos remarcados (com baixa de preço), exibindo fotos, títulos, preço promocional com destaque de desconto, grade e botões ("Adicionar à sacola", "Detalhes"), direcionando conforme a experiência atual.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag red">Disparo 2 · 26/11 (14h)</span>
+          <h3>4. Disparo de Últimas Horas (Base Total)</h3>
+          <p>Disparo em massa para toda a base com a imagem oficial de encerramento. Ao clicar no botão <i>Aproveitar agora</i>, conecta com o Shopping Muse enviando <code>"quero ver as últimas novidades em ofertas"</code> com foco nas maiores ofertas e descontos da Black Friday.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag">Engajamento Contínuo</span>
+          <h3>5. Personal Shopper Ativa</h3>
+          <p>A cliente pode digitar livremente no chat a qualquer momento (ex: <i>"quero vestidos de festa"</i>), refinando a busca diretamente com a inteligência conversacional.</p>
+        </div>
+      `;
+    } else {
+      // Abordagem 3: Vitrine DY (Seletor Black Friday)
+      rnTitulo.textContent = "Regras | Vitrine Dynamic Yield (DY)";
+      rnSub.textContent = "Seletor Black Friday por Categoria & WhatsApp Flows";
+
+      rnBody.innerHTML = `
+        <div class="alert-attention">
+          <span class="alert-title">⚠️ Ponto de Atenção Técnico (Dependência C&amp;A):</span> O endpoint da vitrine <b>Dynamic Yield (DY)</b> com o seletor específico de produtos selecionados por categoria para a <b>Black Friday</b> encontra-se atualmente <b>PENDENTE</b> e precisará ser disponibilizado pela equipe técnica da C&amp;A para viabilizar a exibição desta vitrine filtrada em produção.
+        </div>
+
+        <div class="strategic-note">
+          <span class="strategic-title">💡 Aprendizado Estratégico da Versão:</span> Esta experiência simplifica a jornada e testa novos componentes (<b>WhatsApp Flows</b> para seleção de grade e <b>Card de Troca/Mais Produtos</b> no carrossel nativo), servindo de aprendizado direto para incorporação na jornada principal.
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag blue">Disparo 1 · 21/11 (Base Total)</span>
+          <h3>1. Esquenta com Carrossel de Categorias</h3>
+          <p>Disparo inicial com o carrossel de categorias. Ao clicar no quick reply de uma categoria (ex: <i>Moda Feminina</i>), o sistema aciona a API Dynamic Yield aplicando o filtro correspondente para gerar a vitrine nativa.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag amber">API Dynamic Yield (Pendente)</span>
+          <h3>2. Consulta Filtrada por Categoria</h3>
+          <p>A API do Dynamic Yield é consultada via endpoint parametrizado, retornando apenas as ofertas e produtos selecionados do departamento escolhido.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag green">Navegação Contínua</span>
+          <h3>3. Navegação Contínua &amp; Retenção</h3>
+          <p>O último card do carrossel de produtos atua como ponto de continuidade da jornada, disponibilizando dois botões de ação rápida para manter a cliente engajada sem sair do chat.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag purple">WhatsApp Flows</span>
+          <h3>4. Seleção de SKU sem sair do WhatsApp</h3>
+          <p>Ao clicar em <i>"Adicionar à sacola"</i> ou <i>"Detalhes"</i> nos produtos DY, abre-se o modal do <b>WhatsApp Flows</b> para selecionar cor, tamanho e quantidade, gerando a confirmação com os botões <i>Finalizar compra</i> ou <i>Continuar comprando</i>.</p>
+        </div>
+
+        <div class="exec-item">
+          <span class="exec-tag red">Disparo 2 · 26/11 (14h)</span>
+          <h3>5. Últimas Horas Base Total</h3>
+          <p>Disparo em massa de encerramento da Black Friday direcionando a cliente para as maiores ofertas recomendadas pelo DY.</p>
+        </div>
+      `;
+    }
+  },
+
+  reiniciar: function() {
+    this.fecharFlows();
+    this.fecharLista();
+    this.setTyping(false);
+    var chat = document.getElementById('chat');
+    
+    if (this.versaoAtiva === 'geral') {
+      this.montarChatAbordagem1(chat);
+    } else if (this.versaoAtiva === 'remarcados') {
+      this.montarChatAbordagem2(chat);
+    } else {
+      this.montarChatAbordagem3(chat);
+    }
+  },
+
+  // =========================================================================
+  // Montagem da Abordagem 1: Envio geral + lembrete (CTAs para site)
+  // =========================================================================
+  montarChatAbordagem1: function(chat) {
+    chat.innerHTML = `
+      <div class="day">21/11 · Disparo 1 (Esquenta Black Friday)</div>
+      
+      <div class="row in">
+        <div class="bub">
+          <p>Mariana, a <b>Black Friday C&amp;A</b> já começou com ofertas exclusivas e descontos imperdíveis esperando por você! 🔥✨</p>
+          <p>Escolha a sua categoria favorita abaixo para aproveitar os melhores achadinhos:</p>
+          <span class="meta">10:00</span>
+        </div>
+      </div>
+
+      <!-- Carrossel de 4 Categorias Destacadas + Card Vitrine Completa -->
+      <div class="carousel-container" id="carrosselCategoriasBF">
+        
+        <!-- Card 1: Moda Feminina -->
+        <div class="cat-card">
+          <div class="cat-card-img-wrap">
+            <img src="${this.IMG_CAT_FEM}" alt="Moda Feminina">
+          </div>
+          <div class="cat-card-body">
+            <div>
+              <div class="cat-card-title">Looks Femininos</div>
+              <div class="cat-card-desc">Vestidos, blusas, alfaiataria e as peças mais desejadas.</div>
+            </div>
+            <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV1('Moda Feminina', 'https://www.cea.com.br/black-friday/moda-feminina')">
+              <span class="qr-icon">↩</span> Moda Feminina
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2: Moda Masculina -->
+        <div class="cat-card">
+          <div class="cat-card-img-wrap">
+            <img src="${this.IMG_CAT_MASC}" alt="Moda Masculina">
+          </div>
+          <div class="cat-card-body">
+            <div>
+              <div class="cat-card-title">Destaques Masculinos</div>
+              <div class="cat-card-desc">Camisas, polos, bermudas e básicos essenciais da estação.</div>
+            </div>
+            <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV1('Moda Masculina', 'https://www.cea.com.br/black-friday/moda-masculina')">
+              <span class="qr-icon">↩</span> Moda Masculina
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 3: Jeans C&A -->
+        <div class="cat-card">
+          <div class="cat-card-img-wrap">
+            <img src="${this.IMG_CAT_JEANS}" alt="Jeans C&A">
+          </div>
+          <div class="cat-card-body">
+            <div>
+              <div class="cat-card-title">O Melhor do Jeans</div>
+              <div class="cat-card-desc">Calças, jaquetas e shorts no denim e caimento perfeitos.</div>
+            </div>
+            <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV1('Jeans', 'https://www.cea.com.br/black-friday/jeans')">
+              <span class="qr-icon">↩</span> Jeans
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 4: Beleza & Perfumaria -->
+        <div class="cat-card">
+          <div class="cat-card-img-wrap">
+            <img src="${this.IMG_CAT_BELEZA}" alt="Beleza & Perfumaria">
+          </div>
+          <div class="cat-card-body">
+            <div>
+              <div class="cat-card-title">Perfumaria &amp; Beleza</div>
+              <div class="cat-card-desc">Fragrâncias importadas, cuidados de pele e maquiagens.</div>
+            </div>
+            <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV1('Beleza', 'https://www.cea.com.br/black-friday/beleza')">
+              <span class="qr-icon">↩</span> Beleza
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 5: Vitrine Completa -->
+        <div class="cat-card">
+          <div class="cat-card-img-wrap">
+            <img src="${this.IMG_CAT_TODAS}" alt="Todas as Ofertas">
+          </div>
+          <div class="cat-card-body">
+            <div>
+              <div class="cat-card-title">Vitrine completa</div>
+              <div class="cat-card-desc">Explore todas as ofertas e promoções em um só lugar.</div>
+            </div>
+            <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV1('Todas as ofertas', 'https://www.cea.com.br/black-friday')">
+              <span class="qr-icon">↩</span> Todas as ofertas
+            </button>
+          </div>
+        </div>
+
+      </div>
+      <div id="flowAnchor"></div>
+    `;
+    this.scrollToBottom();
+  },
+
+  interagirCategoriaV1: async function(nomeCat, linkCat) {
+    this.categoriaSelecionada = nomeCat;
+    this.categoriInteresse = nomeCat.toLowerCase();
+    this.linkCategoriaSelecionada = linkCat;
+
+    var anchor = document.getElementById('flowAnchor');
+    
+    // Se a interação ocorrer APÓS o fim da Black Friday (depois de 27/11 às 23:59h)
+    if (this.timingAtual === 'depois27') {
+      anchor.innerHTML += `
+        <div class="row out">
+          <div class="bub">
+            ${nomeCat}
+            <span class="meta">28/11 · 14:35</span>
+          </div>
+        </div>
+      `;
+      this.scrollToBottom();
+
+      this.setTyping(true);
+      await this.sleep(1200);
+      this.setTyping(false);
+
+      anchor.innerHTML += `
+        <div class="row in">
+          <div class="bub">
+            <p>Mariana, a <b>Black Friday C&amp;A terminou</b>! ⏰</p>
+            <p>Mas que tal explorar outras novidades por aqui? 👀✨</p>
+            <span class="meta">14:35 (28/11)</span>
+          </div>
+        </div>
+
+        <div class="btn-wpp-single" id="btnExplorarNovidadesBox">
+          <button type="button" onclick="window.simuladorApp.conectarShoppingMuse()">Explorar novidades</button>
+        </div>
+
+        <details class="muse-transition">
+          <summary>🔍 Ver detalhes técnicos (Devs)</summary>
+          <div class="muse-details-content">
+            <div><b>Condição atendida:</b> <code>timestamp_interacao &gt; 27/11 23:59h</code></div>
+            <div><b>Ação do botão "Explorar novidades":</b> Envia o payload invisível <code>"quero ver novidades"</code> para acionar a assistente <b>Shopping Muse</b>.</div>
+            <div><b>Bypass de Agendamento:</b> Não agenda disparo de lembrete posterior.</div>
+          </div>
+        </details>
+        <div id="anchorMuse"></div>
+      `;
+      this.scrollToBottom();
+      return;
+    }
+
+    // Interação válida durante o Esquenta (até 25/11 ou 26/11)
+    var horaInteracao = (this.timingAtual === 'antes25') ? '22/11 · 14:20' : '26/11 · 16:45';
+    var dataProgramada = (this.timingAtual === 'antes25') ? '26/11 às 14:00h' : '27/11 às 00:00h';
+    var botaoSimularLembrete = (this.timingAtual === 'antes25') ? '📩 Simular Disparo 26/11 às 14h (Lembrete)' : '📩 Simular Disparo 27/11 às 00h (Virada D-Day)';
+
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          ${nomeCat}
+          <span class="meta">${horaInteracao}</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Excelente escolha, Mariana! 🛍️✨</p>
+          <p>As peças em <b>${nomeCat}</b> estão com descontos imperdíveis. Corre para aproveitar, porque os estoques são limitados.</p>
+          <span class="meta">${horaInteracao}</span>
+        </div>
+      </div>
+
+      <!-- Botão CTA Nativo WhatsApp com texto padrão "Aproveitar ofertas", sem emoji e link dinâmico -->
+      <div class="btn-wpp-single cta-link-box">
+        <a href="${linkCat}" target="_blank" rel="noopener">
+          <svg class="cta-svg" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M4.75 3.5a.75.75 0 0 0 0 1.5h5.19L3.22 11.72a.75.75 0 1 0 1.06 1.06L11 6.06v5.19a.75.75 0 0 0 1.5 0v-7a.75.75 0 0 0-.75-.75h-7Z"/></svg>
+          Aproveitar ofertas
+        </a>
+      </div>
+
+      <details class="muse-transition">
+        <summary>⚙️ Dados do agendamento</summary>
+        <div class="muse-details-content">
+          <div><b>Categoria salva:</b> <code>categoriInteresse = "${this.categoriInteresse}"</code></div>
+          <div><b>Link vinculado:</b> <code>${linkCat}</code></div>
+          <div><b>Agendamento registrado:</b> Lembrete programado para <b>${dataProgramada}</b></div>
+        </div>
+      </details>
+
+      <div class="chat-action-menu" id="boxSimularLembrete">
+        <button type="button" class="btn-chat-action primary" onclick="window.simuladorApp.dispararLembreteV1()">
+          ${botaoSimularLembrete}
+        </button>
+      </div>
+      <div id="anchorLembrete"></div>
+    `;
+    this.scrollToBottom();
+  },
+
+  dispararLembreteV1: async function() {
+    var box = document.getElementById('boxSimularLembrete');
+    if (box) box.style.display = 'none';
+
+    var anchor = document.getElementById('anchorLembrete');
+    
+    var diaLabel = (this.timingAtual === 'antes25') ? '26/11 (14:00h) · Disparo Lembrete' : '27/11 (00:00h) · Disparo D-Day';
+    var horaMsg = (this.timingAtual === 'antes25') ? '14:00' : '00:00';
+
+    anchor.innerHTML += `
+      <div class="day">${diaLabel}</div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1300);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <img src="${this.IMG_ULTIMAS_HORAS}" class="template-header-img" alt="Últimas Horas Black Friday C&A" onerror="this.style.display='none'">
+          <p>Mariana, são as <b>últimas horas</b> para aproveitar os maiores descontos da <b>Black Friday da C&amp;A</b> em <b>${this.categoriaSelecionada.toLowerCase()}</b> e muito mais! ⏰🔥</p>
+          <p>Corre para garantir os seus favoritos agora mesmo! 🏃‍♀️</p>
+          <span class="meta">${horaMsg}</span>
+        </div>
+      </div>
+
+      <div class="btn-wpp-single cta-link-box">
+        <a href="https://www.cea.com.br/black-friday" target="_blank" rel="noopener">
+          <svg class="cta-svg" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M4.75 3.5a.75.75 0 0 0 0 1.5h5.19L3.22 11.72a.75.75 0 1 0 1.06 1.06L11 6.06v5.19a.75.75 0 0 0 1.5 0v-7a.75.75 0 0 0-.75-.75h-7Z"/></svg>
+          Aproveitar agora
+        </a>
+      </div>
+
+      <details class="muse-transition">
+        <summary>🎯 Validação do Retargeting</summary>
+        <div class="muse-details-content">
+          <div><b>Disparo executado com sucesso:</b> Template de Últimas Horas</div>
+          <div><b>Personalização aplicada:</b> Disparo de urgência final com botão CTA <b>Aproveitar agora</b> direcionando para a vitrine geral da Black Friday.</div>
+        </div>
+      </details>
+    `;
+    this.scrollToBottom();
+  },
+
+  // =========================================================================
+  // Montagem da Abordagem 2: Produtos remarcados (Shopping Muse)
+  // =========================================================================
+  montarChatAbordagem2: function(chat) {
+    if (this.disparoV2Atual === 'esquenta') {
+      chat.innerHTML = `
+        <div class="day">21/11 · Disparo 1 (Esquenta Base Total)</div>
+        
+        <div class="row in">
+          <div class="bub">
+            <p>Mariana, a <b>Black Friday C&amp;A</b> já começou com ofertas exclusivas e descontos imperdíveis esperando por você! 🔥✨</p>
+            <p>Escolha a sua categoria favorita abaixo para aproveitar os melhores achadinhos:</p>
+            <span class="meta">10:00</span>
+          </div>
+        </div>
+
+        <!-- Carrossel de Categorias que conecta com Shopping Muse -->
+        <div class="carousel-container" id="carrosselCategoriasBFV2">
+          
+          <!-- Card 1: Moda Feminina -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_FEM}" alt="Moda Feminina">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">Looks Femininos</div>
+                <div class="cat-card-desc">Vestidos, blusas, alfaiataria e as peças mais desejadas.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV2('moda feminina')">
+                <span class="qr-icon">↩</span> Moda Feminina
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: Moda Masculina -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_MASC}" alt="Moda Masculina">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">Destaques Masculinos</div>
+                <div class="cat-card-desc">Camisas, polos, bermudas e básicos essenciais da estação.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV2('moda masculina')">
+                <span class="qr-icon">↩</span> Moda Masculina
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 3: Jeans C&A -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_JEANS}" alt="Jeans C&A">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">O Melhor do Jeans</div>
+                <div class="cat-card-desc">Calças, jaquetas e shorts no denim e caimento perfeitos.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV2('jeans')">
+                <span class="qr-icon">↩</span> Jeans
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 4: Beleza & Perfumaria -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_BELEZA}" alt="Beleza & Perfumaria">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">Perfumaria &amp; Beleza</div>
+                <div class="cat-card-desc">Fragrâncias importadas, cuidados de pele e maquiagens.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV2('beleza e perfumaria')">
+                <span class="qr-icon">↩</span> Beleza
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 5: Vitrine Completa -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_TODAS}" alt="Todas as Ofertas">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">Vitrine completa</div>
+                <div class="cat-card-desc">Explore todas as ofertas e promoções em um só lugar.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaV2('as últimas novidades')">
+                <span class="qr-icon">↩</span> Todas as ofertas
+              </button>
+            </div>
+          </div>
+
+        </div>
+        <div id="flowAnchorV2"></div>
+      `;
+    } else {
+      // Disparo 2 de Últimas Horas da Abordagem 2 (26/11 às 14h para toda a base)
+      chat.innerHTML = `
+        <div class="day">26/11 (14:00h) · Disparo 2 (Últimas Horas Base Total)</div>
+        
+        <div class="row in">
+          <div class="bub">
+            <img src="${this.IMG_ULTIMAS_HORAS}" class="template-header-img" alt="Últimas Horas Black Friday C&A" onerror="this.style.display='none'">
+            <p>Mariana, são as <b>últimas horas</b> para aproveitar os maiores descontos da <b>Black Friday da C&amp;A</b> em <b>${this.categoriaSelecionada.toLowerCase()}</b> e muito mais! ⏰🔥</p>
+            <p>Corre para garantir os seus favoritos agora mesmo! 🏃‍♀️</p>
+            <span class="meta">14:00</span>
+          </div>
+        </div>
+
+        <div class="btn-wpp-single" id="btnUltimasV2Box">
+          <button type="button" onclick="window.simuladorApp.interagirUltimasHorasV2()">
+            Aproveitar agora
+          </button>
+        </div>
+
+        <div id="flowAnchorV2"></div>
+      `;
+    }
+    this.scrollToBottom();
+  },
+
+  interagirCategoriaV2: async function(termoCategoria) {
+    var payloadEnvio = "quero ver peças em " + termoCategoria;
+    if (termoCategoria === 'as últimas novidades') {
+      payloadEnvio = "quero ver as últimas novidades";
+    }
+
+    var anchor = document.getElementById('flowAnchorV2');
+    var labelBotaoClicado = termoCategoria.charAt(0).toUpperCase() + termoCategoria.slice(1);
+    if (termoCategoria === 'as últimas novidades') {
+      labelBotaoClicado = 'Todas as ofertas';
+      this.categoriaSelecionada = 'Todas as ofertas';
+      this.categoriInteresse = 'todas as ofertas';
+    } else if (termoCategoria === 'beleza e perfumaria') {
+      labelBotaoClicado = 'Beleza';
+      this.categoriaSelecionada = 'Beleza';
+      this.categoriInteresse = 'beleza';
+    } else if (termoCategoria === 'jeans') {
+      labelBotaoClicado = 'Jeans';
+      this.categoriaSelecionada = 'Jeans';
+      this.categoriInteresse = 'jeans';
+    } else if (termoCategoria === 'moda masculina') {
+      labelBotaoClicado = 'Moda Masculina';
+      this.categoriaSelecionada = 'Moda Masculina';
+      this.categoriInteresse = 'moda masculina';
+    } else if (termoCategoria === 'moda feminina') {
+      labelBotaoClicado = 'Moda Feminina';
+      this.categoriaSelecionada = 'Moda Feminina';
+      this.categoriInteresse = 'moda feminina';
+    }
+
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          ${labelBotaoClicado}
+          <span class="meta">10:02</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    // Mensagem de acolhimento antes da conexão
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Excelente escolha! Separamos as melhores peças em <b>${termoCategoria}</b> para você aproveitar a Black Friday C&amp;A.</p>
+          <span class="meta">10:02</span>
+        </div>
+      </div>
+
+      <!-- Detalhes da conexão técnica Shopping Muse -->
+      <details class="muse-transition">
+        <summary>🤖 Conexão com Shopping Muse (Personal Shopper)</summary>
+        <div class="muse-details-content">
+          <div><b>Comando invisível enviado:</b></div>
+          <div class="trans-payload">"${payloadEnvio}"</div>
+          <div><b>Filtro configurado:</b> Vitrine restrita a produtos com desconto ativo de Black Friday.</div>
+        </div>
+      </details>
+    `;
+    this.scrollToBottom();
+
+    // Mensagens padrão idênticas ao protótipo original
+    await this.sleep(1000);
+    this.setTyping(true);
+    await this.sleep(1000);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Só um segundinho...</p>
+          <p>Estou localizando as opções disponíveis.</p>
+          <span class="meta">10:03</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    await this.sleep(1000);
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    this.renderizarVitrineRemarcadosMuse(anchor, termoCategoria);
+  },
+
+  interagirUltimasHorasV2: async function() {
+    var btnBox = document.getElementById('btnUltimasV2Box');
+    if (btnBox) btnBox.style.display = 'none';
+
+    var anchor = document.getElementById('flowAnchorV2');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Aproveitar agora
+          <span class="meta">14:02</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Excelente escolha! Agora é só escolher suas peças favoritas e aproveitar as últimas horas da Black Friday C&amp;A. ✨</p>
+          <span class="meta">14:02</span>
+        </div>
+      </div>
+
+      <details class="muse-transition">
+        <summary>🤖 Conexão com Shopping Muse (Últimas Horas)</summary>
+        <div class="muse-details-content">
+          <div><b>Comando invisível enviado:</b></div>
+          <div class="trans-payload">"quero ver as últimas novidades em ofertas"</div>
+          <div><b>Filtro configurado:</b> Maiores ofertas e descontos da Black Friday para conversão imediata.</div>
+        </div>
+      </details>
+    `;
+    this.scrollToBottom();
+
+    await this.sleep(1000);
+    this.setTyping(true);
+    await this.sleep(1000);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Só um segundinho...</p>
+          <p>Estou localizando as opções disponíveis.</p>
+          <span class="meta">14:03</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    await this.sleep(1000);
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    this.renderizarVitrineRemarcadosMuse(anchor, 'últimas horas');
+  },
+
+  renderizarVitrineRemarcadosMuse: function(anchor, contexto) {
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Aqui estão algumas sugestões de looks para você.</p>
+          <span class="meta">10:03</span>
+        </div>
+      </div>
+
+      <!-- Carrossel de Produtos Remarcados C&A -->
+      <div class="carousel-container">
+        
+        <!-- Produto 1: Blazer Alfaiataria Off White -->
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_PROD_FEM_1}" alt="Blazer Off White">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>blazer de alfaiataria feminino com martingale off white</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 359,99</span>
+                <span class="prod-price-current">R$ 279,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos disponíveis: PP | P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.feedbackAcaoMuse('Adicionar à sacola')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.feedbackAcaoMuse('Detalhes do produto')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Produto 2: Blazer Alfaiataria Marrom -->
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_PROD_FEM_2}" alt="Blazer Marrom">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>blazer de alfaiataria feminino com martingale marrom</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 359,99</span>
+                <span class="prod-price-current">R$ 279,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos disponíveis: PP | P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.feedbackAcaoMuse('Adicionar à sacola')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.feedbackAcaoMuse('Detalhes do produto')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Sugestões Finais (Conforme Lógica do Macro) -->
+        <div class="prod-card suggestion-card">
+          <div class="suggestion-banner"><div class="sparkles">✨</div></div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title"><b>Quer ver mais opções?</b></div>
+              <div style="font-size:11px; color:#54656F; margin-bottom:12px;">Veja mais produtos desta categoria ou explore outro departamento!</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.enviarInputLivreMuse('Quero ver mais produtos desta categoria')">↩ Mais desta categoria</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.voltarAoCarrosselCategoriasV2()">↩ Outras categorias</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-action-menu" id="acoesAposVitrineMuse">
+        <div class="in-chat-input-bar">
+          <input type="text" id="txtInputMuse" placeholder="Ou digite o que procura (ex: vestidos, jeans)..." onkeydown="if(event.key==='Enter') window.simuladorApp.enviarInputLivreMuse(this.value)">
+          <button type="button" onclick="window.simuladorApp.enviarInputLivreMuse(document.getElementById('txtInputMuse').value)">Enviar</button>
+        </div>
+      </div>
+      <div id="anchorFimVitrineMuse"></div>
+    `;
+    this.scrollToBottom();
+  },
+
+  voltarAoCarrosselCategoriasV2: function() {
+    var anchor = document.getElementById('anchorFimVitrineMuse') || document.getElementById('flowAnchorV2');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Outras categorias
+          <span class="meta">10:04</span>
+        </div>
+      </div>
+      <div class="row in">
+        <div class="bub">
+          <p>Claro, Mariana! Qual departamento você gostaria de explorar agora?</p>
+          <span class="meta">10:04</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  feedbackAcaoMuse: function(acao) {
+    alert("Conforme experiência atual");
+  },
+
+  enviarInputLivreMuse: async function(textoCustom) {
+    var inputEl = document.getElementById('txtInputMuse');
+    var texto = textoCustom || (inputEl ? inputEl.value.trim() : '') || 'Quero vestidos de festa';
+
+    var acoes = document.getElementById('acoesAposVitrineMuse');
+    if (acoes) acoes.style.display = 'none';
+
+    var anchor = document.getElementById('anchorFimVitrineMuse') || document.getElementById('flowAnchorV2');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          ${texto}
+          <span class="meta">10:05</span>
+        </div>
+      </div>
+
+      <details class="muse-transition">
+        <summary>🤖 Input repassado à Personal Shopper (Shopping Muse)</summary>
+        <div class="muse-details-content">
+          <div><b>Input capturado:</b> "${texto}"</div>
+          <div>A IA conduz perguntas de estilo/tamanho e recalcula as ofertas correspondentes.</div>
+        </div>
+      </details>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1200);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Perfeito, Mariana! Você procura algo mais casual ou festa? Se quiser, pode me enviar uma foto de referência também. 😊</p>
+          <span class="meta">10:05</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  conectarShoppingMuse: async function() {
+    var btnBox = document.getElementById('btnExplorarNovidadesBox');
+    if (btnBox) btnBox.style.display = 'none';
+
+    var anchor = document.getElementById('anchorMuse');
+    anchor.innerHTML += `
+      <div class="row out" style="margin-top: 8px;">
+        <div class="bub">
+          quero ver novidades
+          <span class="meta">14:36</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1200);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>✨ Conectando com a sua assistente de estilo <b>Shopping Muse</b> da C&amp;A...</p>
+          <p>Que tipo de peça ou estilo você quer conhecer hoje?</p>
+          <span class="meta">14:36</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  // =========================================================================
+  // Montagem da Abordagem 3: Vitrine DY (Seletor Black Friday)
+  // Filtrando apenas produtos da categoria escolhida + WhatsApp Flows + Card Final
+  // =========================================================================
+  montarChatAbordagem3: function(chat) {
+    if (this.disparoV3Atual === 'esquenta') {
+      chat.innerHTML = `
+        <div class="day">21/11 · Disparo 1 (Esquenta Base Total · DY)</div>
+        
+        <div class="row in">
+          <div class="bub">
+            <p>Mariana, a <b>Black Friday C&amp;A</b> já começou com ofertas exclusivas e descontos imperdíveis esperando por você! 🔥✨</p>
+            <p>Escolha a sua categoria favorita abaixo para carregar sua vitrine exclusiva de achadinhos:</p>
+            <span class="meta">10:00</span>
+          </div>
+        </div>
+
+        <!-- Carrossel de Categorias para Vitrine DY -->
+        <div class="carousel-container" id="carrosselCategoriasBFV3">
+          
+          <!-- Card 1: Moda Feminina -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_FEM}" alt="Moda Feminina">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">Looks Femininos</div>
+                <div class="cat-card-desc">Vestidos, alfaiataria, blusas e peças mais desejadas.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaDY('Moda Feminina', 'feminino')">
+                <span class="qr-icon">↩</span> Moda Feminina
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: Moda Masculina -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_MASC}" alt="Moda Masculina">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">Destaques Masculinos</div>
+                <div class="cat-card-desc">Camisas, polos, bermudas e básicos da estação.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaDY('Moda Masculina', 'masculino')">
+                <span class="qr-icon">↩</span> Moda Masculina
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 3: Jeans C&A -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_JEANS}" alt="Jeans C&A">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">O Melhor do Jeans</div>
+                <div class="cat-card-desc">Calças, jaquetas e shorts no denim e caimento perfeitos.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaDY('Jeans', 'jeans')">
+                <span class="qr-icon">↩</span> Jeans
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 4: Beleza & Perfumaria -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_BELEZA}" alt="Beleza & Perfumaria">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">Perfumaria &amp; Beleza</div>
+                <div class="cat-card-desc">Fragrâncias importadas, cuidados de pele e maquiagens.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaDY('Beleza', 'beleza')">
+                <span class="qr-icon">↩</span> Beleza
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 5: Vitrine Completa -->
+          <div class="cat-card">
+            <div class="cat-card-img-wrap">
+              <img src="${this.IMG_CAT_TODAS}" alt="Todas as Ofertas">
+            </div>
+            <div class="cat-card-body">
+              <div>
+                <div class="cat-card-title">Vitrine completa</div>
+                <div class="cat-card-desc">Explore todas as ofertas da Black Friday C&amp;A.</div>
+              </div>
+              <button type="button" class="cat-btn" onclick="window.simuladorApp.interagirCategoriaDY('Todas as ofertas', 'todas')">
+                <span class="qr-icon">↩</span> Todas as ofertas
+              </button>
+            </div>
+          </div>
+
+        </div>
+        <div id="flowAnchorV3"></div>
+      `;
+    } else {
+      // Disparo 2 de Últimas Horas DY (26/11 às 14h para toda a base)
+      chat.innerHTML = `
+        <div class="day">26/11 (14:00h) · Disparo 2 (Últimas Horas DY Base Total)</div>
+        
+        <div class="row in">
+          <div class="bub">
+            <img src="${this.IMG_ULTIMAS_HORAS}" class="template-header-img" alt="Últimas Horas Black Friday C&A" onerror="this.style.display='none'">
+            <p>Mariana, são as <b>últimas horas</b> para aproveitar os maiores descontos da <b>Black Friday da C&amp;A</b> em <b>${this.categoriaSelecionada.toLowerCase()}</b> e muito mais! ⏰🔥</p>
+            <p>Corre para garantir os seus favoritos agora mesmo! 🏃‍♀️</p>
+            <span class="meta">14:00</span>
+          </div>
+        </div>
+
+        <div class="btn-wpp-single" id="btnUltimasV3Box">
+          <button type="button" onclick="window.simuladorApp.interagirUltimasHorasV3()">
+            Aproveitar agora
+          </button>
+        </div>
+
+        <div id="flowAnchorV3"></div>
+      `;
+    }
+    this.scrollToBottom();
+  },
+
+  interagirCategoriaDY: async function(nomeCategoria, slugCategoria) {
+    this.categoriaSelecionada = nomeCategoria;
+    this.categoriInteresse = nomeCategoria.toLowerCase();
+
+    var anchor = document.getElementById('flowAnchorV3');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          ${nomeCategoria}
+          <span class="meta">10:02</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Excelente escolha! Separamos as melhores peças de <b>${nomeCategoria}</b> selecionadas para a Black Friday C&amp;A.</p>
+          <span class="meta">10:02</span>
+        </div>
+      </div>
+
+      <!-- Telemetria Técnica: Integração Dynamic Yield e Endpoint Pendente -->
+      <details class="muse-transition dy">
+        <summary>⚡ Integração API Dynamic Yield (DY)</summary>
+        <div class="muse-details-content">
+          <div class="badge-status-pending">Status: Endpoint Pendente</div>
+          <div style="margin-top:2px;"><b>Situação Técnica:</b> Endpoint com seletor específico para a Black Friday na categoria <b>${nomeCategoria}</b> ainda <b>não disponibilizado</b> pela C&amp;A (Dependência de desenvolvimento).</div>
+          <div style="margin-top:4px;"><b>Chamada Projetada:</b> <code>GET /v2/dy/showcase/black-friday?category=${slugCategoria}&user=mariana</code></div>
+          <div style="margin-top:2px;"><b>Filtro Aplicado:</b> Apenas produtos da categoria selecionada com ofertas ativas.</div>
+          <div style="margin-top:2px;"><b>Interface de SKU:</b> WhatsApp Flows nativo (Tamanho, Cor, Quantidade).</div>
+        </div>
+      </details>
+    `;
+    this.scrollToBottom();
+
+    await this.sleep(1000);
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    this.renderizarVitrineDYPorCategoria(anchor, nomeCategoria, slugCategoria);
+  },
+
+  interagirUltimasHorasV3: async function() {
+    var btnBox = document.getElementById('btnUltimasV3Box');
+    if (btnBox) btnBox.style.display = 'none';
+
+    var anchor = document.getElementById('flowAnchorV3');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Aproveitar agora
+          <span class="meta">14:02</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Excelente escolha! Agora é só escolher suas peças favoritas e aproveitar as últimas horas da Black Friday C&amp;A. ✨</p>
+          <span class="meta">14:02</span>
+        </div>
+      </div>
+
+      <details class="muse-transition dy">
+        <summary>⚡ Integração API Dynamic Yield (Últimas Horas)</summary>
+        <div class="muse-details-content">
+          <div class="badge-status-pending">Status: Endpoint Pendente</div>
+          <div style="margin-top:2px;"><b>Chamada Projetada:</b> <code>GET /v2/dy/showcase/black-friday-closing?user=mariana</code></div>
+          <div><b>Regra:</b> Recomendações personalizadas de escassez com estoque em tempo real.</div>
+        </div>
+      </details>
+    `;
+    this.scrollToBottom();
+
+    await this.sleep(1000);
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    this.renderizarVitrineDYPorCategoria(anchor, 'Destaques Black Friday', 'todas');
+  },
+
+  renderizarVitrineDYPorCategoria: function(anchor, nomeCategoria, slugCategoria) {
+    // Definimos produtos coerentes com a categoria selecionada:
+    var card1 = "", card2 = "";
+
+    if (slugCategoria === 'masculino') {
+      card1 = `
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_PROD_MASC_1}" alt="Camisa Masculina Linho">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>camisa comfort manga longa linho com algodão verde</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 199,99</span>
+                <span class="prod-price-current">R$ 139,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('camisa comfort manga longa linho verde', 139.99, 199.99, '${this.IMG_PROD_MASC_1}', 'Verde militar')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('camisa comfort manga longa linho verde', 139.99, 199.99, '${this.IMG_PROD_MASC_1}', 'Verde militar')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+      `;
+      card2 = `
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=450&auto=format&fit=crop" alt="Polo Masculina Piquet">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>camisa polo masculina em piquet regular marinho</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 119,99</span>
+                <span class="prod-price-current">R$ 79,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('camisa polo masculina em piquet marinho', 79.99, 119.99, 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=450&auto=format&fit=crop', 'Azul Marinho')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('camisa polo masculina em piquet marinho', 79.99, 119.99, 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=450&auto=format&fit=crop', 'Azul Marinho')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (slugCategoria === 'jeans') {
+      card1 = `
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_PROD_JEANS_1}" alt="Calça Jeans Wide Leg">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>calça jeans feminina wide leg cintura alta média</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 179,99</span>
+                <span class="prod-price-current">R$ 129,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: 36 | 38 | 40 | 42 | 44</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('calça jeans feminina wide leg cintura alta', 129.99, 179.99, '${this.IMG_PROD_JEANS_1}', 'Azul Médio')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('calça jeans feminina wide leg cintura alta', 129.99, 179.99, '${this.IMG_PROD_JEANS_1}', 'Azul Médio')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+      `;
+      card2 = `
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=450&auto=format&fit=crop" alt="Jaqueta Jeans Oversized">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>jaqueta jeans oversized unissex com bolsos</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 259,99</span>
+                <span class="prod-price-current">R$ 179,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('jaqueta jeans oversized unissex', 179.99, 259.99, 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=450&auto=format&fit=crop', 'Jeans Claro')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('jaqueta jeans oversized unissex', 179.99, 259.99, 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=450&auto=format&fit=crop', 'Jeans Claro')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (slugCategoria === 'beleza') {
+      card1 = `
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_PROD_BELEZA_1}" alt="Perfume Importado">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>eau de parfum floral feminino sofisticado 80ml</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 399,99</span>
+                <span class="prod-price-current">R$ 279,99</span>
+              </div>
+              <div class="prod-sizes">Volumetria: 80ml</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('eau de parfum floral feminino 80ml', 279.99, 399.99, '${this.IMG_PROD_BELEZA_1}', 'Única')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('eau de parfum floral feminino 80ml', 279.99, 399.99, '${this.IMG_PROD_BELEZA_1}', 'Única')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+      `;
+      card2 = `
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=450&auto=format&fit=crop" alt="Kit Maquiagem">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>kit maquiagem paleta de sombras + batom matte</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 149,99</span>
+                <span class="prod-price-current">R$ 99,99</span>
+              </div>
+              <div class="prod-sizes">Itens: Kit Duo</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('kit maquiagem paleta + batom matte', 99.99, 149.99, 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=450&auto=format&fit=crop', 'Nude Elegance')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('kit maquiagem paleta + batom matte', 99.99, 149.99, 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=450&auto=format&fit=crop', 'Nude Elegance')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      // Feminino / Todas: produto principal oficial do payload fornecido
+      card1 = `
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.PRODUTO_DY_FEM.images[0]}" alt="${this.PRODUTO_DY_FEM.name}">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>${this.PRODUTO_DY_FEM.name}</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ ${this.PRODUTO_DY_FEM.oldPrice.toFixed(2).replace('.',',')}</span>
+                <span class="prod-price-current">R$ ${this.PRODUTO_DY_FEM.price.toFixed(2).replace('.',',')}</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: PP | P | GG (M e G esgotados)</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlows()">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlows()">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+      `;
+      card2 = `
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_PROD_FEM_1}" alt="Blazer Off White">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>blazer alfaiataria com martingale off white</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 359,99</span>
+                <span class="prod-price-current">R$ 279,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('blazer alfaiataria com martingale off white', 279.99, 359.99, '${this.IMG_PROD_FEM_1}', 'Off white')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('blazer alfaiataria com martingale off white', 279.99, 359.99, '${this.IMG_PROD_FEM_1}', 'Off white')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    anchor.innerHTML += `
+      <!-- Carrossel de Produtos da Dynamic Yield Filtrado pela Categoria -->
+      <div class="carousel-container" id="carrosselDYContainer">
+        ${card1}
+        ${card2}
+
+        <!-- Card Final do Carrossel (Conforme Lógica do Macro Anexo) -->
+        <div class="prod-card suggestion-card">
+          <div class="suggestion-banner"><div class="sparkles">✨</div></div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title"><b>Quer ver mais opções?</b></div>
+              <div style="font-size:11px; color:#54656F; margin-bottom:12px;">Veja mais peças desta categoria ou explore outro departamento!</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.carregarMaisProdutosDY('${nomeCategoria}')">↩ Ver mais produtos</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.voltarAoCarrosselCategoriasDY()">↩ Trocar de categoria</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="chat-action-menu" id="acoesAposDY">
+        <button type="button" class="btn-chat-action" onclick="window.simuladorApp.abrirFlows()">
+          📱 Abrir WhatsApp Flows (Escolha de tamanho/cor)
+        </button>
+      </div>
+      <div id="anchorFimDY"></div>
+    `;
+    this.scrollToBottom();
+  },
+
+  carregarMaisProdutosDY: async function(nomeCat) {
+    var anchor = document.getElementById('anchorFimDY') || document.getElementById('flowAnchorV3');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Ver mais produtos
+          <span class="meta">10:04</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    // Carrega novo carrossel com mais itens remarcados da mesma categoria
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Separamos mais estas ofertas de <b>${nomeCat}</b> para você aproveitar:</p>
+          <span class="meta">10:04</span>
+        </div>
+      </div>
+
+      <div class="carousel-container">
+        <!-- Produto Adicional 1 -->
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_PROD_FEM_2}" alt="Blazer Marrom">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>blazer de alfaiataria feminino com martingale marrom</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 359,99</span>
+                <span class="prod-price-current">R$ 279,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('blazer alfaiataria feminino com martingale marrom', 279.99, 359.99, '${this.IMG_PROD_FEM_2}', 'Marrom')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('blazer alfaiataria feminino com martingale marrom', 279.99, 359.99, '${this.IMG_PROD_FEM_2}', 'Marrom')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Produto Adicional 2 -->
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_PROD_FEM_1}" alt="Blazer Off White">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>blazer alfaiataria com martingale off white</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 359,99</span>
+                <span class="prod-price-current">R$ 279,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('blazer alfaiataria com martingale off white', 279.99, 359.99, '${this.IMG_PROD_FEM_1}', 'Off white')">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlowsGenerico('blazer alfaiataria com martingale off white', 279.99, 359.99, '${this.IMG_PROD_FEM_1}', 'Off white')">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card de Opções Contínuas -->
+        <div class="prod-card suggestion-card">
+          <div class="suggestion-banner"><div class="sparkles">✨</div></div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title"><b>Quer ver mais opções?</b></div>
+              <div style="font-size:11px; color:#54656F; margin-bottom:12px;">Veja mais peças desta categoria ou explore outro departamento!</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.carregarMaisProdutosDY('${nomeCat}')">↩ Ver mais produtos</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.voltarAoCarrosselCategoriasDY()">↩ Trocar de categoria</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  voltarAoCarrosselCategoriasDY: async function() {
+    var anchor = document.getElementById('anchorFimDY') || document.getElementById('flowAnchorV3');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Trocar de categoria
+          <span class="meta">10:04</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1000);
+    this.setTyping(false);
+
+    // Mensagem Interativa do tipo interactive-list-messages nativa do WhatsApp (com botão de abrir lista)
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub list-msg-bubble">
+          <div class="list-msg-body">
+            <p>Sem problemas, Mariana! 🛍️ Escolha abaixo qual departamento você deseja conferir na Black Friday C&amp;A:</p>
+            <span class="meta" style="margin-bottom: 4px;">10:04</span>
+          </div>
+          <button type="button" class="btn-list-action" onclick="window.simuladorApp.abrirLista()">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path fill-rule="evenodd" d="M2.5 4.75a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Zm0 5.25a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Zm0 5.25a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd"/></svg>
+            Ver categorias
+          </button>
+        </div>
+      </div>
+      <div id="anchorItemLista"></div>
+    `;
+    this.scrollToBottom();
+  },
+
+  abrirLista: function() {
+    var b = document.getElementById('listBackdrop');
+    var s = document.getElementById('listSheet');
+    if (b) b.classList.add('open');
+    if (s) s.classList.add('open');
+  },
+
+  fecharLista: function() {
+    var b = document.getElementById('listBackdrop');
+    var s = document.getElementById('listSheet');
+    if (b) b.classList.remove('open');
+    if (s) s.classList.remove('open');
+  },
+
+  selecionarItemLista: function(nomeCategoria, slugCategoria) {
+    this.fecharLista();
+    this.interagirCategoriaDY(nomeCategoria, slugCategoria);
+  },
+
+  // WhatsApp Flows Modal (Bottom-Sheet)
+  abrirFlows: function() {
+    this.PRODUTO_ATUAL_FLOWS = this.PRODUTO_DY_FEM;
+    this.renderizarConteudoFlows(this.PRODUTO_DY_FEM);
+  },
+
+  abrirFlowsGenerico: function(nome, preco, precoAntigo, imgUrl, cor) {
+    var p = {
+      id: "99999",
+      name: nome,
+      price: preco,
+      oldPrice: precoAntigo,
+      images: [imgUrl],
+      sizes: [
+        { name: "PP", available: true },
+        { name: "P", available: true },
+        { name: "M", available: false },
+        { name: "G", available: true },
+        { name: "GG", available: true }
+      ],
+      color: cor,
+      description: "Peça selecionada para a Black Friday C&A. Confeccionada com tecidos confortáveis e caimento moderno. Verifique as instruções de lavagem na etiqueta."
+    };
+    this.PRODUTO_ATUAL_FLOWS = p;
+    this.renderizarConteudoFlows(p);
+  },
+
+  renderizarConteudoFlows: function(p) {
+    var content = document.getElementById('flowsContent');
+    content.innerHTML = `
+      <div class="flows-media-gallery">
+        <img id="flowsMainImg" src="${p.images[0]}" alt="${p.name}">
+        <div class="flows-dots">
+          <span class="flows-dot active"></span>
+        </div>
+      </div>
+
+      <div class="flows-prod-title">${p.name}</div>
+      <div class="flows-price-box">
+        <span class="flows-price-old">R$ ${p.oldPrice.toFixed(2).replace('.',',')}</span>
+        <span class="flows-price-new">R$ ${p.price.toFixed(2).replace('.',',')}</span>
+      </div>
+
+      <!-- Campo Cor -->
+      <div class="flows-field-group">
+        <div class="flows-input-box">
+          <span class="flows-label-floating">Cor</span>
+          ${p.color}
+        </div>
+      </div>
+
+      <!-- Seleção de Tamanho (Chips) -->
+      <div class="flows-chips-label">Tamanho</div>
+      <div class="flows-chips-sub">Selecione 1 opção</div>
+      <div class="flows-chips-grid">
+        ${p.sizes.map(s => {
+          if (!s.available) {
+            return `<div class="flows-chip disabled" title="Tamanho esgotado">${s.name}</div>`;
+          }
+          var selClass = (s.name === this.tamanhoSelecionadoDY) ? 'selected' : '';
+          return `<div class="flows-chip ${selClass}" onclick="window.simuladorApp.selecionarTamanhoFlow('${s.name}', this)">${s.name}</div>`;
+        }).join('')}
+      </div>
+
+      <!-- Campo Quantidade -->
+      <div class="flows-field-group">
+        <div class="flows-input-box" style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="flows-label-floating">Quantidade</span>
+          <input type="number" id="flowsQtd" value="${this.quantidadeSelecionadaDY}" min="1" max="10" style="border:none; width:50px; font-size:13px; font-weight:600; outline:none;" onchange="window.simuladorApp.quantidadeSelecionadaDY = this.value">
+        </div>
+      </div>
+
+      <!-- Descrição Completa -->
+      <div class="flows-description">
+        <b>Descrição:</b><br>
+        ${p.description}
+      </div>
+    `;
+
+    document.getElementById('flowsBackdrop').classList.add('open');
+    document.getElementById('flowsSheet').classList.add('open');
+  },
+
+  selecionarTamanhoFlow: function(tam, el) {
+    this.tamanhoSelecionadoDY = tam;
+    var chips = document.querySelectorAll('.flows-chip:not(.disabled)');
+    chips.forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  },
+
+  fecharFlows: function() {
+    var b = document.getElementById('flowsBackdrop');
+    var s = document.getElementById('flowsSheet');
+    if (b) b.classList.remove('open');
+    if (s) s.classList.remove('open');
+  },
+
+  submeterFlows: async function() {
+    this.fecharFlows();
+    this.fecharLista();
+    var p = this.PRODUTO_ATUAL_FLOWS || this.PRODUTO_DY_FEM;
+    var tam = this.tamanhoSelecionadoDY;
+    var qtd = document.getElementById('flowsQtd') ? document.getElementById('flowsQtd').value : 1;
+
+    var anchor = document.getElementById('anchorFimDY') || document.getElementById('flowAnchorV3');
+    
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Adicionar ao carrinho: <b>${p.name}</b> (Tam: ${tam}, Qtd: ${qtd})
+          <span class="meta">10:04</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1200);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>✅ <b>Prontinho, a peça está na sua sacola!</b></p>
+          <p>Agora é só escolher o próximo passo.</p>
+          <span class="meta">10:04</span>
+        </div>
+      </div>
+
+      <div class="btn-wpp-stacked" id="menuAposSacolaDY">
+        <button type="button" onclick="window.simuladorApp.acaoFinalizarCompraDY()">Finalizar compra</button>
+        <button type="button" onclick="window.simuladorApp.acaoContinuarComprandoDY()">Continuar comprando</button>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  acaoFinalizarCompraDY: function() {
+    alert("Indicativo de Ação: Direciona para a experiência atual de checkout da C&A.");
+  },
+
+  acaoContinuarComprandoDY: async function() {
+    var menu = document.getElementById('menuAposSacolaDY');
+    if (menu) menu.style.display = 'none';
+
+    var anchor = document.getElementById('anchorFimDY') || document.getElementById('flowAnchorV3');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Continuar comprando
+          <span class="meta">10:05</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(900);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Perfeito! Aqui estão mais opções de <b>${this.categoriaSelecionada}</b> na Black Friday para você:</p>
+          <span class="meta">10:05</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  scrollToBottom: function() {
+    setTimeout(function() {
+      var chat = document.getElementById('chat');
+      if (chat) chat.scrollTop = chat.scrollHeight;
+    }, 60);
+  }
+};
+
+// Inicialização
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    window.simuladorApp.renderizarRegrasNegocio();
+    window.simuladorApp.reiniciar();
+  });
+} else {
+  window.simuladorApp.renderizarRegrasNegocio();
+  window.simuladorApp.reiniciar();
+}
+</script>
+</body>
+</html>
