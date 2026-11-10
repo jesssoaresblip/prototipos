@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C&A | Protótipo Interativo - Campanha Data Dupla 11/11</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EDEDEB;
+  --panel: #FFFFFF;
+  --ink: #0A0A0A;
+  --on-ink: #FFFFFF;
+  --muted: #6E6E6E;
+  --line: #D8D8D6;
+  --soft: #F5F5F4;
+  --wa-dark: #075E54;
+  --wa-teal: #008069;
+  --wa-bg: #EFEAE2;
+  --wa-out: #D9FDD3;
+  --ui-font: "Instrument Sans", system-ui, sans-serif;
+  --wa-font: "Instrument Sans", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--ui-font); font-size: 14px; line-height: 1.45; display: flex; flex-direction: column; min-height: 100vh; }
+button { cursor: pointer; font-family: inherit; }
+
+/* Header */
+.topbar { background: #0A0A0A; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; min-height: 60px; }
+.brand b { font-size: 20px; font-weight: 700; }
+.brand span { font-size: 14px; color: #BDBDBD; margin-left: 10px; }
+.live-badge { background: #008069; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Grid principal */
+.bench { flex: 1; display: grid; grid-template-columns: 340px minmax(360px, 1fr) 340px; gap: 16px; padding: 16px; min-height: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-head { padding: 16px; border-bottom: 1px solid var(--line); }
+.panel-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.panel-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.panel-body { overflow-y: auto; padding: 16px; flex: 1; }
+
+/* Seletores de Copy */
+.scen-btn { width: 100%; text-align: left; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px; margin-bottom: 10px; transition: 0.2s; }
+.scen-btn b { display: block; font-size: 13.5px; }
+.scen-btn span { display: block; font-size: 12px; color: var(--muted); margin-top: 3px; }
+.scen-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.scen-btn[aria-pressed="true"] span { color: #CCC; }
+
+.param-card { background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-top: 10px; margin-bottom: 14px; font-size: 12.5px; line-height: 1.6; }
+.param-card b { color: var(--ink); }
+
+.reset-btn { width: 100%; background: var(--panel); color: var(--ink); border: 1px solid var(--line); padding: 10px; border-radius: 6px; font-weight: 600; font-size: 13px; margin-top: 6px; }
+.reset-btn:hover { background: var(--soft); }
+
+/* Celular WhatsApp */
+.stage { display: flex; align-items: center; justify-content: center; }
+.phone { width: 375px; height: 750px; background: #111B21; border-radius: 36px; padding: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); position: relative; }
+.screen { background: var(--wa-bg); border-radius: 28px; height: 100%; overflow: hidden; display: flex; flex-direction: column; font-family: var(--wa-font); }
+.status { height: 24px; background: var(--wa-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 11px; }
+.wa-head { background: var(--wa-dark); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.wa-head .av { width: 34px; height: 34px; border-radius: 50%; background: #0A0A0A; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.wa-head .who b { display: block; font-size: 14px; }
+.wa-head .who span { font-size: 11px; opacity: 0.8; }
+
+.chat { flex: 1; overflow-y: auto; padding: 10px; background-image: radial-gradient(rgba(7,94,84,0.06) 1px, transparent 1.2px); background-size: 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.day { margin: 8px auto 6px; background: #fff; color: #54656F; font-size: 11px; padding: 3px 8px; border-radius: 6px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); text-align: center; font-weight: 600; }
+.row { display: flex; margin: 2px 0; width: 100%; }
+.row.in { justify-content: flex-start; }
+
+.bub { max-width: 90%; padding: 8px 10px; border-radius: 8px; font-size: 13px; line-height: 1.4; color: #111B21; background: #fff; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word; }
+.media-wrapper { position: relative; width: 100%; margin-bottom: 8px; }
+.bub img.msg-img { width: 100%; height: auto; border-radius: 6px; display: block; }
+.temp-tag { position: absolute; top: 6px; right: 6px; background: rgba(0, 0, 0, 0.78); color: #FFF3CD; border: 1px solid #FFC107; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(2px); box-shadow: 0 2px 4px rgba(0,0,0,0.3); pointer-events: none; }
+.meta { float: right; margin: 6px 0 -2px 8px; font-size: 10px; color: #667781; }
+
+.legal-text { font-size: 11px; color: #667781; margin-top: 8px; border-top: 1px solid #ECECEC; padding-top: 6px; font-style: italic; }
+
+/* Botões do HSM */
+.stacked-menu { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; width: 90%; }
+.stacked-menu button, .cta-link-btn { border: 0; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 13px; padding: 11px; border-radius: 8px; text-align: center; width: 100%; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box; cursor: pointer; transition: 0.2s; }
+.stacked-menu button:hover, .cta-link-btn:hover { background: #F8F9FA; }
+
+/* Container de Mensagens e Elementos de Controle */
+.msg-group { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+
+/* Botão de Disparo na Conversa */
+.in-chat-trigger { margin: 10px auto; display: block; width: 92%; background: var(--wa-teal); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 600; font-size: 13px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: 0.2s; }
+.in-chat-trigger:hover { background: #006654; }
+
+/* Lateral Simplificada */
+.spec h3 { font-size: 13.5px; margin: 14px 0 6px; font-weight: 700; border-bottom: 1px solid var(--line); padding-bottom: 4px; color: var(--ink); }
+.spec h3:first-child { margin-top: 0; }
+.spec p, .spec li { font-size: 12.5px; color: #333; line-height: 1.45; }
+.spec ul { padding-left: 18px; margin: 4px 0; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-bottom: 6px; background: #0A0A0A; color: #FFF; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><b>C&A</b><span>Disparo Oficial D0 — Campanha Data Dupla 11/11</span></div>
+  <div class="live-badge">Virada 14h · 40% OFF</div>
+</header>
+
+<div class="bench">
+  
+  <!-- Painel de Controle Esquerdo: Comparador de Copies -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Opções de Template (Copies)</h2>
+      <p>Alterne entre as 3 versões para comparar:</p>
+    </div>
+    <div class="panel-body">
+      <button type="button" class="scen-btn" id="btnCopy1" aria-pressed="true" onclick="window.simuladorApp.selecionarVersaoCopy('1')">
+        <b>✨ Opção 1 (Principal / Aprovada)</b>
+        <span>Foco em novidade imperdível e renovar o guarda-roupa com 40% OFF extra.</span>
+      </button>
+
+      <button type="button" class="scen-btn" id="btnCopy2" aria-pressed="false" onclick="window.simuladorApp.selecionarVersaoCopy('2')">
+        <b>🔥 Opção 2 (Virada & Urgência)</b>
+        <span>Destaca a virada oficial da promoção e oportunidade imediata.</span>
+      </button>
+
+      <button type="button" class="scen-btn" id="btnCopy3" aria-pressed="false" onclick="window.simuladorApp.selecionarVersaoCopy('3')">
+        <b>⚡ Opção 3 (Direta & Objetiva)</b>
+        <span>Foco ultra rápido nos 40% OFF e no cupom 11DO11.</span>
+      </button>
+
+      <div class="param-card">
+        • <b>Base:</b> 70.000 clientes<br>
+        • <b>Início:</b> 10/11 às 14:00h<br>
+        • <b>Término:</b> 12/11 às 10:00h<br>
+        • <b>Cupom:</b> <code>11DO11</code> (40% OFF extra)<br>
+        • <b>Vitrine:</b> Coleção 20011 (Site e App)
+      </div>
+
+      <button type="button" class="reset-btn" onclick="window.simuladorApp.reiniciar()">🔄 Resetar Conversa</button>
+    </div>
+  </aside>
+
+  <!-- Visão WhatsApp -->
+  <main class="stage">
+    <div class="phone">
+      <div class="screen">
+        <div class="status"><span>14:00</span><span>5G ▮▮▮</span></div>
+        <header class="wa-head">
+          <div class="av">C&A</div>
+          <div class="who"><b>C&A</b><span>Conta Comercial Oficial</span></div>
+        </header>
+        <div class="chat" id="chat">
+          <!-- Conteúdo montado via JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Especificações Simplificadas C&A -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Resumo da Ação</h2>
+      <p>Visão simplificada para o time C&A:</p>
+    </div>
+    <div class="panel-body spec">
+      <span class="badge">DISPARO D0 · 70K CLIENTES</span>
+      
+      <h3>🎯 Objetivo</h3>
+      <p>Ativar os <b>70.000 clientes</b> com a virada promocional de <b>40% OFF extra</b> no cupom <b>11DO11</b> para compras no site ou app.</p>
+
+      <h3>🛍️ Experiência da Cliente</h3>
+      <ul>
+        <li><b>Mensagem Direta:</b> Template único com comunicação clara e sem atrito conversacional.</li>
+        <li><b>Botão de Acesso:</b> Link direto para a lista selecionada da coleção (`/vitrine/cea/20011`).</li>
+        <li><b>Cópia do Cupom:</b> Botão nativo que copia o código <b>11DO11</b> com um clique.</li>
+      </ul>
+
+      <h3>⏰ Validade</h3>
+      <p>Promoção válida até <b>12/11 às 10h</b>.</p>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+window.simuladorApp = {
+  versaoCopy: '1',
+  disparoEnviado: false,
+  LINK_VITRINE: "https://www.cea.com.br/vitrine/cea/20011",
+  IMG_HEADER: "https://blipmediastore.blob.core.windows.net/public-medias/Media_3938bbf9-4ca6-4c42-9a82-c8846521ec21",
+  CUPOM_CODIGO: "11DO11",
+  LEGAL_TEXT: "Promoção válida até 12/11 às 10h.",
+
+  selecionarVersaoCopy: function(versao) {
+    this.versaoCopy = versao;
+    document.getElementById('btnCopy1').setAttribute('aria-pressed', versao === '1' ? 'true' : 'false');
+    document.getElementById('btnCopy2').setAttribute('aria-pressed', versao === '2' ? 'true' : 'false');
+    document.getElementById('btnCopy3').setAttribute('aria-pressed', versao === '3' ? 'true' : 'false');
+
+    if (this.disparoEnviado) {
+      this.renderizarMensagem();
+    }
+  },
+
+  copiarCodigo: function(btnElement) {
+    var tempInput = document.createElement("input");
+    tempInput.value = this.CUPOM_CODIGO;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    try {
+      document.execCommand('copy');
+      var originalHtml = btnElement.innerHTML;
+      btnElement.innerHTML = "<span>✓ Cupom 11DO11 copiado!</span>";
+      btnElement.style.color = "#0F5132";
+      btnElement.style.background = "#D1E7DD";
+      setTimeout(function() {
+        btnElement.innerHTML = originalHtml;
+        btnElement.style.color = "var(--wa-teal)";
+        btnElement.style.background = "#fff";
+      }, 2500);
+    } catch (e) {
+      console.log("Erro ao copiar código", e);
+    }
+    document.body.removeChild(tempInput);
+  },
+
+  reiniciar: function() {
+    this.disparoEnviado = false;
+    var chat = document.getElementById('chat');
+    if (chat) {
+      chat.innerHTML = '<button type="button" class="in-chat-trigger" id="btnDisparo" onclick="window.simuladorApp.enviarDisparo()">📩 Simular Disparo D0 (10/11 a partir das 14h)</button><div id="flowContent"></div>';
+    }
+  },
+
+  enviarDisparo: function() {
+    this.disparoEnviado = true;
+    var btn = document.getElementById('btnDisparo');
+    if (btn) btn.style.display = 'none';
+    this.renderizarMensagem();
+  },
+
+  renderizarMensagem: function() {
+    var flow = document.getElementById('flowContent');
+    if (!flow) return;
+
+    var textoCopy = "";
+    if (this.versaoCopy === '1') {
+      textoCopy = "Maria, tem novidade imperdível na <b>Data Dupla 11/11</b> da C&A! 🎟️✨<br><br>Liberamos <b>40% OFF EXTRA</b> em uma seleção especial de peças para renovar o guarda-roupa usando o cupom <b>" + this.CUPOM_CODIGO + "</b> para compras pelo site ou app! 🔥";
+    } else if (this.versaoCopy === '2') {
+      textoCopy = "Maria, a <b>Data Dupla 11/11</b> da C&A acabou de ficar ainda melhor! 🔥<br><br>A promoção virou e liberamos <b>40% OFF EXTRA</b> com o cupom <b>" + this.CUPOM_CODIGO + "</b> em uma seleção exclusiva pelo site ou app! 🛍️";
+    } else {
+      textoCopy = "Maria, liberamos <b>40% OFF EXTRA</b> na <b>Data Dupla 11/11</b> da C&A! 🎟️🔥<br><br>Use o cupom <b>" + this.CUPOM_CODIGO + "</b> e garanta os melhores achadinhos em peças selecionadas no nosso site ou app! 🛍️";
+    }
+
+    flow.innerHTML = `
+      <div class="day">10/11 (Hoje) · 14:00</div>
+      <div class="msg-group">
+        <div class="row in">
+          <div class="bub">
+            <div class="media-wrapper">
+              <img src="${this.IMG_HEADER}" class="msg-img" alt="C&A Data Dupla 40% OFF" onerror="this.style.display='none'">
+              <span class="temp-tag">⚠️ Imagem Provisória</span>
+            </div>
+            ${textoCopy}
+            <div class="legal-text">${this.LEGAL_TEXT}</div>
+            <span class="meta">14:00</span>
+          </div>
+        </div>
+        
+        <div class="stacked-menu">
+          <a href="${this.LINK_VITRINE}" target="_blank" rel="noopener noreferrer" class="cta-link-btn">Aproveitar ofertas</a>
+          <button type="button" onclick="window.simuladorApp.copiarCodigo(this)">Copiar código do cupom</button>
+        </div>
+      </div>
+    `;
+  }
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    window.simuladorApp.reiniciar();
+  });
+} else {
+  window.simuladorApp.reiniciar();
+}
+</script>
+</body>
+</html>
