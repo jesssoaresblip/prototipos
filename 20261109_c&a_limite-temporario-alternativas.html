@@ -196,6 +196,33 @@ details.muse-transition[open] summary::after { transform: rotate(180deg); }
 .strategic-note b, .strategic-note strong { font-weight: 700; display: inline; color: #14532D; }
 
 /* ==========================================================
+   WHATSAPP INTERACTIVE LIST BOTTOM-SHEET & BUTTON
+   ========================================================== */
+.list-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; border-radius: 28px; }
+.list-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.list-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 82%; background: #FFFFFF; border-radius: 20px 20px 0 0; z-index: 101; transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -8px 24px rgba(0,0,0,0.25); font-family: var(--wa-font); }
+.list-sheet.open { transform: translateY(0); }
+
+.list-sheet-header { display: flex; align-items: center; justify-content: center; position: relative; padding: 16px 18px 12px; border-bottom: 1px solid #F0F2F5; flex-shrink: 0; }
+.list-sheet-title { font-weight: 700; font-size: 16px; color: #111B21; letter-spacing: -0.2px; }
+.list-sheet-close { position: absolute; right: 14px; top: 12px; width: 30px; height: 30px; border-radius: 50%; background: #E9EDEF; border: none; font-size: 15px; color: #54656F; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.15s; }
+.list-sheet-close:hover { background: #D1D7DB; color: #111; }
+
+.list-sheet-content { overflow-y: auto; flex: 1; padding: 4px 0 16px; }
+.list-section-title { font-size: 13px; font-weight: 600; color: #54656F; padding: 14px 18px 6px; letter-spacing: -0.1px; }
+.list-row { padding: 12px 18px; border-bottom: 1px solid #F0F2F5; cursor: pointer; transition: background 0.15s; display: flex; flex-direction: column; }
+.list-row:hover { background: #F5F6F6; }
+.list-row-title { font-size: 15px; font-weight: 600; color: #111B21; line-height: 1.3; }
+.list-row-desc { font-size: 13px; color: #667781; margin-top: 2px; line-height: 1.35; }
+.list-sheet-footer-hint { text-align: center; font-size: 12px; color: #8696A0; padding: 22px 18px 8px; font-weight: 500; }
+
+.bub.list-msg-bubble { padding: 0; overflow: hidden; }
+.list-msg-body { padding: 8px 10px 4px; margin: 0; }
+.btn-list-action { width: 100%; border: none; border-top: 1px solid #E9EDEF; background: transparent; color: var(--wa-teal); font-weight: 600; font-size: 13px; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.15s; font-family: inherit; }
+.btn-list-action:hover { background: #F8F9FA; }
+
+/* ==========================================================
    WHATSAPP FLOWS BOTTOM-SHEET MODAL (Fiel aos prints Insider)
    ========================================================== */
 .flows-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; border-radius: 28px; }
@@ -313,6 +340,47 @@ details.muse-transition[open] summary::after { transform: rotate(180deg); }
         </header>
         <div class="chat" id="chat">
           <!-- Mensagens geradas dinamicamente via JS -->
+        </div>
+
+                <!-- WhatsApp Interactive List Bottom Sheet Modal -->
+        <div class="list-backdrop" id="listBackdrop" onclick="window.simuladorApp.fecharLista()"></div>
+        <div class="list-sheet" id="listSheet">
+          <div class="list-sheet-header">
+            <span class="list-sheet-title">Categorias</span>
+            <button type="button" class="list-sheet-close" onclick="window.simuladorApp.fecharLista()">✕</button>
+          </div>
+          <div class="list-sheet-content">
+            <div class="list-section-title">DEPARTAMENTOS EM DESTAQUE</div>
+            
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Moda Feminina')">
+              <div class="list-row-title">Moda Feminina</div>
+              <div class="list-row-desc">Vestidos, alfaiataria, blusas e peças da estação</div>
+            </div>
+
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Moda Masculina')">
+              <div class="list-row-title">Moda Masculina</div>
+              <div class="list-row-desc">Camisas, polos, bermudas e básicos essenciais</div>
+            </div>
+
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Jeans C&amp;A')">
+              <div class="list-row-title">Jeans C&amp;A</div>
+              <div class="list-row-desc">Calças, jaquetas e shorts jeans no caimento perfeito</div>
+            </div>
+
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Beleza &amp; Perfumaria')">
+              <div class="list-row-title">Beleza &amp; Perfumaria</div>
+              <div class="list-row-desc">Perfumes importados, skincare e maquiagens</div>
+            </div>
+
+            <div class="list-section-title">CATÁLOGO GERAL</div>
+
+            <div class="list-row" onclick="window.simuladorApp.selecionarItemLista('Todas as novidades')">
+              <div class="list-row-title">Todas as novidades</div>
+              <div class="list-row-desc">Vitrine completa para aproveitar seu novo limite</div>
+            </div>
+
+            <div class="list-sheet-footer-hint">Toque em um item para selecionar</div>
+          </div>
         </div>
 
         <!-- WhatsApp Flows Bottom Sheet Modal -->
@@ -528,14 +596,20 @@ window.simuladorApp = {
         </div>
 
         <div class="exec-item">
+          <span class="exec-tag purple">Navegação Contínua</span>
+          <h3>4. Card Final da Vitrine (Retenção)</h3>
+          <p>O último card do carrossel de produtos atua como ponto de continuidade da jornada, disponibilizando dois botões de ação rápida para manter a cliente engajada sem sair do chat.</p>
+        </div>
+
+        <div class="exec-item">
           <span class="exec-tag">Próximo Passo</span>
-          <h3>4. Confirmação e Bifurcação</h3>
+          <h3>5. Confirmação e Bifurcação</h3>
           <p>Ao adicionar a peça, a cliente recebe a mensagem <i>"✅ Prontinho, a peça está na sua sacola! Agora é só escolher o próximo passo."</i> com opções de <b>Finalizar compra</b> (redirecionamento à experiência atual) ou <b>Continuar comprando</b> (reexibição da vitrine DY).</p>
         </div>
 
         <div class="exec-item">
           <span class="exec-tag red">Inatividade 1h</span>
-          <h3>5. Régua de Reengajamento DY</h3>
+          <h3>6. Régua de Reengajamento DY</h3>
           <p>Após 60 minutos sem interação, o bot dispara a pergunta de recuperação: <i>"Mariana, não encontrou os seus favoritos? 🛍️ Ainda dá tempo de aproveitar seu novo limite na Black Friday! Quer conferir outras opções recomendadas?"</i></p>
           <p style="margin-top: 4px;">• <b>Quero conferir:</b> Reexibe a vitrine DY para novas escolhas.<br>• <b>Encerrar:</b> Finaliza o atendimento conforme a experiência atual.</p>
         </div>
@@ -580,6 +654,7 @@ window.simuladorApp = {
 
   reiniciar: function() {
     this.fecharFlows();
+    this.fecharLista();
     this.setTyping(false);
     var chat = document.getElementById('chat');
     chat.innerHTML = `
@@ -948,6 +1023,21 @@ window.simuladorApp = {
           </div>
         </div>
 
+        <!-- Card Final de Navegação Contínua e Retenção (Lógica DY) -->
+        <div class="prod-card suggestion-card">
+          <div class="suggestion-banner"><div class="sparkles">✨</div></div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title"><b>Quer ver mais opções?</b></div>
+              <div style="font-size:11px; color:#54656F; margin-bottom:12px;">Veja mais peças recomendadas ou explore outro departamento!</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.carregarMaisProdutosDY()">↩ Ver mais peças</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.voltarAoCarrosselCategoriasDY()">↩ Ver outra categoria</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <div class="chat-action-menu" id="acoesAposDY">
@@ -1040,6 +1130,7 @@ window.simuladorApp = {
 
   submeterFlows: async function() {
     this.fecharFlows();
+    this.fecharLista();
     var p = this.PRODUTO_DY;
     var tam = this.tamanhoSelecionadoDY;
     var qtd = document.getElementById('flowsQtd') ? document.getElementById('flowsQtd').value : 1;
@@ -1110,6 +1201,171 @@ window.simuladorApp = {
       </div>
     `;
     // Reexibe a vitrine DY
+    var carrosselOriginal = document.getElementById('carrosselDYContainer');
+    if (carrosselOriginal) {
+      anchor.innerHTML += carrosselOriginal.outerHTML;
+    }
+    this.scrollToBottom();
+  },
+
+  carregarMaisProdutosDY: async function() {
+    var anchor = document.getElementById('anchorAposDY') || document.getElementById('flowAnchor');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Ver mais peças
+          <span class="meta">13:28</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1100);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="carousel-container">
+        <!-- Produto Adicional 1 -->
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_BLAZER_BROWN}" alt="Blazer Marrom">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>blazer alfaiataria feminino martingale marrom</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 359,99</span>
+                <span class="prod-price-current">R$ 279,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlows()">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlows()">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Produto Adicional 2 -->
+        <div class="prod-card">
+          <div class="prod-card-img-wrap">
+            <img src="${this.IMG_BLAZER_OFF}" alt="Blazer Off White">
+          </div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title">Que tal? ✨ <b>blazer alfaiataria com martingale off white</b></div>
+              <div class="prod-price-box">
+                <span class="prod-price-old">R$ 359,99</span>
+                <span class="prod-price-current">R$ 279,99</span>
+              </div>
+              <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlows()">↩ Adicionar à sacola</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.abrirFlows()">↩ Detalhes do produto</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card de Opções Contínuas -->
+        <div class="prod-card suggestion-card">
+          <div class="suggestion-banner"><div class="sparkles">✨</div></div>
+          <div class="prod-card-body">
+            <div>
+              <div class="prod-title"><b>Quer ver mais opções?</b></div>
+              <div style="font-size:11px; color:#54656F; margin-bottom:12px;">Veja mais peças recomendadas ou explore outro departamento!</div>
+            </div>
+            <div class="prod-actions">
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.carregarMaisProdutosDY()">↩ Ver mais peças</button>
+              <button class="prod-btn" type="button" onclick="window.simuladorApp.voltarAoCarrosselCategoriasDY()">↩ Ver outra categoria</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  voltarAoCarrosselCategoriasDY: async function() {
+    var anchor = document.getElementById('anchorAposDY') || document.getElementById('flowAnchor');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          Ver outra categoria
+          <span class="meta">13:28</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1000);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub list-msg-bubble">
+          <div class="list-msg-body">
+            <p>Sem problemas, ${this.dados.nome}! 🛍️ Escolha abaixo qual departamento você deseja conferir com seu novo limite:</p>
+            <span class="meta" style="margin-bottom: 4px;">13:28</span>
+          </div>
+          <button type="button" class="btn-list-action" onclick="window.simuladorApp.abrirLista()">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path fill-rule="evenodd" d="M2.5 4.75a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Zm0 5.25a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Zm0 5.25a.75.75 0 0 1 .75-.75h13.5a.75.75 0 0 1 0 1.5H3.25a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd"/></svg>
+            Ver categorias
+          </button>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  abrirLista: function() {
+    var b = document.getElementById('listBackdrop');
+    var s = document.getElementById('listSheet');
+    if (b) b.classList.add('open');
+    if (s) s.classList.add('open');
+  },
+
+  fecharLista: function() {
+    var b = document.getElementById('listBackdrop');
+    var s = document.getElementById('listSheet');
+    if (b) b.classList.remove('open');
+    if (s) s.classList.remove('open');
+  },
+
+  selecionarItemLista: async function(nomeCategoria) {
+    this.fecharLista();
+    var anchor = document.getElementById('anchorAposDY') || document.getElementById('flowAnchor');
+    anchor.innerHTML += `
+      <div class="row out">
+        <div class="bub">
+          ${nomeCategoria}
+          <span class="meta">13:29</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1000);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Excelente escolha! Aqui estão os destaques em <b>${nomeCategoria}</b> recomendados para você:</p>
+          <span class="meta">13:29</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    await this.sleep(800);
+    this.setTyping(true);
+    await this.sleep(1000);
+    this.setTyping(false);
+
     var carrosselOriginal = document.getElementById('carrosselDYContainer');
     if (carrosselOriginal) {
       anchor.innerHTML += carrosselOriginal.outerHTML;
@@ -1361,11 +1617,11 @@ window.simuladorApp = {
   },
 
   adicionarSacola: function(prod) {
-    alert('Produto "' + prod + '" adicionado à sacola!');
+    alert('Conforme experiência atual');
   },
 
   verDetalhes: function(prod) {
-    alert('Abrindo detalhes do produto: ' + prod);
+    alert('Conforme experiência atual');
   },
 
   scrollToBottom: function() {
