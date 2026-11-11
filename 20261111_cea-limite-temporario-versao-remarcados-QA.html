@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C&A Pay | Protótipo QA - Produtos Remarcados Shopping Muse (v3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F3F4F6;
+  --panel: #FFFFFF;
+  --ink: #0A0A0A;
+  --muted: #6B7280;
+  --line: #E5E7EB;
+  --wa-dark: #075E54;
+  --wa-teal: #008069;
+  --wa-green: #25D366;
+  --wa-bg: #EFEAE2;
+  --wa-out: #E7FED8;
+  --cea-blue: #002B49;
+  --cea-red: #E0001A;
+  --ui-font: "Instrument Sans", system-ui, sans-serif;
+  --wa-font: "Instrument Sans", Roboto, Helvetica, Arial, sans-serif;
+  --mono-font: "JetBrains Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--ui-font); font-size: 13.5px; line-height: 1.45; display: flex; flex-direction: column; min-height: 100vh; }
+button { cursor: pointer; font-family: inherit; }
+
+/* Topbar */
+.topbar { background: #0A0A0A; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; min-height: 56px; border-bottom: 1px solid #222; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand b { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+.brand span { font-size: 13px; color: #A8A8A8; border-left: 1px solid #333; padding-left: 12px; margin-left: 4px; }
+.badge-version { background: #2563EB; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+/* Grid Principal: Três colunas distribuídas igualmente em espaço e alinhadas ao topo */
+.bench {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px;
+  padding: 18px;
+  min-height: 0;
+}
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.panel-head { padding: 14px 18px; border-bottom: 1px solid var(--line); background: #FAF9F8; }
+.panel-head h2 { margin: 0; font-size: 14px; font-weight: 700; color: #111; }
+.panel-head p { margin: 2px 0 0; color: var(--muted); font-size: 11.5px; }
+.panel-body { overflow-y: auto; padding: 16px 18px; flex: 1; max-height: calc(100vh - 120px); }
+
+/* Painel Esquerdo: Controle QA */
+.section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #374151; margin-bottom: 10px; display: block; }
+.sim-controls { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.btn-sim { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #FFF; text-align: left; font-size: 12px; font-weight: 600; color: #1F2937; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s; }
+.btn-sim:hover { border-color: #9CA3AF; background: #F9FAFB; }
+.btn-sim.active { border-color: var(--cea-blue); background: #EFF6FF; color: var(--cea-blue); font-weight: 700; }
+.btn-sim span.tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #E5E7EB; color: #374151; }
+
+.context-box { padding: 12px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 12px; color: #334155; line-height: 1.5; margin-bottom: 16px; }
+.context-box b { color: #0F172A; }
+.code-tag { font-family: var(--mono-font); font-size: 10.5px; background: #E2E8F0; padding: 2px 5px; border-radius: 4px; color: #0F172A; word-break: break-all; display: inline-block; }
+
+.reset-btn { width: 100%; background: #FFF; color: var(--ink); border: 1px solid var(--line); padding: 10px; border-radius: 8px; font-weight: 600; font-size: 12.5px; transition: 0.15s; }
+.reset-btn:hover { background: #F3F4F6; }
+
+/* Simulador WhatsApp Central */
+.stage { display: flex; align-items: flex-start; justify-content: center; width: 100%; }
+.phone { width: 100%; max-width: 390px; height: 760px; background: #111B21; border-radius: 36px; padding: 10px; box-shadow: 0 24px 44px rgba(0,0,0,0.25); position: relative; overflow: hidden; }
+.screen { background: var(--wa-bg); border-radius: 28px; height: 100%; overflow: hidden; display: flex; flex-direction: column; font-family: var(--wa-font); position: relative; }
+.status { height: 24px; background: var(--wa-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 11px; }
+.wa-head { background: var(--wa-dark); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.wa-head .av { width: 34px; height: 34px; border-radius: 50%; background: #0A0A0A; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 11px; border: 1.5px solid rgba(255,255,255,0.25); }
+.wa-head .who b { display: flex; align-items: center; gap: 4px; font-size: 13.5px; }
+.wa-head .who .verified { color: #20C65A; font-size: 12px; }
+.wa-head .who span { font-size: 11px; opacity: 0.85; transition: all 0.2s; }
+.wa-head .who span.typing { color: #25D366; font-weight: 600; }
+
+.chat { flex: 1; overflow-y: auto; padding: 10px; background-image: radial-gradient(rgba(7,94,84,0.06) 1px, transparent 1.2px); background-size: 16px 16px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
+.day { margin: 4px auto 2px; background: #fff; color: #54656F; font-size: 10.5px; padding: 3px 8px; border-radius: 6px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.12); text-align: center; font-weight: 500; }
+.row { display: flex; margin: 1px 0; width: 100%; animation: fadeInMsg 0.25s ease-out; }
+.row.in { justify-content: flex-start; }
+.row.out { justify-content: flex-end; }
+
+@keyframes fadeInMsg {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bub { max-width: 86%; padding: 7px 10px; border-radius: 8px; font-size: 12.8px; line-height: 1.38; color: #111B21; background: #fff; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word; }
+.bub p { margin: 0 0 6px 0; }
+.bub p:last-child { margin-bottom: 0; }
+.bub .footer-text { font-size: 11.5px; color: #667781; font-style: italic; margin-top: 6px; }
+.bub img.template-header-img { width: 100%; height: auto; max-height: 160px; border-radius: 6px; margin-bottom: 8px; display: block; object-fit: cover; background: #eaeaea; }
+.out .bub { background: var(--wa-out); }
+.meta { float: right; margin: 3px 0 -2px 8px; font-size: 10px; color: #667781; }
+
+.typing-bubble { display: flex; align-items: center; gap: 4px; padding: 10px 14px; background: #fff; border-radius: 12px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); animation: fadeInMsg 0.2s ease-out; }
+.typing-dot { width: 6px; height: 6px; background: #8696A0; border-radius: 50%; animation: typingAnimation 1.4s infinite ease-in-out; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingAnimation {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* Botões WhatsApp */
+.btn-wpp-single { width: 86%; margin-top: 3px; }
+.btn-wpp-single button { border: 0; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 12.5px; padding: 9px; border-radius: 8px; text-align: center; width: 100%; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); cursor: pointer; transition: 0.15s; display: block; }
+.btn-wpp-single button:hover { background: #F8F9FA; }
+
+.btn-wpp-quickreply { display: flex; gap: 6px; width: 86%; margin-top: 4px; }
+.btn-wpp-quickreply button { flex: 1; border: 0; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 12.5px; padding: 9px; border-radius: 8px; text-align: center; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); cursor: pointer; transition: 0.15s; }
+.btn-wpp-quickreply button:hover { background: #F8F9FA; }
+
+.chat-action-menu { display: flex; flex-direction: column; gap: 6px; margin: 6px 0; width: 100%; }
+.in-chat-input-bar { display: flex; gap: 6px; margin: 4px 0; width: 100%; }
+.in-chat-input-bar input { flex: 1; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; font-family: inherit; background: #fff; }
+.in-chat-input-bar button { background: var(--wa-teal); color: #fff; border: 0; border-radius: 8px; padding: 0 12px; font-weight: 600; font-size: 12px; }
+.in-chat-input-bar button:hover { background: #006b57; }
+
+/* Transição Interna */
+details.muse-transition { background: #F3EEFA; border-left: 3px solid #6E2A8D; padding: 6px 10px; border-radius: 6px; font-size: 11.5px; color: #4B1A64; margin: 6px 0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+details.muse-transition summary { font-weight: 700; cursor: pointer; outline: none; }
+.muse-details-content { margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.15); font-size: 11px; line-height: 1.4; }
+.trans-payload { font-family: var(--mono-font); font-size: 10px; background: rgba(0,0,0,0.06); padding: 3px 6px; border-radius: 4px; display: inline-block; margin: 3px 0; }
+
+/* Carrossel Produtos */
+.carousel-container { width: 100%; overflow-x: auto; padding: 6px 2px 10px; display: flex; gap: 10px; scrollbar-width: thin; animation: fadeInMsg 0.3s ease-out; }
+.prod-card { flex: 0 0 215px; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+.prod-card-img-wrap { position: relative; width: 100%; height: 165px; background: #F8F9FA; display: flex; align-items: center; justify-content: center; }
+.prod-card img { width: 100%; height: 100%; object-fit: cover; }
+.prod-card-body { padding: 9px 11px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.prod-title { font-size: 12px; line-height: 1.35; color: #111; margin-bottom: 6px; }
+.prod-title b { font-weight: 600; }
+.prod-price-box { margin-bottom: 4px; display: flex; align-items: baseline; gap: 6px; }
+.prod-price-old { font-size: 10.5px; color: #888; text-decoration: line-through; }
+.prod-price-current { font-size: 13.5px; font-weight: 700; color: #111; }
+.prod-sizes { font-size: 10.5px; color: #667781; margin-bottom: 8px; }
+.prod-actions { border-top: 1px solid #EEF1F2; margin-top: 4px; }
+.prod-btn { background: transparent; border: none; border-bottom: 1px solid #EEF1F2; color: var(--wa-teal); font-size: 11.5px; font-weight: 600; padding: 8px 0; width: 100%; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: 0.15s; }
+.prod-btn:last-child { border-bottom: none; }
+.prod-btn:hover { background: #FAFAFA; }
+
+.prod-card.suggestion-card { background: #fff; }
+.suggestion-banner { width: 100%; height: 165px; background: linear-gradient(135deg, #1C0DE2 0%, #3F00E8 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-size: 32px; }
+
+/* Painel Direito: Guia QA & Regras */
+.qa-card { background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+.qa-card h3 { margin: 0 0 6px 0; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.qa-card p { margin: 0 0 8px 0; font-size: 12px; color: #4B5563; line-height: 1.5; }
+.qa-card ul { margin: 0; padding-left: 18px; font-size: 11.8px; color: #374151; }
+.qa-card li { margin-bottom: 4px; }
+.qa-card li:last-child { margin-bottom: 0; }
+
+.badge-rule { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
+.badge-rule.purple { background: #F3E8FF; color: #6B21A8; }
+.badge-rule.blue { background: #DBEAFE; color: #1E40AF; }
+.badge-rule.amber { background: #FEF3C7; color: #92400E; }
+.badge-rule.red { background: #FEE2E2; color: #991B1B; }
+.badge-rule.green { background: #DCFCE7; color: #166534; }
+
+.regex-box { background: #F8FAFC; border: 1px solid #CBD5E1; border-left: 3px solid #3B82F6; padding: 8px 10px; border-radius: 4px; font-family: var(--mono-font); font-size: 10.5px; color: #1E293B; word-break: break-all; margin: 6px 0; }
+
+.checklist { list-style: none; padding-left: 0 !important; }
+.checklist li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 11.8px; }
+.checklist input[type="checkbox"] { margin-top: 2px; }
+
+.alert-criteria { background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 10px 12px; border-radius: 4px; font-size: 11.5px; color: #92400E; margin-top: 8px; }
+.alert-criteria b { color: #78350F; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <b>C&amp;A Pay</b>
+    <span>Protótipo &amp; Guia QA — Produtos Remarcados Shopping Muse</span>
+  </div>
+  <span class="badge-version">Template v3 Oficial</span>
+</header>
+
+<div class="bench">
+  
+  <!-- Painel Esquerdo: Controle QA & Dados da Sessão -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Cenários de Teste (QA)</h2>
+      <p>Simule os caminhos previstos no fluxo:</p>
+    </div>
+    <div class="panel-body">
+      
+      <span class="section-title">Parâmetros Atuais</span>
+      <div class="context-box">
+        <b>Template Oficial (v3):</b><br>
+        <span class="code-tag">napoli_cea_br_utility_campanha_limite_temp_nov_26_v3</span><br><br>
+        <b>Variáveis Dinâmicas:</b><br>
+        • <span class="code-tag">{{1}}</span> Nome: Mariana<br>
+        • <span class="code-tag">{{2}}</span> Limite: R$ 2.500,00<br>
+        • <span class="code-tag">{{3}}</span> Validade: 30/11<br><br>
+        <b>Sessão ativa:</b><br>
+        • Data teste: &lt; 27/11 23h59 (Válido)<br>
+        • <span class="code-tag">sessionId = currentSessionIdMarkdownItems</span>
+      </div>
+
+      <span class="section-title">Atalhos de Simulação</span>
+      <div class="sim-controls">
+        <button type="button" class="btn-sim active" id="btnCenarioPadrao" onclick="window.qaApp.simularCenario('padrao')">
+          <span>1. Cumpre condições (APENAS remarcados)</span>
+          <span class="tag">Filtro Ativo</span>
+        </button>
+
+        <button type="button" class="btn-sim" id="btnCenarioVitrineGeral" onclick="window.qaApp.simularCenario('vitrine_geral')">
+          <span>2. Não cumpre condições (Vitrine Geral mista)</span>
+          <span class="tag">Geral</span>
+        </button>
+
+        <button type="button" class="btn-sim" id="btnCenarioInatividade" onclick="window.qaApp.simularCenario('inatividade')">
+          <span>3. Inatividade 1h na Vitrine</span>
+          <span class="tag">Régua 1h</span>
+        </button>
+
+        <button type="button" class="btn-sim" id="btnCenarioDataExpirada" onclick="window.qaApp.simularCenario('data_expirada')">
+          <span>4. Interação após 27/11 (Onboarding)</span>
+          <span class="tag">Redirect</span>
+        </button>
+
+        <button type="button" class="btn-sim" id="btnCenarioTextoInvalido" onclick="window.qaApp.simularCenario('texto_invalido')">
+          <span>5. Resposta fora da Regex</span>
+          <span class="tag">Cascata</span>
+        </button>
+      </div>
+
+      <button type="button" class="reset-btn" onclick="window.qaApp.reiniciar()">🔄 Resetar Simulador</button>
+    </div>
+  </aside>
+
+  <!-- Simulador Central WhatsApp -->
+  <main class="stage">
+    <div class="phone">
+      <div class="screen">
+        <div class="status"><span>13:26</span><span>5G ▮▮▮</span></div>
+        <header class="wa-head">
+          <div class="av">C&amp;A</div>
+          <div class="who">
+            <b>C&amp;A Modas <span class="verified">●</span></b>
+            <span id="waStatusHeader">Conta Comercial Oficial</span>
+          </div>
+        </header>
+        <div class="chat" id="chat">
+          <!-- Conteúdo gerado dinamicamente -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Painel Direito: Orientações de QA & Regras de Negócio dos Prints -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Orientações para Validação de QA</h2>
+      <p>Regras extraídas dos fluxos e critérios de homologação:</p>
+    </div>
+    <div class="panel-body">
+      
+      <!-- Card Template & Regex -->
+      <div class="qa-card">
+        <h3><span class="badge-rule blue">Disparo</span> Template Utility v3 &amp; Regex</h3>
+        <p>A mensagem inicial é um disparo ativo de utility com imagem de cabeçalho e botão Quick Reply único.</p>
+        <ul>
+          <li><b>Nome do template:</b> <span class="code-tag">napoli_cea_br_utility_campanha_limite_temp_nov_26_v3</span></li>
+          <li><b>Salvar contexto:</b> Salva <span class="code-tag">{{1}}</span> em <span class="code-tag">{{contact.extras.1}}</span> e nome do template em <span class="code-tag">{{contact.extras.campaignMessageTemplate}}</span>.</li>
+          <li><b>Regex de Validação de Resposta:</b>
+            <div class="regex-box">^(?i)\s*(quero(\s+(saber|ver|conhecer|entender))?(\s+mais)?|saber\s+mais|mais(\s+detalhes|\s+informa[cç][oõ]es)?|beleza|conta\s+(a[ii]|mais)|manda\s+(a[ii]|ver)|pode\s+(ser|falar|mandar|contar)|com\s+certeza|bora|sim|claro|ok|show)\s*[.!]?\s*$</div>
+          </li>
+          <li><b>Desvios:</b> Se a resposta for diferente da regex/botão (<span class="code-tag">notEquals "Quero saber mais"</span>), redirecionar para <b>Redirect Cascata</b> (<span class="code-tag">cascatabeta2@msging.net</span>).</li>
+        </ul>
+      </div>
+
+      <!-- Card Condição Temporal -->
+      <div class="qa-card">
+        <h3><span class="badge-rule amber">Condição</span> Verificação de Data limite</h3>
+        <p>No bloco <span class="code-tag">[NA] [NLT.2.1.0]</span>, o bot verifica se a data/hora atual é inferior a <b>27/11 23h59</b>:</p>
+        <ul>
+          <li><b>Se antes de 27/11 equals "sim":</b> Segue para liberação da oferta e orquestrador Shopping Muse.</li>
+          <li><b>Se antes de 27/11 equals "não":</b> Direciona para <b>Redirect Onboarding</b> (<span class="code-tag">onboardingbeta4@msging.net</span>). <i>(Não há exibição de régua de inatividade após essa data).</i></li>
+        </ul>
+      </div>
+
+      <!-- Card Regra de Negócio: Produtos Remarcados vs Vitrine Geral -->
+      <div class="qa-card">
+        <h3><span class="badge-rule purple">Shopping Muse</span> Exibição de Remarcados vs Vitrine Geral</h3>
+        <p>O que muda em relação às vitrines antigas:</p>
+        <ul>
+          <li>Deixamos de usar templates na vitrine A, adotando <b>carrossel nativo</b> no WhatsApp.</li>
+          <li>Produtos remarcados passam a exibir o <b>preço antigo riscado e o preço novo</b>, incentivando a compra (sem exibir tag de porcentagem %).</li>
+          <li><b>Conexão invisível:</b> Usuária conectada ao Orquestrador Multi Agents enviando a instrução <span class="code-tag">"Quero ver as últimas novidades"</span>.</li>
+        </ul>
+        <div class="alert-criteria">
+          <b>Condições obrigatórias para exibir APENAS itens remarcados:</b><br>
+          1. Iniciou a conversa interagindo com o template <span class="code-tag">napoli_cea_br_utility_campanha_limite_temp_nov_26_v3</span>.<br>
+          2. Interação realizada <b>antes de 27/11, 23h59</b>.<br>
+          3. Sessão ativa: <span class="code-tag">sessionId = currentSessionIdMarkdownItems</span>.<br><br>
+          <b>Regra de Fallback:</b> Pessoas que <b>não cumprem</b> todas essas condições recebem a <b>vitrine geral</b> (contendo itens com e sem remarcação).
+        </div>
+      </div>
+
+      <!-- Card Inatividade 1h -->
+      <div class="qa-card">
+        <h3><span class="badge-rule red">Régua 1h</span> Inatividade Específica Black Friday</h3>
+        <p>Em caso de 1 hora sem interação após receber a vitrine de produtos remarcados (bloco <span class="code-tag">[INPUT] I.1.0.0</span>):</p>
+        <ul>
+          <li><b>Critério para disparo:</b> Usuário com template v3 ativo, antes de 27/11 23h59 e sessionId correspondente.</li>
+          <li><b>Mensagem enviada:</b>
+            <div style="background:#F3F4F6; padding:8px; border-radius:6px; margin-top:4px; font-style:italic;">
+              "Mariana, não encontrou os seus favoritos? 🛍️<br><br>
+              Posso te ajudar a encontrar as melhores peças e montar looks para você aproveitar o seu novo limite nesta *Black Friday*.<br><br>
+              Deseja continuar agora?"
+            </div>
+          </li>
+          <li><b>Opções Quick Reply:</b> <b>Sim</b> | <b>Não</b></li>
+          <li><b>Pós 27/11:</b> Não se aplica. O usuário é encaminhado para o bot de Onboarding e a régua de inatividade de limite temporário não é disparada.</li>
+        </ul>
+      </div>
+
+      <!-- Checklist de Homologação QA -->
+      <div class="qa-card">
+        <h3><span class="badge-rule green">Checklist QA</span> Critérios de Aceite para Testes</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox"> Disparo carrega nome {{1}}, valor {{2}} e validade {{3}}.</label></li>
+          <li><label><input type="checkbox"> Resposta salva contact.extras.1 e contact.extras.campaignMessageTemplate.</label></li>
+          <li><label><input type="checkbox"> Se cumprir condições (Template v3 + antes de 27/11 + sessionId): exibe APENAS produtos remarcados (preço riscado + preço novo, sem porcentagem %).</label></li>
+          <li><label><input type="checkbox"> Se NÃO cumprir condições: exibe vitrine geral mista (itens com e sem remarcação).</label></li>
+          <li><label><input type="checkbox"> Se data > 27/11 23h59: redireciona para Onboarding (sem inatividade).</label></li>
+          <li><label><input type="checkbox"> Respostas fora da regex: redirecionam para Cascata.</label></li>
+          <li><label><input type="checkbox"> Inatividade de 60m antes de 27/11: exibe copy oficial com botões Sim | Não.</label></li>
+        </ul>
+      </div>
+
+    </div>
+  </aside>
+
+</div>
+
+<script>
+window.qaApp = {
+  dados: {
+    nome: 'Mariana',
+    valor: '2.500,00',
+    validade: '30/11',
+    template: 'napoli_cea_br_utility_campanha_limite_temp_nov_26_v3'
+  },
+
+  IMG_HEADER_UTILITY: "https://blipmediastore.blob.core.windows.net/public-medias/Media_ea455dd0-43e9-44b2-ada8-40d7f05b4d56",
+  IMG_BLAZER_OFF: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=450&auto=format&fit=crop",
+  IMG_BLAZER_BROWN: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=450&auto=format&fit=crop",
+  IMG_COLETE: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=450&auto=format&fit=crop",
+  IMG_VESTIDO_NOVO: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=450&auto=format&fit=crop",
+
+  sleep: function(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  },
+
+  setTyping: function(isTyping) {
+    var headerStatus = document.getElementById('waStatusHeader');
+    var existingTyping = document.getElementById('typingIndicator');
+    var chat = document.getElementById('chat');
+
+    if (isTyping) {
+      if (headerStatus) {
+        headerStatus.textContent = 'digitando...';
+        headerStatus.classList.add('typing');
+      }
+      if (!existingTyping && chat) {
+        var typingDiv = document.createElement('div');
+        typingDiv.className = 'row in';
+        typingDiv.id = 'typingIndicator';
+        typingDiv.innerHTML = `
+          <div class="typing-bubble">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+        `;
+        chat.appendChild(typingDiv);
+        this.scrollToBottom();
+      }
+    } else {
+      if (headerStatus) {
+        headerStatus.textContent = 'Conta Comercial Oficial';
+        headerStatus.classList.remove('typing');
+      }
+      if (existingTyping) {
+        existingTyping.remove();
+      }
+    }
+  },
+
+  reiniciar: function() {
+    this.setTyping(false);
+    var chat = document.getElementById('chat');
+    chat.innerHTML = `
+      <div class="row in">
+        <div class="bub">
+          <img src="${this.IMG_HEADER_UTILITY}" class="template-header-img" alt="C&A Pay Limite Temporário" onerror="this.style.display='none'">
+          <p>Olá, <b>${this.dados.nome}</b>, tudo bem?</p>
+          <p>Este é um lembrete que seu limite disponível foi atualizado temporariamente para R$ <b>${this.dados.valor}</b>, com validade até <b>${this.dados.validade}</b>.</p>
+          <p class="footer-text">Acesse o app C&amp;A para mais informações.</p>
+          <span class="meta">13:24</span>
+        </div>
+      </div>
+      <div class="btn-wpp-single" id="btnDisparo">
+        <button type="button" onclick="window.qaApp.clicarQueroSaberMais(true)">Quero saber mais</button>
+      </div>
+      <div id="flowAnchor"></div>
+    `;
+    this.atualizarBotoesAtivos('btnCenarioPadrao');
+  },
+
+  atualizarBotoesAtivos: function(activeId) {
+    var ids = ['btnCenarioPadrao', 'btnCenarioVitrineGeral', 'btnCenarioInatividade', 'btnCenarioDataExpirada', 'btnCenarioTextoInvalido'];
+    ids.forEach(id => {
+      var el = document.getElementById(id);
+      if (el) el.classList.toggle('active', id === activeId);
+    });
+  },
+
+  simularCenario: async function(tipo) {
+    this.reiniciar();
+    if (tipo === 'padrao') {
+      this.atualizarBotoesAtivos('btnCenarioPadrao');
+      await this.clicarQueroSaberMais(true); // cumpre condições
+    } else if (tipo === 'vitrine_geral') {
+      this.atualizarBotoesAtivos('btnCenarioVitrineGeral');
+      await this.clicarQueroSaberMais(false); // NÃO cumpre condições -> vitrine geral
+    } else if (tipo === 'inatividade') {
+      this.atualizarBotoesAtivos('btnCenarioInatividade');
+      await this.clicarQueroSaberMais(true);
+      await this.sleep(1200);
+      await this.acionarInatividade();
+    } else if (tipo === 'data_expirada') {
+      this.atualizarBotoesAtivos('btnCenarioDataExpirada');
+      var btn = document.getElementById('btnDisparo');
+      if (btn) btn.style.display = 'none';
+
+      var anchor = document.getElementById('flowAnchor');
+      anchor.innerHTML += `
+        <div class="row out"><div class="bub">Quero saber mais<span class="meta">13:25</span></div></div>
+      `;
+      this.scrollToBottom();
+
+      this.setTyping(true);
+      await this.sleep(800);
+      this.setTyping(false);
+
+      anchor.innerHTML += `
+        <div class="day" style="background:#FEE2E2; color:#991B1B; margin: 8px auto;">Condição: antes de 27/11 equals "não"</div>
+        <div class="row in">
+          <div class="bub">
+            <p>Redirecionamento efetuado para o bot de <b>Onboarding</b> (<span style="font-family:monospace; font-size:11px;">onboardingbeta4@msging.net</span>).</p>
+            <span class="meta">13:25</span>
+          </div>
+        </div>
+      `;
+      this.scrollToBottom();
+      // Não há mensagem de inatividade pós 27/11
+    } else if (tipo === 'texto_invalido') {
+      this.atualizarBotoesAtivos('btnCenarioTextoInvalido');
+      var btn = document.getElementById('btnDisparo');
+      if (btn) btn.style.display = 'none';
+
+      var anchor = document.getElementById('flowAnchor');
+      anchor.innerHTML += `
+        <div class="row out"><div class="bub">Qual o horário de funcionamento da loja do shopping?<span class="meta">13:25</span></div></div>
+      `;
+      this.scrollToBottom();
+
+      this.setTyping(true);
+      await this.sleep(800);
+      this.setTyping(false);
+
+      anchor.innerHTML += `
+        <div class="day" style="background:#FEE2E2; color:#991B1B; margin: 8px auto;">Regex: Mensagem não correspondente</div>
+        <div class="row in">
+          <div class="bub">
+            <p>Redirecionamento efetuado para <b>Redirect Cascata</b> (<span style="font-family:monospace; font-size:11px;">cascatabeta2@msging.net</span>).</p>
+            <span class="meta">13:25</span>
+          </div>
+        </div>
+      `;
+      this.scrollToBottom();
+    }
+  },
+
+  clicarQueroSaberMais: async function(cumpreCondicoes) {
+    var btn = document.getElementById('btnDisparo');
+    if (btn) btn.style.display = 'none';
+
+    var anchor = document.getElementById('flowAnchor');
+    anchor.innerHTML += `
+      <div class="row out"><div class="bub">Quero saber mais<span class="meta">13:25</span></div></div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(900);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>${this.dados.nome}, a <b>Black Friday C&amp;A</b> já começou e tem muita oportunidade esperando por você! 😊</p>
+          <p>Que tal aproveitar seu novo limite para renovar o guarda-roupa? Separei uma seleção de achadinhos, vem ver!👇</p>
+          <span class="meta">13:26</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    if (cumpreCondicoes) {
+      anchor.innerHTML += `
+        <details class="muse-transition" open>
+          <summary>🤖 Orquestrador Multi Agents — Condições Cumpridas</summary>
+          <div class="muse-details-content">
+            <div><b>Template origem:</b> <span class="trans-payload">napoli_cea_br_utility_campanha_limite_temp_nov_26_v3</span> (OK)</div>
+            <div><b>Data de interação:</b> Antes de 27/11, 23h59 (OK)</div>
+            <div><b>Sessão ativa:</b> <span class="trans-payload">sessionId = currentSessionIdMarkdownItems</span> (OK)</div>
+            <div><b>Filtro Aplicado:</b> <b>APENAS itens remarcados</b> (com preço riscado e preço novo)</div>
+          </div>
+        </details>
+      `;
+    } else {
+      anchor.innerHTML += `
+        <details class="muse-transition" open style="background:#FFFBEB; border-left-color:#F59E0B; color:#92400E;">
+          <summary>ℹ️ Orquestrador Multi Agents — Condições Não Cumpridas</summary>
+          <div class="muse-details-content">
+            <div><b>Resultado:</b> Usuário não cumpriu todas as 3 regras obrigatórias de remarcados.</div>
+            <div><b>Vitrine Exibida:</b> <b>Vitrine Geral</b> (contendo itens remarcados e itens regulares sem desconto).</div>
+          </div>
+        </details>
+      `;
+    }
+    this.scrollToBottom();
+
+    await this.sleep(700);
+    this.setTyping(true);
+    await this.sleep(800);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Só um segundinho...</p>
+          <p>Estou localizando as opções disponíveis.</p>
+          <span class="meta">13:26</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+
+    await this.sleep(800);
+    this.setTyping(true);
+    await this.sleep(900);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Aqui estão algumas sugestões de looks para você.</p>
+          <span class="meta">13:26</span>
+        </div>
+      </div>
+
+      <div class="carousel-container" id="carrosselProdutos">
+        ${cumpreCondicoes ? this.gerarCardsApenasRemarcados() : this.gerarCardsVitrineGeral()}
+      </div>
+
+      <div class="chat-action-menu" id="menuAposVitrine">
+        <div class="in-chat-input-bar">
+          <input type="text" id="txtInputLivre" placeholder="Digite uma resposta (ex: Quero vestidos)..." onkeydown="if(event.key==='Enter') window.qaApp.enviarTextoLivre(this.value)">
+          <button type="button" onclick="window.qaApp.enviarTextoLivre(document.getElementById('txtInputLivre').value)">Enviar</button>
+        </div>
+      </div>
+      <div id="anchorAposVitrine"></div>
+    `;
+    this.scrollToBottom();
+  },
+
+  gerarCardsApenasRemarcados: function() {
+    return `
+      <!-- Card 1 Remarcado -->
+      <div class="prod-card">
+        <div class="prod-card-img-wrap"><img src="${this.IMG_BLAZER_OFF}" alt="Blazer Off White"></div>
+        <div class="prod-card-body">
+          <div>
+            <div class="prod-title">Que tal? ✨ <b>blazer de alfaiataria feminino com martingale off white</b></div>
+            <div class="prod-price-box">
+              <span class="prod-price-old">R$ 359,99</span>
+              <span class="prod-price-current">R$ 279,99</span>
+            </div>
+            <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+          </div>
+          <div class="prod-actions">
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Adicionar à sacola')">↩ Adicionar à sacola</button>
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Detalhes do produto')">↩ Detalhes do produto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 Remarcado -->
+      <div class="prod-card">
+        <div class="prod-card-img-wrap"><img src="${this.IMG_BLAZER_BROWN}" alt="Blazer Marrom"></div>
+        <div class="prod-card-body">
+          <div>
+            <div class="prod-title">Que tal? ✨ <b>blazer de alfaiataria feminino com martingale marrom</b></div>
+            <div class="prod-price-box">
+              <span class="prod-price-old">R$ 359,99</span>
+              <span class="prod-price-current">R$ 279,99</span>
+            </div>
+            <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+          </div>
+          <div class="prod-actions">
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Adicionar à sacola')">↩ Adicionar à sacola</button>
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Detalhes do produto')">↩ Detalhes do produto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 Remarcado -->
+      <div class="prod-card">
+        <div class="prod-card-img-wrap"><img src="${this.IMG_COLETE}" alt="Colete Xadrez"></div>
+        <div class="prod-card-body">
+          <div>
+            <div class="prod-title">Que tal? ✨ <b>colete de alfaiataria feminino decote v xadrez azul</b></div>
+            <div class="prod-price-box">
+              <span class="prod-price-old">R$ 199,99</span>
+              <span class="prod-price-current">R$ 149,99</span>
+            </div>
+            <div class="prod-sizes">Tamanhos: PP | M | GG</div>
+          </div>
+          <div class="prod-actions">
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Adicionar à sacola')">↩ Adicionar à sacola</button>
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Detalhes do produto')">↩ Detalhes do produto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Sugestões -->
+      <div class="prod-card suggestion-card">
+        <div class="suggestion-banner">✨</div>
+        <div class="prod-card-body">
+          <div>
+            <div class="prod-title"><b>Quer mais sugestões?</b></div>
+            <div style="font-size:11px; color:#54656F; margin-bottom:12px;">Posso te mostrar mais peças no mesmo estilo ou procurar outro!</div>
+          </div>
+          <div class="prod-actions">
+            <button class="prod-btn" type="button" onclick="window.qaApp.enviarTextoLivre('Quero sugerir mais peças')">↩ Sugerir mais peças</button>
+            <button class="prod-btn" type="button" onclick="window.qaApp.enviarTextoLivre('Quero sugerir outro estilo')">↩ Sugerir outro estilo</button>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  gerarCardsVitrineGeral: function() {
+    return `
+      <!-- Card 1: Produto Regular NÃO Remarcado -->
+      <div class="prod-card">
+        <div class="prod-card-img-wrap"><img src="${this.IMG_VESTIDO_NOVO}" alt="Vestido Longo"></div>
+        <div class="prod-card-body">
+          <div>
+            <div class="prod-title">Que tal? ✨ <b>vestido longo floral evasê alças finas</b></div>
+            <div class="prod-price-box">
+              <!-- Sem preço antigo riscado, item regular -->
+              <span class="prod-price-current">R$ 219,99</span>
+            </div>
+            <div class="prod-sizes">Tamanhos: P | M | G</div>
+          </div>
+          <div class="prod-actions">
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Adicionar à sacola')">↩ Adicionar à sacola</button>
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Detalhes do produto')">↩ Detalhes do produto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Produto Remarcado -->
+      <div class="prod-card">
+        <div class="prod-card-img-wrap"><img src="${this.IMG_BLAZER_OFF}" alt="Blazer Off White"></div>
+        <div class="prod-card-body">
+          <div>
+            <div class="prod-title">Que tal? ✨ <b>blazer alfaiataria com martingale off white</b></div>
+            <div class="prod-price-box">
+              <span class="prod-price-old">R$ 359,99</span>
+              <span class="prod-price-current">R$ 279,99</span>
+            </div>
+            <div class="prod-sizes">Tamanhos: PP | P | M | G | GG</div>
+          </div>
+          <div class="prod-actions">
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Adicionar à sacola')">↩ Adicionar à sacola</button>
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Detalhes do produto')">↩ Detalhes do produto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Outro Produto Regular NÃO Remarcado -->
+      <div class="prod-card">
+        <div class="prod-card-img-wrap"><img src="${this.IMG_COLETE}" alt="Colete Xadrez"></div>
+        <div class="prod-card-body">
+          <div>
+            <div class="prod-title">Que tal? ✨ <b>calça alfaiataria feminina reta azul</b></div>
+            <div class="prod-price-box">
+              <span class="prod-price-current">R$ 179,99</span>
+            </div>
+            <div class="prod-sizes">Tamanhos: 36 | 38 | 40 | 42</div>
+          </div>
+          <div class="prod-actions">
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Adicionar à sacola')">↩ Adicionar à sacola</button>
+            <button class="prod-btn" type="button" onclick="alert('Ação homologada: Detalhes do produto')">↩ Detalhes do produto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Sugestões -->
+      <div class="prod-card suggestion-card">
+        <div class="suggestion-banner">✨</div>
+        <div class="prod-card-body">
+          <div>
+            <div class="prod-title"><b>Quer mais sugestões?</b></div>
+            <div style="font-size:11px; color:#54656F; margin-bottom:12px;">Posso te mostrar mais peças no mesmo estilo ou procurar outro!</div>
+          </div>
+          <div class="prod-actions">
+            <button class="prod-btn" type="button" onclick="window.qaApp.enviarTextoLivre('Quero sugerir mais peças')">↩ Sugerir mais peças</button>
+            <button class="prod-btn" type="button" onclick="window.qaApp.enviarTextoLivre('Quero sugerir outro estilo')">↩ Sugerir outro estilo</button>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  acionarInatividade: async function() {
+    var menu = document.getElementById('menuAposVitrine');
+    if (menu) menu.style.display = 'none';
+
+    var anchor = document.getElementById('anchorAposVitrine') || document.getElementById('flowAnchor');
+    anchor.innerHTML += `
+      <div class="day" style="background:#FFF3CD; color:#856404; margin-top:10px;">⏰ Após 1h sem resposta da cliente (Bloco [INPUT] I.1.0.0)</div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1000);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>${this.dados.nome}, não encontrou os seus favoritos? 🛍️</p>
+          <p>Posso te ajudar a encontrar as melhores peças e montar looks para você aproveitar o seu novo limite nesta <b>*Black Friday*</b>.</p>
+          <p style="margin-top:6px;">Deseja continuar agora?</p>
+          <span class="meta">14:26</span>
+        </div>
+      </div>
+
+      <div class="btn-wpp-quickreply" id="qrInatividade">
+        <button type="button" onclick="window.qaApp.responderInatividade('Sim')">Sim</button>
+        <button type="button" onclick="window.qaApp.responderInatividade('Não')">Não</button>
+      </div>
+      <div id="anchorInatividadeResp"></div>
+    `;
+    this.scrollToBottom();
+  },
+
+  responderInatividade: async function(resposta) {
+    var qr = document.getElementById('qrInatividade');
+    if (qr) qr.style.display = 'none';
+
+    var anchor = document.getElementById('anchorInatividadeResp') || document.getElementById('anchorAposVitrine');
+    anchor.innerHTML += `
+      <div class="row out"><div class="bub">${resposta}<span class="meta">14:27</span></div></div>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(800);
+    this.setTyping(false);
+
+    if (resposta === 'Sim') {
+      anchor.innerHTML += `
+        <div class="row in">
+          <div class="bub">
+            <p>Conta para mim: você procura algo feminino ou masculino? E qual estilo você tem em mente para renovar o guarda-roupa hoje? 😊</p>
+            <span class="meta">14:27</span>
+          </div>
+        </div>
+      `;
+    } else {
+      anchor.innerHTML += `
+        <div class="row in">
+          <div class="bub">
+            <p>Sem problemas, ${this.dados.nome}! Qualquer coisa é só chamar por aqui quando quiser aproveitar seu limite de R$ ${this.dados.valor}. Boas compras! 👋✨</p>
+            <span class="meta">14:27</span>
+          </div>
+        </div>
+        <div class="day" style="background:#E5E7EB; color:#374151; margin-top:6px;">Atendimento finalizado</div>
+      `;
+    }
+    this.scrollToBottom();
+  },
+
+  enviarTextoLivre: async function(textoCustom) {
+    var inputEl = document.getElementById('txtInputLivre');
+    var texto = textoCustom || (inputEl ? inputEl.value.trim() : '') || 'Gostei do blazer';
+
+    var menu = document.getElementById('menuAposVitrine');
+    if (menu) menu.style.display = 'none';
+
+    var anchor = document.getElementById('anchorAposVitrine');
+    anchor.innerHTML += `
+      <div class="row out"><div class="bub">${texto}<span class="meta">13:28</span></div></div>
+      <details class="muse-transition" open>
+        <summary>🤖 Input repassado à IA Personal Shopper</summary>
+        <div class="muse-details-content">
+          <div><b>Texto capturado:</b> "${texto}"</div>
+          <div>Shopping Muse processa e retorna refinamento de busca.</div>
+        </div>
+      </details>
+    `;
+    this.scrollToBottom();
+
+    this.setTyping(true);
+    await this.sleep(1000);
+    this.setTyping(false);
+
+    anchor.innerHTML += `
+      <div class="row in">
+        <div class="bub">
+          <p>Perfeito! Estou buscando opções incríveis com base no que você me falou... ✨</p>
+          <span class="meta">13:28</span>
+        </div>
+      </div>
+    `;
+    this.scrollToBottom();
+  },
+
+  scrollToBottom: function() {
+    setTimeout(function() {
+      var chat = document.getElementById('chat');
+      if (chat) chat.scrollTop = chat.scrollHeight;
+    }, 60);
+  }
+};
+
+// Auto boot
+window.addEventListener('DOMContentLoaded', function() {
+  window.qaApp.reiniciar();
+});
+</script>
+</body>
+</html>
