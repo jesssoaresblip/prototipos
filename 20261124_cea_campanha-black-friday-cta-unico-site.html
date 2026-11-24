@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C&A | Simulador Black Friday - Etiqueta Vermelha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EDEDEB;
+  --panel: #FFFFFF;
+  --ink: #0A0A0A;
+  --on-ink: #FFFFFF;
+  --muted: #666666;
+  --line: #D8D8D6;
+  --soft: #F6F6F5;
+  --wa-dark: #075E54;
+  --wa-teal: #008069;
+  --wa-green: #25D366;
+  --wa-bg: #EFEAE2;
+  --wa-out: #E7FED8;
+  --cea-blue: #002B49;
+  --cea-red: #E0001A;
+  --ui-font: "Instrument Sans", system-ui, sans-serif;
+  --wa-font: "Instrument Sans", Roboto, Helvetica, Arial, sans-serif;
+  --mono-font: "JetBrains Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--ui-font); font-size: 13.5px; line-height: 1.45; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+button { cursor: pointer; font-family: inherit; }
+
+/* Topbar */
+.topbar { background: #0A0A0A; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; min-height: 56px; border-bottom: 1px solid #222; flex-shrink: 0; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand b { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+.brand span { font-size: 13px; color: #A8A8A8; border-left: 1px solid #333; padding-left: 12px; margin-left: 4px; }
+.badge-bf { background: #E0001A; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+/* Grid Principal Responsiva */
+.bench { 
+  flex: 1; 
+  display: grid; 
+  grid-template-columns: 290px minmax(380px, 1fr) 360px; 
+  gap: 16px; 
+  padding: 16px; 
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1080px) {
+  .bench {
+    grid-template-columns: 260px minmax(340px, 1fr) 320px;
+    gap: 12px;
+    padding: 12px;
+  }
+}
+
+.panel { 
+  background: var(--panel); 
+  border: 1px solid var(--line); 
+  border-radius: 12px; 
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
+  height: 100%;
+}
+
+.panel-head { padding: 14px 16px; border-bottom: 1px solid var(--line); background: #FAF9F8; flex-shrink: 0; }
+.panel-head h2 { margin: 0; font-size: 14px; font-weight: 700; color: #111; }
+.panel-head p { margin: 2px 0 0; color: var(--muted); font-size: 11.5px; }
+.panel-body { overflow-y: auto; padding: 14px 16px; flex: 1; }
+
+/* Stage e Celular WhatsApp */
+.stage { display: flex; align-items: center; justify-content: center; height: 100%; }
+.phone { width: 380px; height: 750px; max-height: 100%; background: #111B21; border-radius: 36px; padding: 10px; box-shadow: 0 24px 44px rgba(0,0,0,0.35); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+
+/* Painel Esquerdo: Seletor de Variações */
+.version-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.version-card { border: 1.5px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #FFF; text-align: left; cursor: pointer; transition: all 0.2s ease; position: relative; }
+.version-card:hover { border-color: #B5B5B5; background: #FAFAFA; }
+.version-card.active { border-color: var(--cea-blue); background: var(--cea-blue); box-shadow: 0 4px 10px rgba(0, 43, 73, 0.16); }
+.version-card .v-title { font-size: 13.5px; font-weight: 700; color: #111; margin-bottom: 2px; }
+.version-card.active .v-title { color: #FFFFFF; }
+.version-card .v-sub { font-size: 11px; font-style: italic; color: #666; display: block; }
+.version-card.active .v-sub { color: #D4E4F2; }
+.timing-box { background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+.timing-box label { font-size: 11.5px; font-weight: 700; color: #111; display: block; margin-bottom: 8px; }
+.timing-options { display: flex; flex-direction: column; gap: 6px; }
+.timing-opt-btn { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; text-align: left; font-size: 11.5px; color: #333; cursor: pointer; transition: 0.15s; }
+.timing-opt-btn:hover { border-color: #999; }
+.timing-opt-btn.active { border-color: var(--wa-teal); background: #E6F4F1; color: #005A4A; font-weight: 600; }
+.timing-opt-btn small { display: block; font-size: 10px; opacity: 0.8; margin-top: 2px; font-weight: normal; }
+
+/* Simulador WhatsApp Central */
+.screen { background: var(--wa-bg); border-radius: 28px; height: 100%; overflow: hidden; display: flex; flex-direction: column; font-family: var(--wa-font); position: relative; }
+.status { height: 24px; background: var(--wa-dark); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 11px; flex-shrink: 0; }
+.wa-head { background: var(--wa-dark); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px 12px; flex-shrink: 0; }
+.wa-head .av { width: 34px; height: 34px; border-radius: 50%; background: #0A0A0A; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 11px; border: 1.5px solid rgba(255,255,255,0.25); }
+.wa-head .who b { display: flex; align-items: center; gap: 4px; font-size: 13.5px; }
+.wa-head .who .verified { color: #20C65A; font-size: 12px; }
+.wa-head .who span { font-size: 11px; opacity: 0.85; }
+
+.chat { flex: 1; overflow-y: auto; padding: 10px; background-image: radial-gradient(rgba(7,94,84,0.06) 1px, transparent 1.2px); background-size: 16px 16px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
+.day { margin: 4px auto 2px; background: #fff; color: #54656F; font-size: 10.5px; padding: 3px 8px; border-radius: 6px; width: max-content; box-shadow: 0 1px 0.5px rgba(0,0,0,0.12); text-align: center; font-weight: 500; }
+.row { display: flex; margin: 1px 0; width: 100%; animation: fadeInMsg 0.25s ease-out; }
+.row.in { justify-content: flex-start; }
+
+@keyframes fadeInMsg {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bub { max-width: 88%; padding: 7px 10px; border-radius: 8px; font-size: 12.8px; line-height: 1.4; color: #111B21; background: #fff; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); position: relative; word-wrap: break-word; }
+.bub p { margin: 0 0 7px 0; }
+.bub p:last-child { margin-bottom: 0; }
+.bub .footer-text { font-size: 11.2px; color: #667781; font-style: italic; margin-top: 6px; }
+.bub img.template-header-img { width: 100%; height: auto; max-height: 175px; border-radius: 6px; margin-bottom: 8px; display: block; object-fit: cover; background: #eaeaea; }
+.meta { float: right; margin: 3px 0 -2px 8px; font-size: 10px; color: #667781; }
+
+/* Botão CTA Nativo WhatsApp */
+.btn-wpp-single { width: 88%; margin-top: 3px; }
+.cta-link-box a { border: 0; background: #fff; color: var(--wa-teal); font-weight: 600; font-size: 12.8px; padding: 10px; border-radius: 8px; text-align: center; width: 100%; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); cursor: pointer; transition: 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
+.cta-link-box a:hover { background: #F8F9FA; }
+.cta-svg { vertical-align: -1px; flex-shrink: 0; }
+
+/* Painel Direito: Regras de Negócio */
+.exec-item { border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 12px; }
+.exec-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.exec-item h3 { margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: var(--cea-blue); }
+.exec-item p { margin: 0; font-size: 12px; color: #444; line-height: 1.45; }
+.exec-tag { display: inline-block; background: #E9ECEF; color: #495057; font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; }
+.exec-tag.red { background: #FDE8E8; color: #C81E1E; }
+.exec-tag.blue { background: #E1EFFE; color: #1E429F; }
+.exec-tag.green { background: #DEF7EC; color: #03543F; }
+.exec-tag.amber { background: #FEF3C7; color: #92400E; }
+.exec-tag.purple { background: #EDEBFE; color: #5521B5; }
+
+.strategic-note { background: #F0FDF4; border: 1px solid #BBF7D0; border-left: 4px solid #16A34A; padding: 10px 12px; border-radius: 6px; margin: 0 0 14px 0; font-size: 11.5px; color: #166534; line-height: 1.45; }
+.strategic-note .strategic-title { color: #14532D; font-weight: 700; font-size: 12px; display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <b>C&amp;A</b>
+    <span>Simulador de Ofertas — Black Friday</span>
+  </div>
+  <span class="badge-bf">Black Friday 2026</span>
+</header>
+
+<div class="bench">
+  
+  <!-- Painel Esquerdo: Seletor de Variações de Copy -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Variações de Copy</h2>
+      <p>Selecione a opção para visualizar o template:</p>
+    </div>
+    <div class="panel-body">
+      
+      <div class="version-list">
+        <!-- Opção 1 -->
+        <button type="button" class="version-card active" id="btnCopy1" onclick="window.simuladorApp.selecionarCopy('copy1')">
+          <div class="v-title">Opção 1 · Exclusividade &amp; Vantagem</div>
+          <span class="v-sub">Foco sutil em condição especial</span>
+        </button>
+
+        <!-- Opção 2 -->
+        <button type="button" class="version-card" id="btnCopy2" onclick="window.simuladorApp.selecionarCopy('copy2')">
+          <div class="v-title">Opção 2 · Direto &amp; Objetivo</div>
+          <span class="v-sub">Foco na mecânica de 3 peças</span>
+        </button>
+
+        <!-- Opção 3 -->
+        <button type="button" class="version-card" id="btnCopy3" onclick="window.simuladorApp.selecionarCopy('copy3')">
+          <div class="v-title">Opção 3 · Urgência &amp; Oportunidade</div>
+          <span class="v-sub">Apelo promocional e prazo final</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Simulador Central WhatsApp -->
+  <main class="stage">
+    <div class="phone">
+      <div class="screen">
+        <div class="status"><span>10:00</span><span>5G ▮▮▮</span></div>
+        <header class="wa-head">
+          <div class="av">C&amp;A</div>
+          <div class="who">
+            <b>C&amp;A <span class="verified">●</span></b>
+            <span>Conta Comercial Oficial</span>
+          </div>
+        </header>
+        <div class="chat" id="chat">
+          <!-- Mensagem gerada dinamicamente via JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Painel Direito: Regras de Negócio -->
+  <aside class="panel">
+    <div class="panel-head">
+      <h2>Regras de Negócio</h2>
+      <p>Escopo oficial da campanha Black Friday:</p>
+    </div>
+    <div class="panel-body" id="regrasNegocioBody">
+      <!-- Regras injetadas via JS -->
+    </div>
+  </aside>
+
+</div>
+
+<script>
+window.simuladorApp = {
+  copyAtiva: 'copy1', // 'copy1', 'copy2' ou 'copy3'
+  loteAtivo: '26', // '26' ou '27'
+
+  IMG_TEMPLATE: "https://blipmediastore.blob.core.windows.net/public-medias/Media_f23d15df-fad2-484c-acb9-67ca281549e2",
+  LINK_SITE: "https://www.cea.com.br/",
+
+  selecionarCopy: function(copy) {
+    this.copyAtiva = copy;
+    document.getElementById('btnCopy1').classList.toggle('active', copy === 'copy1');
+    document.getElementById('btnCopy2').classList.toggle('active', copy === 'copy2');
+    document.getElementById('btnCopy3').classList.toggle('active', copy === 'copy3');
+    this.renderizarRegrasNegocio();
+    this.reiniciar();
+  },
+
+  renderizarRegrasNegocio: function() {
+    var rnBody = document.getElementById('regrasNegocioBody');
+    var destaqueCopy = "";
+
+    if (this.copyAtiva === 'copy1') {
+      destaqueCopy = "<b>Opção 1 (Exclusividade):</b> Valoriza o acesso privilegiado à condição extra de forma sutil, gerando percepção de benefício exclusivo sem mencionar explicitamente o canal.";
+    } else if (this.copyAtiva === 'copy2') {
+      destaqueCopy = "<b>Opção 2 (Direto &amp; Objetivo):</b> Comunica rapidamente o benefício progressivo da etiqueta vermelha, ideal para leitura rápida e clique imediato.";
+    } else {
+      destaqueCopy = "<b>Opção 3 (Urgência &amp; Oportunidade):</b> Combina a condição especial de desconto adicional com o gatilho de encerramento da Black Friday.";
+    }
+
+    rnBody.innerHTML = `
+      <div class="strategic-note">
+        <span class="strategic-title">💡 Abordagem Ativa:</span>
+        ${destaqueCopy}
+      </div>
+
+      <div class="exec-item">
+        <span class="exec-tag purple">Parâmetros &amp; Mídia do Template</span>
+        <h3>1. Variável, CTA e Imagem Pública</h3>
+        <p>• <b>Variável <code>{{1}}</code>:</b> Nome da cliente (ex.: <i>Mariana</i>).<br>
+           • <b>Tipo de Botão:</b> CTA URL direcionando para a home do site C&amp;A (<code>https://www.cea.com.br/</code>).<br>
+           • <b>Imagem Pública (Header):</b><br>
+           <a href="https://blipmediastore.blob.core.windows.net/public-medias/Media_f23d15df-fad2-484c-acb9-67ca281549e2" target="_blank" rel="noopener" style="color: var(--wa-teal); word-break: break-all; font-family: var(--mono-font); font-size: 10.5px;">https://blipmediastore.blob.core.windows.net/public-medias/Media_f23d15df-fad2-484c-acb9-67ca281549e2</a></p>
+      </div>
+
+      <div class="exec-item">
+        <span class="exec-tag blue">Volumetria &amp; Datas</span>
+        <h3>2. Cronograma de Disparos (230k total)</h3>
+        <p>• <b>26/11:</b> Disparo ativo para base de <b>115.000 clientes</b>.<br>
+           • <b>27/11:</b> Disparo ativo para base de <b>115.000 clientes</b>.</p>
+      </div>
+
+      <div class="exec-item">
+        <span class="exec-tag red">Mecânica Promocional</span>
+        <h3>3. Regra de Etiqueta Vermelha (+10% OFF)</h3>
+        <p>Inclusão de no mínimo <b>3 peças de etiqueta vermelha</b> no carrinho para ativar <b>10% de desconto extra</b> sobre os itens já remarcados.<br>
+        • <b>Vigência oficial:</b> 12/11/2026 a 30/11/2026.</p>
+      </div>
+
+      <div class="exec-item">
+        <span class="exec-tag amber">Fluxo do Bot</span>
+        <h3>4. Sem Agendamentos ou Réguas Extras</h3>
+        <p>Disparo único sem agendamento de lembretes posteriores ou mensagens adicionais. Caso a pessoa usuária envie qualquer resposta no chat, o fluxo segue normalmente para o <b>Onboarding e Menu Principal</b> do bot.</p>
+      </div>
+    `;
+  },
+
+  reiniciar: function() {
+    var chat = document.getElementById('chat');
+    var diaLabel = 'Disparo Black Friday · 26/11 e 27/11';
+    var corpoMensagem = "";
+    var textoBotao = "Aproveitar ofertas";
+
+    if (this.copyAtiva === 'copy1') {
+      corpoMensagem = `
+        <p>Hora de aproveitar uma condição exclusiva na <b>Black Friday</b> da C&amp;A, <b>Mariana</b>! ✨</p>
+        <p>Na compra de <b>3 ou mais peças de etiqueta vermelha</b>, você garante <b>+10% OFF extra</b> sobre os itens remarcados. 🏷️🔥</p>
+        <p>Corre para garantir os seus favoritos! 🏃‍♀️</p>
+        <p class="footer-text">Desconto direto no carrinho. Válido até 30/11.</p>
+      `;
+      textoBotao = "Aproveitar agora";
+    } else if (this.copyAtiva === 'copy2') {
+      corpoMensagem = `
+        <p>Tem desconto extra esperando por você na <b>Black Friday</b> da C&amp;A, <b>Mariana</b>! 🛍️🔥</p>
+        <p>Na compra de <b>3 ou mais peças de etiqueta vermelha</b>, você garante <b>+10% OFF extra</b> sobre os itens remarcados. ✨🏷️</p>
+        <p>Acesse o site e garanta as melhores ofertas enquanto duram os estoques!</p>
+        <p class="footer-text">Desconto direto no carrinho. Válido até 30/11.</p>
+      `;
+      textoBotao = "Conferir ofertas";
+    } else {
+      corpoMensagem = `
+        <p>A <b>Black Friday da C&amp;A</b> está imperdível e essa oportunidade é por tempo limitado, Mariana! ⏰🔥</p>
+        <p>Na compra de <b>3 ou mais peças de etiqueta vermelha</b>, você garante <b>+10% OFF extra</b> sobre os itens remarcados. 🛍️✨</p>
+        <p>Garanta seus looks favoritos agora mesmo! 🏃‍♀️</p>
+        <p class="footer-text">Desconto direto no carrinho. Válido até 30/11.</p>
+      `;
+      textoBotao = "Garantir desconto";
+    }
+
+    chat.innerHTML = `
+      <div class="day">${diaLabel}</div>
+      
+      <div class="row in">
+        <div class="bub">
+          <img src="${this.IMG_TEMPLATE}" class="template-header-img" alt="Black Friday da C&A Etiqueta Vermelha" onerror="this.style.display='none'">
+          ${corpoMensagem}
+          <span class="meta">10:00</span>
+        </div>
+      </div>
+
+      <div class="btn-wpp-single cta-link-box">
+        <a href="${this.LINK_SITE}" target="_blank" rel="noopener">
+          <svg class="cta-svg" viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M4.75 3.5a.75.75 0 0 0 0 1.5h5.19L3.22 11.72a.75.75 0 1 0 1.06 1.06L11 6.06v5.19a.75.75 0 0 0 1.5 0v-7a.75.75 0 0 0-.75-.75h-7Z"/></svg>
+          ${textoBotao}
+        </a>
+      </div>
+    `;
+  }
+};
+
+// Inicialização
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    window.simuladorApp.renderizarRegrasNegocio();
+    window.simuladorApp.reiniciar();
+  });
+} else {
+  window.simuladorApp.renderizarRegrasNegocio();
+  window.simuladorApp.reiniciar();
+}
+</script>
+</body>
+</html>
